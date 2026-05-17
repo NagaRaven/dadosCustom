@@ -1,0 +1,132 @@
+import { useState } from 'react';
+import { useSocket } from '../hooks/useSocket';
+import DiceRoller from './DiceRoller';
+import RollHistory from './RollHistory';
+import MasterControls from './MasterControls';
+
+const isMaster = (u) => u === 'Master';
+
+export default function Dashboard({ username, onLogout }) {
+  const { history, lastRoll, connectedUsers, forceStatus, isConnected, rollDice, forceResult } =
+    useSocket(username);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  return (
+    <div
+      className="min-h-screen grid-bg flex flex-col"
+      style={{ background: '#0a0a0f' }}
+    >
+      <div className="scan-line" />
+
+      {/* ── Barra superior ──────────────────────────────────────────────── */}
+      <header
+        className="flex items-center justify-between px-6 py-3 shrink-0"
+        style={{ borderBottom: '1px solid rgba(0,212,255,0.12)' }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+            style={{
+              border: '1px solid rgba(0,212,255,0.5)',
+              boxShadow: '0 0 10px rgba(0,212,255,0.3)',
+            }}
+          >
+            ⬡
+          </div>
+          <span
+            className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
+            style={{ color: '#00d4ff', textShadow: '0 0 10px rgba(0,212,255,0.5)' }}
+          >
+            STAR WARS — LA TIERRA PROMETIDA
+          </span>
+        </div>
+
+        {/* Usuarios online */}
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          {connectedUsers.map((u) => (
+            <span
+              key={u}
+              className="font-mono text-xs px-2 py-0.5 rounded-sm"
+              style={{
+                background: u === username ? 'rgba(0,212,255,0.12)' : 'rgba(0,212,255,0.04)',
+                border: `1px solid ${u === username ? 'rgba(0,212,255,0.5)' : 'rgba(0,212,255,0.15)'}`,
+                color: u === username ? '#00d4ff' : 'rgba(0,212,255,0.5)',
+              }}
+            >
+              {u}
+            </span>
+          ))}
+        </div>
+
+        {/* Perfil + estado + logout */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{
+                background: isConnected ? '#00ff88' : '#ff4444',
+                boxShadow: isConnected ? '0 0 6px #00ff88' : '0 0 6px #ff4444',
+              }}
+            />
+            <span
+              className="font-orbitron text-xs tracking-widest hidden sm:block"
+              style={{ color: isConnected ? '#00ff88' : '#ff4444' }}
+            >
+              {username}
+            </span>
+          </div>
+
+          <button
+            onClick={onLogout}
+            className="cyber-btn py-1.5 px-3"
+            style={{ fontSize: '0.6rem', borderColor: 'rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.6)' }}
+          >
+            SALIR
+          </button>
+        </div>
+      </header>
+
+      {/* ── Contenido principal ──────────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
+
+        {/* Columna izquierda — Dado + controles Master */}
+        <div className="flex flex-col gap-4 lg:w-[380px] shrink-0">
+          <div className="glass-panel-bright rounded-sm p-4">
+            <div
+              className="font-orbitron text-xs tracking-widest mb-4"
+              style={{ color: 'rgba(0,212,255,0.5)', borderBottom: '1px solid rgba(0,212,255,0.1)', paddingBottom: '8px' }}
+            >
+              TIRADA DE DADOS
+            </div>
+            <DiceRoller
+              username={username}
+              lastRoll={lastRoll}
+              onRoll={rollDice}
+              onAnimationStart={() => setIsAnimating(true)}
+              onAnimationEnd={() => setIsAnimating(false)}
+            />
+          </div>
+
+          {/* Panel del Master — invisible para otros jugadores */}
+          {isMaster(username) && (
+            <MasterControls onForce={forceResult} forceStatus={forceStatus} />
+          )}
+
+          {/* Indicador del dado activo */}
+          <div
+            className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center"
+            style={{ color: 'rgba(0,212,255,0.35)' }}
+          >
+            Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas
+          </div>
+        </div>
+
+        {/* Columna derecha — Historial */}
+        <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
+          <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+        </div>
+      </main>
+    </div>
+  );
+}
