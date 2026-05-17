@@ -9,7 +9,8 @@ export function useSocket(username) {
   const [history, setHistory]           = useState([]);
   const [lastRoll, setLastRoll]         = useState(null);
   const [connectedUsers, setConnected]  = useState([]);
-  const [forceStatus, setForceStatus]   = useState(null); // 'critical' | 'fumble' | null
+  const [forceStatus, setForceStatus]   = useState(null);
+  const [forcePowers, setForcePowers]   = useState({});
   const [isConnected, setIsConnected]   = useState(false);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export function useSocket(username) {
     });
 
     socketRef.current.on('users_update', (users) => setConnected(users));
+    socketRef.current.on('force_powers_update', (powers) => setForcePowers(powers));
 
     // Solo el Master recibe este evento — confirmación privada
     // forceStatus: 'critical' | 'fumble' | número (1-20)
@@ -45,9 +47,9 @@ export function useSocket(username) {
     };
   }, [username]);
 
-  const rollDice = () => {
+  const rollDice = (usedForce = false) => {
     if (!socketRef.current?.connected) return;
-    socketRef.current.emit('roll_dice', { username });
+    socketRef.current.emit('roll_dice', { username, usedForce });
   };
 
   const forceResult = (type, value) => {
@@ -55,5 +57,10 @@ export function useSocket(username) {
     socketRef.current.emit('force_result', { type, value });
   };
 
-  return { history, lastRoll, connectedUsers, forceStatus, isConnected, rollDice, forceResult };
+  const addForcePoint = (targetUsername) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('add_force_point', { targetUsername });
+  };
+
+  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, rollDice, forceResult, addForcePoint };
 }

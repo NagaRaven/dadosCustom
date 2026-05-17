@@ -191,6 +191,28 @@ body {
   50%       { text-shadow: 0 0 40px #ff4444, 0 0 80px rgba(255, 68, 68, 0.8); }
 }
 
+/* Animaciones para la última entrada del historial */
+@keyframes crit-entry-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.2), inset 0 0 6px rgba(255,215,0,0.04); }
+  50%       { box-shadow: 0 0 28px rgba(255,215,0,0.5), 0 0 50px rgba(255,215,0,0.2), inset 0 0 12px rgba(255,215,0,0.08); }
+}
+
+@keyframes fumble-entry-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,68,68,0.2), inset 0 0 6px rgba(255,68,68,0.04); }
+  50%       { box-shadow: 0 0 28px rgba(255,68,68,0.5), 0 0 50px rgba(255,68,68,0.2), inset 0 0 12px rgba(255,68,68,0.08); }
+}
+
+@keyframes force-entry-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(0,255,136,0.15), inset 0 0 6px rgba(0,255,136,0.03); }
+  50%       { box-shadow: 0 0 24px rgba(0,255,136,0.4), 0 0 45px rgba(0,255,136,0.15), inset 0 0 10px rgba(0,255,136,0.07); }
+}
+
+/* Botón de Fuerza activo */
+@keyframes force-btn-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0,255,136,0.2); }
+  50%       { box-shadow: 0 0 22px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2); }
+}
+
 /* ── Scrollbar personalizada ────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }

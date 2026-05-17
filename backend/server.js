@@ -42,6 +42,10 @@ function saveHistory(history) {
   } catch {}
 }
 
+// Puntos de Fuerza — inicializados a 2 por jugador (el Master no tiene)
+const FORCE_PLAYERS = ['Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
+let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
+
 // Estado compartido del servidor
 let rollHistory = loadHistory();  // persiste entre reinicios
 let forcedResult = null;          // null | 'critical' | 'fumble' | number
@@ -68,17 +72,26 @@ app.post('/api/login', (req, res) => {
 // ── Socket.IO ────────────────────────────────────────────────────────────────
 
 io.on('connection', (socket) => {
-  // Enviar historial actual al cliente recién conectado
   socket.emit('history', rollHistory);
+  socket.emit('force_powers_update', forcePowers);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
     io.emit('users_update', Object.values(connectedUsers));
   });
 
-  socket.on('roll_dice', ({ username }) => {
+  socket.on('roll_dice', ({ username, usedForce }) => {
+    // Consumir punto de Fuerza si el jugador lo ha activado y tiene puntos
+    let forceUsed = false;
+    if (usedForce && forcePowers[username] !== undefined && forcePowers[username] > 0) {
+      forcePowers[username]--;
+      forceUsed = true;
+      io.emit('force_powers_update', forcePowers);
+    }
+
     const { roll, nextForced } = processRoll(username, forcedResult);
     forcedResult = nextForced;
+    roll.usedForce = forceUsed;
 
     rollHistory.push(roll);
     rollHistory = limitHistory(rollHistory);
@@ -86,6 +99,15 @@ io.on('connection', (socket) => {
 
     io.emit('new_roll', roll);
     io.emit('history', rollHistory);
+  });
+
+  // Master: añadir un punto de Fuerza a un jugador
+  socket.on('add_force_point', ({ targetUsername }) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (!FORCE_PLAYERS.includes(targetUsername)) return;
+    forcePowers[targetUsername]++;
+    io.emit('force_powers_update', forcePowers);
   });
 
   // Solo el Master puede armar resultados forzados — verificado server-side

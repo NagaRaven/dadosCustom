@@ -3,19 +3,20 @@ import { useSocket } from '../hooks/useSocket';
 import DiceRoller from './DiceRoller';
 import RollHistory from './RollHistory';
 import MasterControls from './MasterControls';
+import ForcePanel from './ForcePanel';
 
 const isMaster = (u) => u === 'Master';
 
 export default function Dashboard({ username, onLogout }) {
-  const { history, lastRoll, connectedUsers, forceStatus, isConnected, rollDice, forceResult } =
-    useSocket(username);
+  const {
+    history, lastRoll, connectedUsers,
+    forceStatus, forcePowers,
+    isConnected, rollDice, forceResult, addForcePoint,
+  } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
   return (
-    <div
-      className="min-h-screen grid-bg flex flex-col"
-      style={{ background: '#0a0a0f' }}
-    >
+    <div className="min-h-screen grid-bg flex flex-col" style={{ background: '#0a0a0f' }}>
       <div className="scan-line" />
 
       {/* ── Barra superior ──────────────────────────────────────────────── */}
@@ -23,14 +24,10 @@ export default function Dashboard({ username, onLogout }) {
         className="flex items-center justify-between px-6 py-3 shrink-0"
         style={{ borderBottom: '1px solid rgba(0,212,255,0.12)' }}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-            style={{
-              border: '1px solid rgba(0,212,255,0.5)',
-              boxShadow: '0 0 10px rgba(0,212,255,0.3)',
-            }}
+            style={{ border: '1px solid rgba(0,212,255,0.5)', boxShadow: '0 0 10px rgba(0,212,255,0.3)' }}
           >
             ⬡
           </div>
@@ -59,7 +56,7 @@ export default function Dashboard({ username, onLogout }) {
           ))}
         </div>
 
-        {/* Perfil + estado + logout */}
+        {/* Estado + logout */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div
@@ -76,7 +73,6 @@ export default function Dashboard({ username, onLogout }) {
               {username}
             </span>
           </div>
-
           <button
             onClick={onLogout}
             className="cyber-btn py-1.5 px-3"
@@ -90,7 +86,7 @@ export default function Dashboard({ username, onLogout }) {
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
 
-        {/* Columna izquierda — Dado + controles Master */}
+        {/* Columna izquierda */}
         <div className="flex flex-col gap-4 lg:w-[380px] shrink-0">
           <div className="glass-panel-bright rounded-sm p-4">
             <div
@@ -105,15 +101,23 @@ export default function Dashboard({ username, onLogout }) {
               onRoll={rollDice}
               onAnimationStart={() => setIsAnimating(true)}
               onAnimationEnd={() => setIsAnimating(false)}
+              myForcePower={forcePowers[username]}
+              isMaster={isMaster(username)}
             />
           </div>
 
-          {/* Panel del Master — invisible para otros jugadores */}
+          {/* Paneles exclusivos del Master */}
           {isMaster(username) && (
-            <MasterControls onForce={forceResult} forceStatus={forceStatus} />
+            <>
+              <MasterControls onForce={forceResult} forceStatus={forceStatus} />
+              <ForcePanel
+                connectedUsers={connectedUsers}
+                forcePowers={forcePowers}
+                onAddForce={addForcePoint}
+              />
+            </>
           )}
 
-          {/* Indicador del dado activo */}
           <div
             className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center"
             style={{ color: 'rgba(0,212,255,0.35)' }}

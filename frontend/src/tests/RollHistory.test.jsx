@@ -51,10 +51,9 @@ describe('RollHistory', () => {
     expect(screen.getByText('PIFIA')).toBeInTheDocument();
   });
 
-  it('muestra el contador numérico de tiradas actuales', () => {
+  it('muestra las entradas cuando el historial tiene tiradas', () => {
     const history = [makeRoll('Nivare', 10, 1), makeRoll('Luz-Ya', 5, 2)];
     render(<RollHistory history={history} currentUser="Nivare" />);
-    // El indicador HUD muestra el número sin "/20"
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getAllByTestId('roll-entry')).toHaveLength(2);
   });
 });
