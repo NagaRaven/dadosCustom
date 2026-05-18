@@ -373,7 +373,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         </div>)}
 
         {/* Separador plegable */}
-        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
+        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'20px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
           <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(0,212,255,0.25))' }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.15em', color:'rgba(0,212,255,0.5)', padding:'3px 10px', border:'1px solid rgba(0,212,255,0.22)', borderRadius:'1px', display:'flex', alignItems:'center', gap:'5px', flexShrink:0, whiteSpace:'nowrap' }}>
             {topExpanded ? '▲' : '▼'} PERSONAJE
@@ -440,8 +440,6 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         >
           {/* Esquinas del tooltip */}
           {['tl','tr','bl','br'].map(p => <Corner key={p} pos={p} />)}
-          {/* Línea de escaneo interna */}
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:'1px', background:'linear-gradient(to right,transparent,rgba(0,212,255,0.5),transparent)', animation:'scan 2s linear infinite', pointerEvents:'none' }} />
           <p style={{ margin:0, fontFamily:'Rajdhani,sans-serif', fontSize:'11.5px', color:'rgba(195,215,235,0.92)', lineHeight:1.55, whiteSpace:'pre-wrap' }}>
             {tooltip.text}
           </p>
