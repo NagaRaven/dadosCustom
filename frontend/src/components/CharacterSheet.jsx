@@ -259,7 +259,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
     return (
       <div className="glass-panel rounded-sm" style={{ padding:'10px', display:'flex', flexDirection:'column' }}>
         <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(0,212,255,0.6)', textAlign:'center', marginBottom:'10px', borderBottom:'1px solid rgba(0,212,255,0.08)', paddingBottom:'6px', lineHeight:1.5 }}>
-          CONTACTOS DEL<br/>COMUNICADOR
+          COMUNICADOR
         </div>
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'6px 0' }}>
           {/* Símbolo prohibido */}
