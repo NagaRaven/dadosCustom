@@ -322,86 +322,186 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(0,212,255,0.2))' }} />
         </div>
 
-        {/* ── PANEL CENTRAL: Créditos | Divisor | Reales de a Ocho ─────── */}
-        <div style={{ display: 'flex', gap: '0', alignItems: 'stretch', marginBottom: '10px' }}>
+        {/* ── PANEL ECONÓMICO: 4 recuadros simétricos apaisados ────────── */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
 
-          {/* Créditos */}
+          {/* ── CRÉDITOS ── */}
           <div
             className="glass-panel rounded-sm"
-            style={{ flex: 1, padding: '8px', borderRight: 'none', borderRadius: '2px 0 0 2px' }}
+            style={{
+              flex: 1, padding: '10px',
+              borderColor: 'rgba(255,215,0,0.28)',
+              boxShadow: '0 0 18px rgba(255,215,0,0.05), inset 0 0 12px rgba(255,215,0,0.03)',
+            }}
           >
+            {/* Header con línea inferior dorada */}
             <div style={{
-              fontFamily: 'Orbitron, monospace', fontSize: '7px', letterSpacing: '0.15em',
-              color: '#ffd700', textShadow: '0 0 8px rgba(255,215,0,0.4)',
-              textAlign: 'center', marginBottom: '8px',
+              display: 'flex', alignItems: 'center', gap: '5px',
+              marginBottom: '9px', paddingBottom: '6px',
+              borderBottom: '1px solid rgba(255,215,0,0.2)',
             }}>
-              CRÉDITOS
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,215,0,0.3))' }} />
+              <span style={{
+                fontFamily: 'Orbitron, monospace', fontSize: '7px', letterSpacing: '0.2em',
+                color: '#ffd700', textShadow: '0 0 10px rgba(255,215,0,0.5)',
+                whiteSpace: 'nowrap',
+              }}>
+                CRÉDITOS
+              </span>
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(255,215,0,0.3))' }} />
             </div>
-            {[
-              { label: 'EN POSESIÓN', key: 'enPosesion' },
-              { label: 'EN EL BANCO', key: 'enElBanco'  },
-            ].map(({ label, key }, i) => (
-              <div key={key} style={{ marginBottom: i === 0 ? '7px' : 0 }}>
-                <span style={{ ...LABEL, display: 'block', marginBottom: '2px', fontSize: '6.5px' }}>{label}</span>
-                {isEditing
-                  ? <input
-                      type="text"
-                      value={data?.creditos?.[key] ?? ''}
-                      onChange={e => setNested('creditos', key, e.target.value)}
-                      style={{ ...EDIT_INPUT, flex: 'none', fontSize: '12px' }}
-                    />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '13px', fontWeight: 600, color: '#e0e8f0' }}>
-                      {data?.creditos?.[key] || '—'}
-                    </div>
-                }
+
+            {/* Sub-campos en fila */}
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {/* EN POSESIÓN */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6px', color: 'rgba(255,215,0,0.45)' }}>
+                  EN POSESIÓN
+                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={data?.creditos?.enPosesion ?? ''}
+                    onChange={e => setNested('creditos', 'enPosesion', e.target.value)}
+                    style={{ ...EDIT_INPUT, flex: 'none', fontSize: '13px', borderBottomColor: 'rgba(255,215,0,0.4)' }}
+                  />
+                ) : (
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif', fontSize: '15px', fontWeight: 700,
+                    color: '#ffe566', textShadow: '0 0 8px rgba(255,215,0,0.35)',
+                    letterSpacing: '0.03em',
+                  }}>
+                    {data?.creditos?.enPosesion || '—'}
+                  </div>
+                )}
                 <div style={GOLD_LINE} />
               </div>
-            ))}
+
+              {/* Divisor vertical sutil */}
+              <div style={{ width: '1px', background: 'rgba(255,215,0,0.15)', flexShrink: 0 }} />
+
+              {/* EN EL BANCO */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6px', color: 'rgba(255,215,0,0.45)' }}>
+                  EN EL BANCO
+                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={data?.creditos?.enElBanco ?? ''}
+                    onChange={e => setNested('creditos', 'enElBanco', e.target.value)}
+                    style={{ ...EDIT_INPUT, flex: 'none', fontSize: '13px', borderBottomColor: 'rgba(255,215,0,0.4)' }}
+                  />
+                ) : (
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif', fontSize: '15px', fontWeight: 700,
+                    color: '#ffe566', textShadow: '0 0 8px rgba(255,215,0,0.35)',
+                    letterSpacing: '0.03em',
+                  }}>
+                    {data?.creditos?.enElBanco || '—'}
+                  </div>
+                )}
+                <div style={GOLD_LINE} />
+              </div>
+            </div>
           </div>
 
-          {/* Divisor central con círculo */}
+          {/* Separador central con círculo */}
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            width: '20px', flexShrink: 0,
-            borderTop: '1px solid rgba(0,212,255,0.18)',
-            borderBottom: '1px solid rgba(0,212,255,0.18)',
-            background: 'rgba(0,212,255,0.02)',
+            justifyContent: 'center', gap: '3px', width: '16px', flexShrink: 0,
           }}>
-            <DividerCircle vertical />
+            <div style={{ width: '1px', flex: 1, background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,0.2))' }} />
+            <div style={{
+              width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0,
+              border: '1px solid rgba(0,212,255,0.4)',
+              boxShadow: '0 0 6px rgba(0,212,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#00d4ff', boxShadow: '0 0 5px rgba(0,212,255,0.9)' }} />
+            </div>
+            <div style={{ width: '1px', flex: 1, background: 'linear-gradient(to top, transparent, rgba(0,212,255,0.2))' }} />
           </div>
 
-          {/* Reales de a Ocho */}
+          {/* ── REALES DE A OCHO ── */}
           <div
             className="glass-panel rounded-sm"
-            style={{ flex: 1, padding: '8px', borderLeft: 'none', borderRadius: '0 2px 2px 0' }}
+            style={{
+              flex: 1, padding: '10px',
+              borderColor: 'rgba(124,58,237,0.28)',
+              boxShadow: '0 0 18px rgba(124,58,237,0.05), inset 0 0 12px rgba(124,58,237,0.03)',
+            }}
           >
+            {/* Header con línea inferior púrpura */}
             <div style={{
-              fontFamily: 'Orbitron, monospace', fontSize: '6.5px', letterSpacing: '0.1em',
-              color: 'rgba(190,150,255,0.9)', textShadow: '0 0 8px rgba(124,58,237,0.4)',
-              textAlign: 'center', marginBottom: '8px', lineHeight: 1.4,
+              display: 'flex', alignItems: 'center', gap: '5px',
+              marginBottom: '9px', paddingBottom: '6px',
+              borderBottom: '1px solid rgba(124,58,237,0.2)',
             }}>
-              REALES<br/>DE A OCHO
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.35))' }} />
+              <span style={{
+                fontFamily: 'Orbitron, monospace', fontSize: '6px', letterSpacing: '0.15em',
+                color: 'rgba(190,150,255,0.95)', textShadow: '0 0 10px rgba(124,58,237,0.6)',
+                whiteSpace: 'nowrap',
+              }}>
+                REALES DE A OCHO
+              </span>
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(124,58,237,0.35))' }} />
             </div>
-            {[
-              { label: 'EN POSESIÓN', key: 'enPosesion' },
-              { label: 'EN EL BANCO', key: 'enElBanco'  },
-            ].map(({ label, key }, i) => (
-              <div key={key} style={{ marginBottom: i === 0 ? '7px' : 0 }}>
-                <span style={{ ...LABEL, display: 'block', marginBottom: '2px', fontSize: '6.5px' }}>{label}</span>
-                {isEditing
-                  ? <input
-                      type="text"
-                      value={data?.realesDeAOcho?.[key] ?? ''}
-                      onChange={e => setNested('realesDeAOcho', key, e.target.value)}
-                      style={{ ...EDIT_INPUT, flex: 'none', fontSize: '12px' }}
-                    />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '13px', fontWeight: 600, color: '#e0e8f0' }}>
-                      {data?.realesDeAOcho?.[key] || '—'}
-                    </div>
-                }
+
+            {/* Sub-campos en fila */}
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {/* EN POSESIÓN */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6px', color: 'rgba(190,150,255,0.45)' }}>
+                  EN POSESIÓN
+                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={data?.realesDeAOcho?.enPosesion ?? ''}
+                    onChange={e => setNested('realesDeAOcho', 'enPosesion', e.target.value)}
+                    style={{ ...EDIT_INPUT, flex: 'none', fontSize: '13px', borderBottomColor: 'rgba(124,58,237,0.4)' }}
+                  />
+                ) : (
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif', fontSize: '15px', fontWeight: 700,
+                    color: 'rgba(200,165,255,0.95)', textShadow: '0 0 8px rgba(124,58,237,0.4)',
+                    letterSpacing: '0.03em',
+                  }}>
+                    {data?.realesDeAOcho?.enPosesion || '—'}
+                  </div>
+                )}
                 <div style={PURPLE_LINE} />
               </div>
-            ))}
+
+              {/* Divisor vertical sutil */}
+              <div style={{ width: '1px', background: 'rgba(124,58,237,0.15)', flexShrink: 0 }} />
+
+              {/* EN EL BANCO */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6px', color: 'rgba(190,150,255,0.45)' }}>
+                  EN EL BANCO
+                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={data?.realesDeAOcho?.enElBanco ?? ''}
+                    onChange={e => setNested('realesDeAOcho', 'enElBanco', e.target.value)}
+                    style={{ ...EDIT_INPUT, flex: 'none', fontSize: '13px', borderBottomColor: 'rgba(124,58,237,0.4)' }}
+                  />
+                ) : (
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif', fontSize: '15px', fontWeight: 700,
+                    color: 'rgba(200,165,255,0.95)', textShadow: '0 0 8px rgba(124,58,237,0.4)',
+                    letterSpacing: '0.03em',
+                  }}>
+                    {data?.realesDeAOcho?.enElBanco || '—'}
+                  </div>
+                )}
+                <div style={PURPLE_LINE} />
+              </div>
+            </div>
           </div>
         </div>
 
