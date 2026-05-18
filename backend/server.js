@@ -51,8 +51,8 @@ function makeDefaultCharacter() {
     profesion: '', afiliacion: '', px: '',
     creditos: { enPosesion: '', enElBanco: '' },
     realesDeAOcho: { enPosesion: '', enElBanco: '' },
-    inventario: Array(8).fill(''),
-    habilidadesEspeciales: Array(5).fill(''),
+    inventario: [],
+    habilidadesEspeciales: [],
   };
 }
 

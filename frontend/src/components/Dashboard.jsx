@@ -133,7 +133,7 @@ export default function Dashboard({ username, onLogout }) {
         </div>
 
         {/* Columna derecha — Ficha de personaje */}
-        <div className="lg:w-[360px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
+        <div className="lg:w-[720px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
           <CharacterSheet
             username={username}
             isMaster={isMaster(username)}

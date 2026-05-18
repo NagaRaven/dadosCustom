@@ -213,6 +213,41 @@ body {
   50%       { box-shadow: 0 0 22px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2); }
 }
 
+/* ── Divisor de energía animado ─────────────────────────────────────────── */
+@keyframes energy-line-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
+}
+
+@keyframes energy-flow-down {
+  0%   { top: -8%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 108%; opacity: 0; }
+}
+
+@keyframes energy-flow-up {
+  0%   { bottom: -8%; opacity: 0; }
+  12%  { opacity: 0.85; }
+  88%  { opacity: 0.85; }
+  100% { bottom: 108%; opacity: 0; }
+}
+
+@keyframes rune-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes rune-counter {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes rune-glow-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(0,212,255,0.25); }
+  50%       { box-shadow: 0 0 14px rgba(0,212,255,0.55), 0 0 28px rgba(0,212,255,0.2); }
+}
+
 /* ── Scrollbar personalizada ────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
