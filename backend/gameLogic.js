@@ -48,4 +48,6 @@ function limitHistory(history, maxItems = MAX_HISTORY) {
   return history.slice(history.length - maxItems);
 }
 
-module.exports = { ACCOUNTS, MAX_HISTORY, validateLogin, rollD20, processRoll, limitHistory };
+const FORCE_PLAYERS = ['Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
+
+module.exports = { ACCOUNTS, MAX_HISTORY, FORCE_PLAYERS, validateLogin, rollD20, processRoll, limitHistory };

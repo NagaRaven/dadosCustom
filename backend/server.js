@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const { validateLogin, processRoll, limitHistory } = require('./gameLogic');
+const { validateLogin, processRoll, limitHistory, FORCE_PLAYERS } = require('./gameLogic');
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -24,7 +24,8 @@ if (!isProd) {
 app.use(express.json());
 
 // ── Persistencia del historial ───────────────────────────────────────────────
-const HISTORY_FILE = path.join(__dirname, 'data', 'history.json');
+const HISTORY_FILE    = path.join(__dirname, 'data', 'history.json');
+const CHARACTERS_FILE = path.join(__dirname, 'data', 'characters.json');
 
 function loadHistory() {
   try {
@@ -42,8 +43,39 @@ function saveHistory(history) {
   } catch {}
 }
 
+// ── Persistencia de fichas de personaje ─────────────────────────────────────
+function makeDefaultCharacter() {
+  return {
+    avatar: null,
+    nombre: '', apellidos: '', raza: '', clase: '',
+    profesion: '', afiliacion: '', px: '',
+    creditos: { enPosesion: '', enElBanco: '' },
+    realesDeAOcho: { enPosesion: '', enElBanco: '' },
+    inventario: Array(8).fill(''),
+    habilidadesEspeciales: Array(5).fill(''),
+  };
+}
+
+function loadCharacters() {
+  try {
+    if (fs.existsSync(CHARACTERS_FILE)) {
+      const saved = JSON.parse(fs.readFileSync(CHARACTERS_FILE, 'utf8'));
+      return Object.fromEntries(FORCE_PLAYERS.map(p => [p, saved[p] || makeDefaultCharacter()]));
+    }
+  } catch {}
+  return Object.fromEntries(FORCE_PLAYERS.map(p => [p, makeDefaultCharacter()]));
+}
+
+function saveCharacters(chars) {
+  try {
+    fs.mkdirSync(path.dirname(CHARACTERS_FILE), { recursive: true });
+    fs.writeFileSync(CHARACTERS_FILE, JSON.stringify(chars, null, 2));
+  } catch {}
+}
+
+let characters = loadCharacters();
+
 // Puntos de Fuerza — inicializados a 2 por jugador (el Master no tiene)
-const FORCE_PLAYERS = ['Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
 let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
 
 // Estado compartido del servidor
@@ -74,6 +106,7 @@ app.post('/api/login', (req, res) => {
 io.on('connection', (socket) => {
   socket.emit('history', rollHistory);
   socket.emit('force_powers_update', forcePowers);
+  socket.emit('characters_update', characters);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -108,6 +141,16 @@ io.on('connection', (socket) => {
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
     forcePowers[targetUsername]++;
     io.emit('force_powers_update', forcePowers);
+  });
+
+  // Master: actualizar ficha de personaje de un jugador
+  socket.on('update_character', ({ username, data }) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (!FORCE_PLAYERS.includes(username)) return;
+    characters[username] = { ...makeDefaultCharacter(), ...data };
+    saveCharacters(characters);
+    io.emit('characters_update', characters);
   });
 
   // Solo el Master puede armar resultados forzados — verificado server-side

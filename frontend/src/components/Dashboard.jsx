@@ -4,14 +4,15 @@ import DiceRoller from './DiceRoller';
 import RollHistory from './RollHistory';
 import MasterControls from './MasterControls';
 import ForcePanel from './ForcePanel';
+import CharacterSheet from './CharacterSheet';
 
 const isMaster = (u) => u === 'Master';
 
 export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
-    forceStatus, forcePowers,
-    isConnected, rollDice, forceResult, addForcePoint,
+    forceStatus, forcePowers, isConnected,
+    characters, rollDice, forceResult, addForcePoint, updateCharacter,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -86,8 +87,8 @@ export default function Dashboard({ username, onLogout }) {
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
 
-        {/* Columna izquierda */}
-        <div className="flex flex-col gap-4 lg:w-[380px] shrink-0">
+        {/* Columna izquierda — Dados */}
+        <div className="flex flex-col gap-4 lg:w-[360px] shrink-0">
           <div className="glass-panel-bright rounded-sm p-4">
             <div
               className="font-orbitron text-xs tracking-widest mb-4"
@@ -126,9 +127,19 @@ export default function Dashboard({ username, onLogout }) {
           </div>
         </div>
 
-        {/* Columna derecha — Historial */}
+        {/* Columna central — Historial */}
         <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
           <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+        </div>
+
+        {/* Columna derecha — Ficha de personaje */}
+        <div className="lg:w-[310px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
+          <CharacterSheet
+            username={username}
+            isMaster={isMaster(username)}
+            characters={characters}
+            onUpdate={updateCharacter}
+          />
         </div>
       </main>
     </div>
