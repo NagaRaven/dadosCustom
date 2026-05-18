@@ -11,6 +11,7 @@ function statusLabel(forceStatus) {
 export default function MasterControls({ onForce, forceStatus }) {
   const isArmed = forceStatus !== null;
   const [customValue, setCustomValue] = useState('');
+  const [collapsed, setCollapsed]     = useState(false);
   const prevStatusRef = useRef(null);
 
   // Vacía el input cuando la tirada forzada se ha consumido
@@ -48,10 +49,18 @@ export default function MasterControls({ onForce, forceStatus }) {
         transition: 'box-shadow 0.4s',
       }}
     >
-      {/* Cabecera */}
-      <div className="flex items-center gap-2 mb-3">
+      {/* Cabecera — clicable para plegar */}
+      <button
+        onClick={() => setCollapsed(c => !c)}
+        style={{
+          width: '100%', background: 'transparent', border: 'none',
+          cursor: 'pointer', padding: 0,
+          marginBottom: collapsed ? 0 : '12px',
+          display: 'flex', alignItems: 'center', gap: '8px',
+        }}
+      >
         <div
-          className="w-2 h-2 rounded-full"
+          className="w-2 h-2 rounded-full shrink-0"
           style={{
             background: isArmed ? '#ffd700' : '#7c3aed',
             boxShadow: isArmed ? '0 0 8px #ffd700' : '0 0 6px #7c3aed',
@@ -59,12 +68,24 @@ export default function MasterControls({ onForce, forceStatus }) {
           }}
         />
         <span
-          className="font-orbitron text-xs tracking-widest"
+          className="font-orbitron text-xs tracking-widest flex-1 text-left"
           style={{ color: isArmed ? '#ffd700' : 'rgba(124,58,237,0.85)' }}
         >
           CONTROL MAESTRO
         </span>
-      </div>
+        <span style={{
+          fontFamily: 'monospace', fontSize: '11px',
+          color: isArmed ? 'rgba(255,215,0,0.6)' : 'rgba(124,58,237,0.6)',
+          transition: 'transform 0.2s',
+          display: 'inline-block',
+          transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+        }}>
+          ▼
+        </span>
+      </button>
+
+      {/* Contenido plegable */}
+      {!collapsed && <>
 
       {/* Estado del forzado */}
       {isArmed && (
@@ -162,6 +183,8 @@ export default function MasterControls({ onForce, forceStatus }) {
           FORZAR TIRADA
         </button>
       </div>
+
+      </>}
     </div>
   );
 }

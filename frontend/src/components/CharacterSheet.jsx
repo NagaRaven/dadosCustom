@@ -75,12 +75,10 @@ const PURPLE_LINE = { height: '1px', background: 'linear-gradient(to right, rgba
 
 const BASIC_FIELDS = [
   { label: 'NOMBRE',     key: 'nombre'     },
-  { label: 'APELLIDOS',  key: 'apellidos'  },
   { label: 'RAZA',       key: 'raza'       },
   { label: 'CLASE',      key: 'clase'      },
   { label: 'PROFESIÓN',  key: 'profesion'  },
   { label: 'AFILIACIÓN', key: 'afiliacion' },
-  { label: 'PX',         key: 'px'         },
 ];
 
 // ── Esquina decorativa ──────────────────────────────────────────────────────
@@ -233,6 +231,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   const [isDragOver, setIsDragOver]         = useState(false);
   const [hoveredInv, setHoveredInv]         = useState(null); // item object
   const [hoveredSkill, setHoveredSkill]     = useState(null); // item object
+  const [topExpanded, setTopExpanded]       = useState(true);
   const fileRef = useRef(null);
 
   const targetUser = isMaster ? selectedPlayer : username;
@@ -451,8 +450,8 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       {/* ── CUERPO DESPLAZABLE ────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 12px' }}>
 
-        {/* ── PANEL SUPERIOR: Avatar + Campos básicos ───────────────────── */}
-        <div style={{ display: 'flex', gap: '14px', marginBottom: '14px' }}>
+        {/* ── PANEL SUPERIOR: Avatar + Campos básicos (plegable) ──────── */}
+        {topExpanded && (<div style={{ display: 'flex', gap: '14px', marginBottom: '14px' }}>
 
           {/* Zona de avatar */}
           <div
@@ -511,14 +510,29 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
               </div>
             ))}
           </div>
-        </div>
+        </div>)}
 
-        {/* Separador decorativo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.2))' }} />
-          <DividerCircle />
-          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(0,212,255,0.2))' }} />
-        </div>
+        {/* Separador plegable */}
+        <button
+          onClick={() => setTopExpanded(e => !e)}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+            marginBottom: '12px', background: 'transparent', border: 'none',
+            cursor: 'pointer', padding: '4px 0',
+          }}
+        >
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.25))' }} />
+          <span style={{
+            fontFamily: 'Orbitron, monospace', fontSize: '6px', letterSpacing: '0.15em',
+            color: 'rgba(0,212,255,0.5)', padding: '3px 10px',
+            border: '1px solid rgba(0,212,255,0.22)', borderRadius: '1px',
+            display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}>
+            {topExpanded ? '▲' : '▼'} PERSONAJE
+          </span>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(0,212,255,0.25))' }} />
+        </button>
 
         {/* ── PANEL ECONÓMICO: Créditos | EnergyDivider | Reales ─────────── */}
         <div style={{ display: 'flex', gap: '0', alignItems: 'stretch', marginBottom: '14px' }}>
@@ -539,7 +553,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6.5px', color: 'rgba(255,215,0,0.45)' }}>EN POSESIÓN</span>
                 {isEditing
                   ? <input type="text" value={data?.creditos?.enPosesion ?? ''} onChange={e => setNested('creditos', 'enPosesion', e.target.value)} style={{ ...EDIT_INPUT, flex: 'none', fontSize: '14px', borderBottomColor: 'rgba(255,215,0,0.4)' }} />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '16px', fontWeight: 700, color: '#ffe566', textShadow: '0 0 8px rgba(255,215,0,0.3)', letterSpacing: '0.02em' }}>{data?.creditos?.enPosesion || '—'}</div>
+                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '22px', fontWeight: 700, color: '#ffe566', textShadow: '0 0 14px rgba(255,215,0,0.7), 0 0 28px rgba(255,215,0,0.25)', letterSpacing: '0.03em' }}>{data?.creditos?.enPosesion || '—'}</div>
                 }
                 <div style={GOLD_LINE} />
               </div>
@@ -549,7 +563,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6.5px', color: 'rgba(255,215,0,0.45)' }}>EN EL BANCO</span>
                 {isEditing
                   ? <input type="text" value={data?.creditos?.enElBanco ?? ''} onChange={e => setNested('creditos', 'enElBanco', e.target.value)} style={{ ...EDIT_INPUT, flex: 'none', fontSize: '14px', borderBottomColor: 'rgba(255,215,0,0.4)' }} />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '16px', fontWeight: 700, color: '#ffe566', textShadow: '0 0 8px rgba(255,215,0,0.3)', letterSpacing: '0.02em' }}>{data?.creditos?.enElBanco || '—'}</div>
+                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '22px', fontWeight: 700, color: '#ffe566', textShadow: '0 0 14px rgba(255,215,0,0.7), 0 0 28px rgba(255,215,0,0.25)', letterSpacing: '0.03em' }}>{data?.creditos?.enElBanco || '—'}</div>
                 }
                 <div style={GOLD_LINE} />
               </div>
@@ -575,7 +589,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6.5px', color: 'rgba(190,150,255,0.45)' }}>EN POSESIÓN</span>
                 {isEditing
                   ? <input type="text" value={data?.realesDeAOcho?.enPosesion ?? ''} onChange={e => setNested('realesDeAOcho', 'enPosesion', e.target.value)} style={{ ...EDIT_INPUT, flex: 'none', fontSize: '14px', borderBottomColor: 'rgba(124,58,237,0.4)' }} />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '16px', fontWeight: 700, color: 'rgba(200,165,255,0.95)', textShadow: '0 0 8px rgba(124,58,237,0.4)', letterSpacing: '0.02em' }}>{data?.realesDeAOcho?.enPosesion || '—'}</div>
+                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '22px', fontWeight: 700, color: 'rgba(210,175,255,1)', textShadow: '0 0 14px rgba(124,58,237,0.7), 0 0 28px rgba(124,58,237,0.3)', letterSpacing: '0.03em' }}>{data?.realesDeAOcho?.enPosesion || '—'}</div>
                 }
                 <div style={PURPLE_LINE} />
               </div>
@@ -585,7 +599,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 <span style={{ ...LABEL, display: 'block', marginBottom: '4px', fontSize: '6.5px', color: 'rgba(190,150,255,0.45)' }}>EN EL BANCO</span>
                 {isEditing
                   ? <input type="text" value={data?.realesDeAOcho?.enElBanco ?? ''} onChange={e => setNested('realesDeAOcho', 'enElBanco', e.target.value)} style={{ ...EDIT_INPUT, flex: 'none', fontSize: '14px', borderBottomColor: 'rgba(124,58,237,0.4)' }} />
-                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '16px', fontWeight: 700, color: 'rgba(200,165,255,0.95)', textShadow: '0 0 8px rgba(124,58,237,0.4)', letterSpacing: '0.02em' }}>{data?.realesDeAOcho?.enElBanco || '—'}</div>
+                  : <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '22px', fontWeight: 700, color: 'rgba(210,175,255,1)', textShadow: '0 0 14px rgba(124,58,237,0.7), 0 0 28px rgba(124,58,237,0.3)', letterSpacing: '0.03em' }}>{data?.realesDeAOcho?.enElBanco || '—'}</div>
                 }
                 <div style={PURPLE_LINE} />
               </div>
