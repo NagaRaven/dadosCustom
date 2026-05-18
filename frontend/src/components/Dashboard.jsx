@@ -12,7 +12,7 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, rollDice, forceResult, addForcePoint, updateCharacter,
+    characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -110,7 +110,7 @@ export default function Dashboard({ username, onLogout }) {
           {/* Paneles exclusivos del Master */}
           {isMaster(username) && (
             <>
-              <MasterControls onForce={forceResult} forceStatus={forceStatus} />
+              <MasterControls onForce={forceResult} forceStatus={forceStatus} theme={theme} onSetTheme={setTheme} />
               <ForcePanel
                 connectedUsers={connectedUsers}
                 forcePowers={forcePowers}

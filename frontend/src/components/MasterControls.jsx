@@ -8,7 +8,7 @@ function statusLabel(forceStatus) {
 }
 
 // Panel exclusivo del Master — no renderizado para otros usuarios
-export default function MasterControls({ onForce, forceStatus }) {
+export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme }) {
   const isArmed = forceStatus !== null;
   const [customValue, setCustomValue] = useState('');
   const [collapsed, setCollapsed]     = useState(false);
@@ -181,6 +181,46 @@ export default function MasterControls({ onForce, forceStatus }) {
           data-testid="force-custom"
         >
           FORZAR TIRADA
+        </button>
+      </div>
+
+      {/* Separador cromático */}
+      <div
+        className="h-px w-full"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(255,215,0,0.35), transparent)', margin: '16px 0 12px' }}
+      />
+
+      {/* Botones de tema */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onSetTheme('yellow')}
+          disabled={theme === 'yellow'}
+          className="flex-1 py-2 rounded-sm font-orbitron text-xs tracking-wider transition-all"
+          style={{
+            background: theme === 'yellow' ? 'rgba(255,215,0,0.14)' : 'rgba(255,215,0,0.05)',
+            border: `1px solid ${theme === 'yellow' ? 'rgba(255,215,0,0.75)' : 'rgba(255,215,0,0.4)'}`,
+            color: theme === 'yellow' ? '#ffd700' : 'rgba(255,215,0,0.55)',
+            cursor: theme === 'yellow' ? 'default' : 'pointer',
+            boxShadow: theme === 'yellow' ? '0 0 14px rgba(255,215,0,0.3)' : 'none',
+            fontSize: '0.55rem',
+          }}
+        >
+          ◉ AMARILLO
+        </button>
+        <button
+          onClick={() => onSetTheme('blue')}
+          disabled={theme === 'blue'}
+          className="flex-1 py-2 rounded-sm font-orbitron text-xs tracking-wider transition-all"
+          style={{
+            background: theme === 'blue' ? 'rgba(0,212,255,0.14)' : 'rgba(0,212,255,0.05)',
+            border: `1px solid ${theme === 'blue' ? 'rgba(0,212,255,0.75)' : 'rgba(0,212,255,0.4)'}`,
+            color: theme === 'blue' ? '#00d4ff' : 'rgba(0,212,255,0.55)',
+            cursor: theme === 'blue' ? 'default' : 'pointer',
+            boxShadow: theme === 'blue' ? '0 0 14px rgba(0,212,255,0.3)' : 'none',
+            fontSize: '0.55rem',
+          }}
+        >
+          ◉ AZUL
         </button>
       </div>
 

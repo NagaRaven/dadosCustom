@@ -83,6 +83,7 @@ let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
 let rollHistory = loadHistory();  // persiste entre reinicios
 let forcedResult = null;          // null | 'critical' | 'fumble' | number
 let connectedUsers = {};          // socketId -> username
+let currentTheme  = 'blue';      // 'blue' | 'yellow'
 
 // ── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -109,6 +110,7 @@ io.on('connection', (socket) => {
   socket.emit('history', rollHistory);
   socket.emit('force_powers_update', forcePowers);
   socket.emit('characters_update', characters);
+  socket.emit('theme_update', currentTheme);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -143,6 +145,15 @@ io.on('connection', (socket) => {
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
     forcePowers[targetUsername]++;
     io.emit('force_powers_update', forcePowers);
+  });
+
+  // Master: cambiar tema de color de la aplicación
+  socket.on('set_theme', (theme) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (theme !== 'blue' && theme !== 'yellow') return;
+    currentTheme = theme;
+    io.emit('theme_update', theme);
   });
 
   // Master: actualizar ficha de personaje de un jugador
