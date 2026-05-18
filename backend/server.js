@@ -53,6 +53,7 @@ function makeDefaultCharacter() {
     realesDeAOcho: { enPosesion: '', enElBanco: '' },
     inventario: [],
     habilidadesEspeciales: [],
+    fortalezas: [],
   };
 }
 
