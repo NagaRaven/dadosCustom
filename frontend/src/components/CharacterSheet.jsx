@@ -78,14 +78,12 @@ function EnergyDivider() {
     </>
   );
   return (
-    <div style={{ width:'32px', flexShrink:0, position:'relative', alignSelf:'stretch', display:'flex', flexDirection:'column', alignItems:'center' }}>
-      {/* Línea pulsante a toda altura */}
-      <div style={{ position:'absolute', top:0, bottom:0, left:'50%', width:'1px', marginLeft:'-0.5px', background:'linear-gradient(to bottom,transparent 0%,rgba(0,212,255,0.55) 15%,rgba(0,212,255,0.3) 50%,rgba(0,212,255,0.55) 85%,transparent 100%)', animation:'energy-line-pulse 2s ease-in-out infinite' }} />
+    <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center' }}>
+      {/* Línea con margen en extremos para no llegar al borde del recuadro */}
+      <div style={{ position:'absolute', top:'10px', bottom:'10px', left:'50%', width:'1px', marginLeft:'-0.5px', background:'linear-gradient(to bottom,transparent 0%,rgba(0,212,255,0.55) 15%,rgba(0,212,255,0.3) 50%,rgba(0,212,255,0.55) 85%,transparent 100%)', animation:'energy-line-pulse 2s ease-in-out infinite' }} />
 
-      {tick(3)}    {/* borde superior */}
       {tick(33, true)} {/* límite fila 1/2 */}
       {tick(67, true)} {/* límite fila 2/3 */}
-      {tick(97)}   {/* borde inferior */}
 
       {/* Runa central (50%) */}
       <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'26px', height:'26px', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -218,7 +216,6 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
               <div key={i} style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'5px' }}>
                 <div style={{ width:'10px', height:'10px', borderRadius:'2px', flexShrink:0, background:LEVEL_COLORS[f.nivel], boxShadow:`0 0 6px ${LEVEL_COLORS[f.nivel]}88` }} />
                 <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'#c8d4e0', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{f.nombre}</span>
-                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'8px', fontWeight:700, color:LEVEL_COLORS[f.nivel], textShadow:`0 0 8px ${LEVEL_COLORS[f.nivel]}88`, flexShrink:0 }}>{f.nivel}</span>
               </div>
             ))}
           </>
@@ -257,7 +254,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   // ── Contactos del Comunicador (estático) ──────────────────────────────────
   function renderContactos() {
     return (
-      <div className="glass-panel rounded-sm" style={{ padding:'10px', display:'flex', flexDirection:'column' }}>
+      <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', display:'flex', flexDirection:'column' }}>
         <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(0,212,255,0.6)', textAlign:'center', marginBottom:'10px', borderBottom:'1px solid rgba(0,212,255,0.08)', paddingBottom:'6px', lineHeight:1.5 }}>
           COMUNICADOR
         </div>
@@ -384,23 +381,33 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(0,212,255,0.25))' }} />
         </button>
 
-        {/* ── GRID PRINCIPAL: 2 columnas + EnergyDivider central ─────────── */}
-        <div style={{ display:'flex', gap:'0', marginBottom:'14px' }}>
+        {/* ── GRID PRINCIPAL: CSS Grid — alturas simétricas por fila ─────── */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 32px 1fr', rowGap:'8px', marginBottom:'14px' }}>
 
-          {/* Columna izquierda */}
-          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'8px', minWidth:0 }}>
+          {/* Fila 1 */}
+          <div style={{ gridColumn:1, gridRow:1 }}>
             {renderCurrencyPanel({ title:'CRÉDITOS', titleColor:'#ffd700', titleShadow:'0 0 10px rgba(255,215,0,0.5)', objKey:'creditos', lineStyle:GOLD_LINE })}
-            {renderItemSection({ arrKey:'inventario', label:'OBJETOS IMPORTANTES', accentColor:'rgba(0,212,255,0.6)', bulletColor:'rgba(0,212,255,0.7)', emptyText:'Sin objetos' })}
-            {renderContactos()}
+          </div>
+          <div style={{ gridColumn:2, gridRow:'1 / 4', position:'relative' }}>
+            <EnergyDivider />
+          </div>
+          <div style={{ gridColumn:3, gridRow:1 }}>
+            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'rgba(200,165,255,1)', titleShadow:'0 0 10px rgba(124,58,237,0.6)', objKey:'realesDeAOcho', lineStyle:PURPLE_LINE })}
           </div>
 
-          {/* Divisor de energía central — abarca las 3 filas */}
-          <EnergyDivider />
-
-          {/* Columna derecha */}
-          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'8px', minWidth:0 }}>
-            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'rgba(200,165,255,1)', titleShadow:'0 0 10px rgba(124,58,237,0.6)', objKey:'realesDeAOcho', lineStyle:PURPLE_LINE })}
+          {/* Fila 2 */}
+          <div style={{ gridColumn:1, gridRow:2, display:'flex', flexDirection:'column' }}>
+            {renderItemSection({ arrKey:'inventario', label:'OBJETOS IMPORTANTES', accentColor:'rgba(0,212,255,0.6)', bulletColor:'rgba(0,212,255,0.7)', emptyText:'Sin objetos' })}
+          </div>
+          <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
             {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.6)', bulletColor:'rgba(0,255,136,0.7)', emptyText:'Sin habilidades' })}
+          </div>
+
+          {/* Fila 3 */}
+          <div style={{ gridColumn:1, gridRow:3, display:'flex', flexDirection:'column' }}>
+            {renderContactos()}
+          </div>
+          <div style={{ gridColumn:3, gridRow:3, display:'flex', flexDirection:'column' }}>
             {renderFortalezas()}
           </div>
         </div>
