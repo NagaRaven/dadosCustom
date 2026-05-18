@@ -88,10 +88,6 @@ let connectedUsers = {};          // socketId -> username
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-// Endpoint temporal de exportación — BORRAR después de rescatar los datos
-app.get('/api/export', (_req, res) => {
-  res.json({ characters, history: rollHistory });
-});
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
