@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function ResultBadge({ value }) {
   const style = value === 20
     ? { color: '#ffd700', textShadow: '0 0 8px #ffd700', fontSize: '1.1rem' }
@@ -13,7 +15,6 @@ function RollEntry({ roll, isLatest }) {
   const isFumble = roll.result === 1;
   const isForce  = !!roll.usedForce;
 
-  // ── Estilos base según resultado ──────────────────────────────────────────
   const borderColor = isCrit    ? '#ffd700'
     : isFumble ? '#ff4444'
     : isForce  ? '#00ff88'
@@ -26,7 +27,6 @@ function RollEntry({ roll, isLatest }) {
     : isLatest ? 'rgba(0,212,255,0.07)'
     : 'transparent';
 
-  // ── Glow y animación para la última entrada ───────────────────────────────
   let boxShadow = 'none';
   let animation = 'none';
 
@@ -45,7 +45,6 @@ function RollEntry({ roll, isLatest }) {
     }
   }
 
-  // Borde completo para la última entrada con resultado especial
   const borderStyle = isLatest && (isCrit || isFumble || isForce)
     ? { border: `1px solid ${borderColor}`, borderLeft: `3px solid ${borderColor}` }
     : { borderLeft: `2px solid ${borderColor}` };
@@ -56,20 +55,13 @@ function RollEntry({ roll, isLatest }) {
       style={{ background: bg, boxShadow, animation, transition: 'box-shadow 0.3s', ...borderStyle }}
       data-testid="roll-entry"
     >
-      {/* Nombre */}
       <span className="font-rajdhani font-semibold text-base" style={{ color: '#a0b4cc', minWidth: '90px' }}>
         {roll.username}
       </span>
-
-      {/* Fórmula */}
       <span className="font-mono text-xs" style={{ color: 'rgba(0,212,255,0.4)', flex: 1, textAlign: 'center' }}>
         1d20 =
       </span>
-
-      {/* Resultado */}
       <ResultBadge value={roll.result} />
-
-      {/* Etiquetas */}
       <div className="flex gap-2 ml-3" style={{ minWidth: '80px', justifyContent: 'flex-end' }}>
         {isCrit   && <span className="font-mono text-xs" style={{ color: '#ffd700', opacity: 0.9 }}>CRÍTICO</span>}
         {isFumble && <span className="font-mono text-xs" style={{ color: '#ff4444', opacity: 0.9 }}>PIFIA</span>}
@@ -81,24 +73,29 @@ function RollEntry({ roll, isLatest }) {
 }
 
 export default function RollHistory({ history, currentUser, isAnimating }) {
+  const [expanded, setExpanded] = useState(false);
+
   const visible = (isAnimating && history.length > 0 && history[history.length - 1].username === currentUser)
     ? history.slice(0, -1)
     : history;
 
   const reversed = [...visible].reverse();
+  const top5     = reversed.slice(0, 5);
+  const rest     = reversed.slice(5);
 
   return (
     <div className="flex flex-col h-full hud-corners-full glass-panel rounded-sm overflow-hidden">
       {/* Cabecera */}
-      <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(0,212,255,0.15)' }}>
+      <div className="px-4 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid rgba(0,212,255,0.15)' }}>
         <h2 className="font-orbitron text-xs tracking-widest text-glow-cyan" style={{ color: '#00d4ff' }}>
           REGISTRO GLOBAL
         </h2>
-        {/* Sin indicador numérico — espacio vacío */}
-        <div />
+        <span className="font-mono text-xs" style={{ color: 'rgba(0,212,255,0.35)' }}>
+          {reversed.length} / 20
+        </span>
       </div>
 
-      {/* Lista — la más reciente arriba */}
+      {/* Lista */}
       <div className="flex-1 overflow-y-auto py-2 space-y-0.5">
         {reversed.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -108,9 +105,40 @@ export default function RollHistory({ history, currentUser, isAnimating }) {
             </p>
           </div>
         ) : (
-          reversed.map((roll, idx) => (
-            <RollEntry key={roll.id} roll={roll} isLatest={idx === 0} />
-          ))
+          <>
+            {/* Las 5 más recientes — siempre visibles */}
+            {top5.map((roll, idx) => (
+              <RollEntry key={roll.id} roll={roll} isLatest={idx === 0} />
+            ))}
+
+            {/* Desplegable con las anteriores */}
+            {rest.length > 0 && (
+              <>
+                <button
+                  onClick={() => setExpanded(e => !e)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    padding: '6px 16px', marginTop: '2px',
+                  }}
+                >
+                  <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.18))' }} />
+                  <span style={{ fontFamily: 'Orbitron,monospace', fontSize: '0.52rem', letterSpacing: '0.13em', color: 'rgba(0,212,255,0.45)', whiteSpace: 'nowrap' }}>
+                    {expanded ? '▲ OCULTAR' : `▼ ${rest.length} ANTERIORES`}
+                  </span>
+                  <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(0,212,255,0.18))' }} />
+                </button>
+
+                {expanded && (
+                  <div className="space-y-0.5">
+                    {rest.map((roll) => (
+                      <RollEntry key={roll.id} roll={roll} isLatest={false} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
         )}
       </div>
     </div>

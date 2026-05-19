@@ -85,11 +85,26 @@ export default function Dashboard({ username, onLogout }) {
       </header>
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
+      {/*
+        Layout responsivo:
+          móvil  (< md)  : columna única
+          tableta (md-lg) : izquierda [historial + dados] | derecha [ficha >50%]
+          escritorio (lg+): dados | historial | ficha
+      */}
+      <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 min-h-0">
 
-        {/* Columna izquierda — Dados */}
-        <div className="flex flex-col gap-4 lg:w-[360px] shrink-0">
-          <div className="glass-panel-bright rounded-sm p-4">
+        {/* ── Columna izquierda ─────────────────────────────────────────────
+            · Tableta : historial (arriba) + dados/master (abajo) — ancho 40%
+            · Escritorio: solo dados/master — ancho fijo 360px            */}
+        <div className="flex flex-col gap-4 shrink-0 min-h-0 md:w-[40%] lg:w-[360px]">
+
+          {/* Historial — tableta y móvil (oculto en escritorio: lg:hidden) */}
+          <div className="flex-1 min-h-0 lg:hidden" style={{ minHeight: '200px' }}>
+            <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+          </div>
+
+          {/* Dados */}
+          <div className="glass-panel-bright rounded-sm p-4 shrink-0">
             <div
               className="font-orbitron text-xs tracking-widest mb-4"
               style={{ color: 'rgba(0,212,255,0.5)', borderBottom: '1px solid rgba(0,212,255,0.1)', paddingBottom: '8px' }}
@@ -120,20 +135,22 @@ export default function Dashboard({ username, onLogout }) {
           )}
 
           <div
-            className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center"
+            className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center shrink-0"
             style={{ color: 'rgba(0,212,255,0.35)' }}
           >
             Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas
           </div>
         </div>
 
-        {/* Columna central — Historial */}
-        <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
+        {/* ── Historial central — solo escritorio (hidden en md y móvil) ── */}
+        <div className="hidden lg:flex flex-col flex-1 min-h-0" style={{ minHeight: '400px' }}>
           <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
         </div>
 
-        {/* Columna derecha — Ficha de personaje */}
-        <div className="lg:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
+        {/* ── Ficha de personaje ────────────────────────────────────────────
+            · Tableta : flex-1 (ocupa el resto, >60% de pantalla)
+            · Escritorio: ancho fijo 792px                                 */}
+        <div className="md:flex-1 lg:flex-none lg:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
           <CharacterSheet
             username={username}
             isMaster={isMaster(username)}
