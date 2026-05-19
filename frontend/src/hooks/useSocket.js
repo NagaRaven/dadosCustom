@@ -85,5 +85,10 @@ export function useSocket(username) {
     socketRef.current.emit('update_notes', { targetUser, notas });
   };
 
-  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes };
+  const setPlayerStatus = (targetPlayer, status) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('set_player_status', { targetPlayer, status });
+  };
+
+  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus };
 }

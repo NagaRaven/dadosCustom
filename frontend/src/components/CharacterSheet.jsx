@@ -32,8 +32,20 @@ function ensureChar(raw) {
     habilidadesEspeciales: Array.isArray(raw?.habilidadesEspeciales) ? raw.habilidadesEspeciales.map(ensureItem) : [],
     fortalezas:           Array.isArray(raw?.fortalezas)           ? raw.fortalezas.map(ensureFortaleza) : [],
     notas:      raw?.notas ?? '',
+    estado:     raw?.estado ?? 'Intacto',
   };
 }
+
+// ── Estados del personaje ────────────────────────────────────────────────────
+const STATUS_STYLES = {
+  'Intacto':          { color:'#00e676', rgb:'0,230,118'   },
+  'Herido leve':      { color:'#ffd700', rgb:'255,215,0'   },
+  'Herido grave':     { color:'#ff8c00', rgb:'255,140,0'   },
+  'Enfermo':          { color:'#c084fc', rgb:'192,132,252' },
+  'Aturdido':         { color:'#94a3b8', rgb:'148,163,184' },
+  'Lesionado':        { color:'#a855f7', rgb:'168,85,247'  },
+  'Heridas críticas': { color:'#ff4444', rgb:'255,68,68', pulse:true },
+};
 
 // ── Estilos compartidos ──────────────────────────────────────────────────────
 const LABEL = { fontFamily:'Orbitron,monospace', fontSize:'7.5px', letterSpacing:'0.12em', color:'rgba(var(--cyan-rgb),0.5)', textTransform:'uppercase', whiteSpace:'nowrap', flexShrink:0 };
@@ -295,14 +307,14 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
               rows={4}
               style={{ width:'100%', background:'rgba(0,0,0,0.25)', border:'1px solid rgba(var(--cyan-rgb),0.25)', color:'rgba(200,215,230,0.9)', fontFamily:'Rajdhani,sans-serif', fontSize:'12px', padding:'8px', outline:'none', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.55, borderRadius:'1px' }}
             />
-            <div style={{ display:'flex', gap:'6px', marginTop:'6px' }}>
-              <button className="cyber-btn" style={{ flex:1, fontSize:'7.5px', padding:'5px', borderColor:'rgba(0,255,136,0.5)', color:'rgba(0,255,136,0.85)' }}
-                onClick={() => { onUpdateNotes(targetUser, notasDraft); setIsEditingNotas(false); }}>
-                GUARDAR
-              </button>
-              <button className="cyber-btn" style={{ flex:1, fontSize:'7.5px', padding:'5px', borderColor:'rgba(255,68,68,0.4)', color:'rgba(255,68,68,0.75)' }}
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:'4px', marginTop:'5px' }}>
+              <button className="cyber-btn" style={{ fontSize:'6.5px', padding:'3px 8px', borderColor:'rgba(255,68,68,0.4)', color:'rgba(255,68,68,0.7)' }}
                 onClick={() => setIsEditingNotas(false)}>
                 CANCELAR
+              </button>
+              <button className="cyber-btn" style={{ fontSize:'6.5px', padding:'3px 8px', borderColor:'rgba(0,255,136,0.5)', color:'rgba(0,255,136,0.85)' }}
+                onClick={() => { onUpdateNotes(targetUser, notasDraft); setIsEditingNotas(false); }}>
+                GUARDAR
               </button>
             </div>
           </>
@@ -311,10 +323,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'12px', color: notasValue ? 'rgba(200,215,230,0.8)' : 'rgba(var(--cyan-rgb),0.2)', minHeight:'52px', lineHeight:1.55, whiteSpace:'pre-wrap', padding:'2px' }}>
               {notasValue || 'Sin notas...'}
             </div>
-            <button className="cyber-btn" style={{ width:'100%', fontSize:'7.5px', padding:'5px', marginTop:'6px' }}
-              onClick={() => { setNotasDraft(notasValue); setIsEditingNotas(true); }}>
-              EDITAR
-            </button>
+            <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'5px' }}>
+              <button className="cyber-btn" style={{ fontSize:'6.5px', padding:'3px 8px' }}
+                onClick={() => { setNotasDraft(notasValue); setIsEditingNotas(true); }}>
+                EDITAR
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -399,13 +413,37 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         </div>)}
 
         {/* Separador plegable */}
-        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'32px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
+        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
           <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.25))' }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.5)', padding:'3px 10px', border:'1px solid rgba(var(--cyan-rgb),0.22)', borderRadius:'1px', display:'flex', alignItems:'center', gap:'5px', flexShrink:0, whiteSpace:'nowrap' }}>
             {topExpanded ? '▲' : '▼'} PERSONAJE
           </span>
           <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.25))' }} />
         </button>
+
+        {/* ── INDICADOR DE ESTADO ───────────────────────────────────────── */}
+        {(() => {
+          const sc = STATUS_STYLES[char.estado] || STATUS_STYLES['Intacto'];
+          return (
+            <div style={{ display:'flex', justifyContent:'center', marginBottom:'14px' }}>
+              <div
+                className={sc.pulse ? 'status-crit-pulse' : ''}
+                style={{
+                  display:'flex', alignItems:'center', gap:'10px',
+                  padding:'8px 28px',
+                  border:`1px solid rgba(${sc.rgb},0.5)`,
+                  borderRadius:'5px',
+                  background:`rgba(${sc.rgb},0.1)`,
+                  boxShadow: sc.pulse ? undefined : `0 0 14px rgba(${sc.rgb},0.18)`,
+                }}
+              >
+                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.2em', color:`rgba(${sc.rgb},0.65)`, flexShrink:0 }}>ESTADO</span>
+                <div style={{ width:'1px', height:'16px', background:`rgba(${sc.rgb},0.35)`, flexShrink:0 }} />
+                <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'14px', fontWeight:700, letterSpacing:'0.06em', color:sc.color, textShadow:`0 0 14px rgba(${sc.rgb},0.65)` }}>{char.estado.toUpperCase()}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── GRID PRINCIPAL: CSS Grid — alturas simétricas por fila ─────── */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 32px 1fr', rowGap:'8px', marginBottom:'14px' }}>

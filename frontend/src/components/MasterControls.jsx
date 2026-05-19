@@ -7,8 +7,19 @@ function statusLabel(forceStatus) {
   return '';
 }
 
+const STATUS_OPTIONS = ['Intacto','Herido leve','Herido grave','Enfermo','Aturdido','Lesionado','Heridas críticas'];
+const STATUS_COLORS = {
+  'Intacto':          '#00e676',
+  'Herido leve':      '#ffd700',
+  'Herido grave':     '#ff8c00',
+  'Enfermo':          '#c084fc',
+  'Aturdido':         '#94a3b8',
+  'Lesionado':        '#a855f7',
+  'Heridas críticas': '#ff4444',
+};
+
 // Panel exclusivo del Master — no renderizado para otros usuarios
-export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme }) {
+export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme, connectedUsers = [], characters = {}, onSetStatus }) {
   const isArmed = forceStatus !== null;
   const [customValue, setCustomValue] = useState('');
   const [collapsed, setCollapsed]     = useState(false);
@@ -219,6 +230,43 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
           );
         })}
       </div>
+
+      {/* Separador + sección de estado por jugador */}
+      <div
+        className="h-px w-full"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.35), transparent)', margin: '14px 0 10px' }}
+      />
+
+      <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.15em', color:'rgba(124,58,237,0.7)', marginBottom:'8px', textAlign:'center' }}>
+        ESTADO DE JUGADORES
+      </div>
+
+      {connectedUsers.filter(u => u !== 'Master').length === 0 ? (
+        <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(124,58,237,0.35)', textAlign:'center', padding:'4px 0' }}>
+          Sin jugadores conectados
+        </div>
+      ) : (
+        connectedUsers.filter(u => u !== 'Master').map(u => {
+          const currentStatus = characters[u]?.estado || 'Intacto';
+          const statusColor = STATUS_COLORS[currentStatus] || '#94a3b8';
+          return (
+            <div key={u} style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'6px' }}>
+              <div style={{ width:'6px', height:'6px', borderRadius:'50%', flexShrink:0, background:statusColor, boxShadow:`0 0 5px ${statusColor}99` }} />
+              <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', color:'rgba(200,190,255,0.7)', flex:'0 0 58px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{u}</span>
+              <select
+                value={currentStatus}
+                onChange={e => onSetStatus && onSetStatus(u, e.target.value)}
+                className="cyber-input"
+                style={{ flex:1, fontSize:'9px', padding:'2px 22px 2px 6px', height:'22px', color:statusColor, borderColor:`${statusColor}66` }}
+              >
+                {STATUS_OPTIONS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          );
+        })
+      )}
 
       </>}
     </div>

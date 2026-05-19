@@ -55,6 +55,7 @@ function makeDefaultCharacter() {
     habilidadesEspeciales: [],
     fortalezas: [],
     notas: '',
+    estado: 'Intacto',
   };
 }
 
@@ -183,6 +184,18 @@ io.on('connection', (socket) => {
     }
 
     socket.emit('force_confirmed', { type, value: forcedResult });
+  });
+
+  // Master: cambiar el estado de un jugador
+  socket.on('set_player_status', ({ targetPlayer, status }) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (!FORCE_PLAYERS.includes(targetPlayer)) return;
+    const VALID = ['Intacto','Herido leve','Herido grave','Enfermo','Aturdido','Lesionado','Heridas críticas'];
+    if (!VALID.includes(status)) return;
+    characters[targetPlayer] = { ...characters[targetPlayer], estado: status };
+    saveCharacters(characters);
+    io.emit('characters_update', characters);
   });
 
   // Jugador o Master pueden actualizar las notas de un personaje
