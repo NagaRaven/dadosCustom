@@ -87,19 +87,21 @@ export default function Dashboard({ username, onLogout }) {
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       {/*
         Layout responsivo:
-          móvil  (< md)  : columna única
-          tableta (md-lg) : izquierda [historial + dados] | derecha [ficha >50%]
-          escritorio (lg+): dados | historial | ficha
+          móvil     (< md)   : columna única
+          tableta   (md-xl)  : izquierda [historial + dados] | derecha [ficha >55%]
+                               cubre todos los iPad en horizontal (1024–1366px)
+          escritorio (xl+)   : 3 cols — dados (320px) | historial | ficha (700px)
+          escritorio grande (2xl+): dados 360px | historial | ficha 792px
       */}
       <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 min-h-0">
 
         {/* ── Columna izquierda ─────────────────────────────────────────────
-            · Tableta : historial (arriba) + dados/master (abajo) — ancho 40%
-            · Escritorio: solo dados/master — ancho fijo 360px            */}
-        <div className="flex flex-col gap-4 shrink-0 min-h-0 md:w-[40%] lg:w-[360px]">
+            · md–xl : historial (arriba flex-1) + dados/master (abajo)  40%
+            · xl+   : solo dados/master — ancho fijo 320px (360px en 2xl) */}
+        <div className="flex flex-col gap-4 shrink-0 min-h-0 md:w-[40%] xl:w-[320px] 2xl:w-[360px]">
 
-          {/* Historial — tableta y móvil (oculto en escritorio: lg:hidden) */}
-          <div className="flex-1 min-h-0 lg:hidden" style={{ minHeight: '200px' }}>
+          {/* Historial — tablet y móvil (oculto en escritorio xl+) */}
+          <div className="flex-1 min-h-0 xl:hidden" style={{ minHeight: '200px' }}>
             <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
           </div>
 
@@ -142,15 +144,15 @@ export default function Dashboard({ username, onLogout }) {
           </div>
         </div>
 
-        {/* ── Historial central — solo escritorio (hidden en md y móvil) ── */}
-        <div className="hidden lg:flex flex-col flex-1 min-h-0" style={{ minHeight: '400px' }}>
+        {/* ── Historial central — solo escritorio xl+ ─────────────────────── */}
+        <div className="hidden xl:flex flex-col flex-1 min-h-0" style={{ minHeight: '400px' }}>
           <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
         </div>
 
         {/* ── Ficha de personaje ────────────────────────────────────────────
-            · Tableta : flex-1 (ocupa el resto, >60% de pantalla)
-            · Escritorio: ancho fijo 792px                                 */}
-        <div className="md:flex-1 lg:flex-none lg:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
+            · Tablet (md–xl) : flex-1, toma el resto (>55% de pantalla)
+            · Escritorio xl+ : 700px fijo  (792px en 2xl)                 */}
+        <div className="md:flex-1 xl:flex-none xl:w-[700px] 2xl:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
           <CharacterSheet
             username={username}
             isMaster={isMaster(username)}
