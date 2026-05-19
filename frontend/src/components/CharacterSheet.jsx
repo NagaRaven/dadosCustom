@@ -270,19 +270,22 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${titleColor}55)` }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
             {logo && (
-              <img
-                src={logo}
-                alt=""
-                style={{
-                  width: logo === '/simbolo-reales.png' ? '22px' : '16px',
-                  height: logo === '/simbolo-reales.png' ? '18px' : '16px',
-                  objectFit: 'contain',
-                  filter: logo === '/simbolo-reales.png'
-                    ? 'sepia(1) saturate(4) brightness(0.88) contrast(1.15)'
-                    : 'invert(1) sepia(1) saturate(6) brightness(1.15)',
-                  flexShrink: 0,
-                }}
-              />
+              logo === '/simbolo-reales.png' ? (
+                /* Monedas: fondo dorado + trazos oscuros encima = efecto grabado en oro */
+                <span style={{
+                  display:'inline-block', width:'28px', height:'24px', flexShrink:0,
+                  background: titleColor, borderRadius:'3px', overflow:'hidden',
+                  boxShadow:`0 0 6px ${titleColor}88`,
+                }}>
+                  <img src={logo} alt="" style={{ width:'100%', height:'100%', objectFit:'contain', display:'block' }} />
+                </span>
+              ) : (
+                /* Símbolo créditos: negro transparente → filtro oro brillante */
+                <img src={logo} alt="" style={{
+                  width:'16px', height:'16px', objectFit:'contain', flexShrink:0,
+                  filter:'invert(1) sepia(1) saturate(6) brightness(1.15)',
+                }} />
+              )
             )}
             {title}
           </span>
