@@ -263,12 +263,26 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   }
 
   // ── Panel de moneda (créditos o reales) ───────────────────────────────────
-  function renderCurrencyPanel({ title, titleColor, titleShadow, objKey, lineStyle }) {
+  function renderCurrencyPanel({ title, titleColor, titleShadow, objKey, lineStyle, logo }) {
     return (
       <div className="glass-panel rounded-sm" style={{ padding:'12px 14px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px', paddingBottom:'7px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.1)' }}>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${titleColor}55)` }} />
-          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap' }}>{title}</span>
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
+            {logo && (
+              <img
+                src={logo}
+                alt=""
+                style={{
+                  width:'16px', height:'16px',
+                  filter:'invert(1) sepia(1) saturate(6) brightness(1.15)',
+                  mixBlendMode:'screen',
+                  flexShrink:0,
+                }}
+              />
+            )}
+            {title}
+          </span>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${titleColor}55)` }} />
         </div>
         <div style={{ display:'flex', gap:'10px' }}>
@@ -450,7 +464,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
           {/* Fila 1 */}
           <div style={{ gridColumn:1, gridRow:1 }}>
-            {renderCurrencyPanel({ title:'CRÉDITOS', titleColor:'#ffd700', titleShadow:'0 0 10px rgba(255,215,0,0.5)', objKey:'creditos', lineStyle:GOLD_LINE })}
+            {renderCurrencyPanel({ title:'CRÉDITOS', titleColor:'#ffd700', titleShadow:'0 0 10px rgba(255,215,0,0.5)', objKey:'creditos', lineStyle:GOLD_LINE, logo:'/simbolo-creditos.png' })}
           </div>
           <div style={{ gridColumn:2, gridRow:'1 / 4', position:'relative' }}>
             <SectionDivider />
