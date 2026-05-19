@@ -274,10 +274,13 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 src={logo}
                 alt=""
                 style={{
-                  width:'16px', height:'16px',
-                  filter:'invert(1) sepia(1) saturate(6) brightness(1.15)',
-                  mixBlendMode:'screen',
-                  flexShrink:0,
+                  width: logo === '/simbolo-reales.png' ? '22px' : '16px',
+                  height: logo === '/simbolo-reales.png' ? '18px' : '16px',
+                  objectFit: 'contain',
+                  filter: logo === '/simbolo-reales.png'
+                    ? 'sepia(1) saturate(4) brightness(0.88) contrast(1.15)'
+                    : 'invert(1) sepia(1) saturate(6) brightness(1.15)',
+                  flexShrink: 0,
                 }}
               />
             )}
@@ -470,7 +473,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             <SectionDivider />
           </div>
           <div style={{ gridColumn:3, gridRow:1 }}>
-            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8a200', titleShadow:'0 0 10px rgba(200,162,0,0.5)', objKey:'realesDeAOcho', lineStyle:DARK_GOLD_LINE })}
+            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8a200', titleShadow:'0 0 10px rgba(200,162,0,0.5)', objKey:'realesDeAOcho', lineStyle:DARK_GOLD_LINE, logo:'/simbolo-reales.png' })}
           </div>
 
           {/* Fila 2 */}
