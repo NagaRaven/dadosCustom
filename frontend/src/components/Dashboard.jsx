@@ -12,7 +12,7 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
+    characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -23,18 +23,18 @@ export default function Dashboard({ username, onLogout }) {
       {/* ── Barra superior ──────────────────────────────────────────────── */}
       <header
         className="flex items-center justify-between px-6 py-3 shrink-0"
-        style={{ borderBottom: '1px solid rgba(0,212,255,0.12)' }}
+        style={{ borderBottom: '1px solid rgba(var(--cyan-rgb),0.12)' }}
       >
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-            style={{ border: '1px solid rgba(0,212,255,0.5)', boxShadow: '0 0 10px rgba(0,212,255,0.3)' }}
+            style={{ border: '1px solid rgba(var(--cyan-rgb),0.5)', boxShadow: '0 0 10px rgba(var(--cyan-rgb),0.3)' }}
           >
             ⬡
           </div>
           <span
             className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
-            style={{ color: '#00d4ff', textShadow: '0 0 10px rgba(0,212,255,0.5)' }}
+            style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)' }}
           >
             STAR WARS — LA TIERRA PROMETIDA
           </span>
@@ -47,9 +47,9 @@ export default function Dashboard({ username, onLogout }) {
               key={u}
               className="font-mono text-xs px-2 py-0.5 rounded-sm"
               style={{
-                background: u === username ? 'rgba(0,212,255,0.12)' : 'rgba(0,212,255,0.04)',
-                border: `1px solid ${u === username ? 'rgba(0,212,255,0.5)' : 'rgba(0,212,255,0.15)'}`,
-                color: u === username ? '#00d4ff' : 'rgba(0,212,255,0.5)',
+                background: u === username ? 'rgba(var(--cyan-rgb),0.12)' : 'rgba(var(--cyan-rgb),0.04)',
+                border: `1px solid ${u === username ? 'rgba(var(--cyan-rgb),0.5)' : 'rgba(var(--cyan-rgb),0.15)'}`,
+                color: u === username ? 'var(--cyan)' : 'rgba(var(--cyan-rgb),0.5)',
               }}
             >
               {u}
@@ -77,7 +77,7 @@ export default function Dashboard({ username, onLogout }) {
           <button
             onClick={onLogout}
             className="cyber-btn py-1.5 px-3"
-            style={{ fontSize: '0.6rem', borderColor: 'rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.6)' }}
+            style={{ fontSize: '0.6rem', borderColor: 'rgba(var(--cyan-rgb),0.4)', color: 'rgba(var(--cyan-rgb),0.6)' }}
           >
             SALIR
           </button>
@@ -133,12 +133,13 @@ export default function Dashboard({ username, onLogout }) {
         </div>
 
         {/* Columna derecha — Ficha de personaje */}
-        <div className="lg:w-[720px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
+        <div className="lg:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
           <CharacterSheet
             username={username}
             isMaster={isMaster(username)}
             characters={characters}
             onUpdate={updateCharacter}
+            onUpdateNotes={updateNotes}
           />
         </div>
       </main>

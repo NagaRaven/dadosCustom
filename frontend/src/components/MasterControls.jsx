@@ -190,38 +190,34 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
         style={{ background: 'linear-gradient(to right, transparent, rgba(255,215,0,0.35), transparent)', margin: '16px 0 12px' }}
       />
 
-      {/* Botones de tema */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => onSetTheme('yellow')}
-          disabled={theme === 'yellow'}
-          className="flex-1 py-2 rounded-sm font-orbitron text-xs tracking-wider transition-all"
-          style={{
-            background: theme === 'yellow' ? 'rgba(255,215,0,0.14)' : 'rgba(255,215,0,0.05)',
-            border: `1px solid ${theme === 'yellow' ? 'rgba(255,215,0,0.75)' : 'rgba(255,215,0,0.4)'}`,
-            color: theme === 'yellow' ? '#ffd700' : 'rgba(255,215,0,0.55)',
-            cursor: theme === 'yellow' ? 'default' : 'pointer',
-            boxShadow: theme === 'yellow' ? '0 0 14px rgba(255,215,0,0.3)' : 'none',
-            fontSize: '0.55rem',
-          }}
-        >
-          ◉ AMARILLO
-        </button>
-        <button
-          onClick={() => onSetTheme('blue')}
-          disabled={theme === 'blue'}
-          className="flex-1 py-2 rounded-sm font-orbitron text-xs tracking-wider transition-all"
-          style={{
-            background: theme === 'blue' ? 'rgba(0,212,255,0.14)' : 'rgba(0,212,255,0.05)',
-            border: `1px solid ${theme === 'blue' ? 'rgba(0,212,255,0.75)' : 'rgba(0,212,255,0.4)'}`,
-            color: theme === 'blue' ? '#00d4ff' : 'rgba(0,212,255,0.55)',
-            cursor: theme === 'blue' ? 'default' : 'pointer',
-            boxShadow: theme === 'blue' ? '0 0 14px rgba(0,212,255,0.3)' : 'none',
-            fontSize: '0.55rem',
-          }}
-        >
-          ◉ AZUL
-        </button>
+      {/* Botones de tema — rejilla 2×2 */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px' }}>
+        {[
+          { id:'yellow', label:'AMARILLO', hex:'#ffd700', rgb:'255,215,0' },
+          { id:'blue',   label:'AZUL',     hex:'#00d4ff', rgb:'0,212,255' },
+          { id:'red',    label:'ROJO',     hex:'#ff4444', rgb:'255,68,68' },
+          { id:'orange', label:'NARANJA',  hex:'#ff8c00', rgb:'255,140,0' },
+        ].map(({ id, label, hex, rgb }) => {
+          const active = theme === id;
+          return (
+            <button
+              key={id}
+              onClick={() => onSetTheme(id)}
+              disabled={active}
+              className="py-2 rounded-sm font-orbitron tracking-wider transition-all"
+              style={{
+                background: active ? `rgba(${rgb},0.14)` : `rgba(${rgb},0.05)`,
+                border: `1px solid ${active ? `rgba(${rgb},0.75)` : `rgba(${rgb},0.4)`}`,
+                color: active ? hex : `rgba(${rgb},0.55)`,
+                cursor: active ? 'default' : 'pointer',
+                boxShadow: active ? `0 0 14px rgba(${rgb},0.3)` : 'none',
+                fontSize: '0.52rem',
+              }}
+            >
+              ◉ {label}
+            </button>
+          );
+        })}
       </div>
 
       </>}

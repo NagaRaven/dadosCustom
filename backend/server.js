@@ -54,6 +54,7 @@ function makeDefaultCharacter() {
     inventario: [],
     habilidadesEspeciales: [],
     fortalezas: [],
+    notas: '',
   };
 }
 
@@ -83,7 +84,7 @@ let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
 let rollHistory = loadHistory();  // persiste entre reinicios
 let forcedResult = null;          // null | 'critical' | 'fumble' | number
 let connectedUsers = {};          // socketId -> username
-let currentTheme  = 'blue';      // 'blue' | 'yellow'
+let currentTheme  = 'blue';      // 'blue' | 'yellow' | 'red' | 'orange'
 
 // ── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ io.on('connection', (socket) => {
   socket.on('set_theme', (theme) => {
     const sender = connectedUsers[socket.id];
     if (sender !== 'Master') return;
-    if (theme !== 'blue' && theme !== 'yellow') return;
+    if (!['blue', 'yellow', 'red', 'orange'].includes(theme)) return;
     currentTheme = theme;
     io.emit('theme_update', theme);
   });
@@ -182,6 +183,17 @@ io.on('connection', (socket) => {
     }
 
     socket.emit('force_confirmed', { type, value: forcedResult });
+  });
+
+  // Jugador o Master pueden actualizar las notas de un personaje
+  socket.on('update_notes', ({ targetUser, notas }) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master' && sender !== targetUser) return;
+    if (!FORCE_PLAYERS.includes(targetUser)) return;
+    if (typeof notas !== 'string') return;
+    characters[targetUser] = { ...characters[targetUser], notas };
+    saveCharacters(characters);
+    io.emit('characters_update', characters);
   });
 
   socket.on('disconnect', () => {

@@ -40,7 +40,8 @@ export function useSocket(username) {
     socketRef.current.on('characters_update', (chars) => setCharacters(chars));
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
-      document.documentElement.classList.toggle('theme-yellow', t === 'yellow');
+      document.documentElement.classList.remove('theme-yellow', 'theme-red', 'theme-orange');
+      if (t !== 'blue') document.documentElement.classList.add(`theme-${t}`);
     });
 
     // Solo el Master recibe este evento — confirmación privada
@@ -79,5 +80,10 @@ export function useSocket(username) {
     socketRef.current.emit('set_theme', t);
   };
 
-  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme };
+  const updateNotes = (targetUser, notas) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('update_notes', { targetUser, notas });
+  };
+
+  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes };
 }

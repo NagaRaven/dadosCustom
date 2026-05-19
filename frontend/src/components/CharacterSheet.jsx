@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const PLAYERS = ['Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
 
@@ -31,16 +31,17 @@ function ensureChar(raw) {
     inventario:           Array.isArray(raw?.inventario)           ? raw.inventario.map(ensureItem)       : [],
     habilidadesEspeciales: Array.isArray(raw?.habilidadesEspeciales) ? raw.habilidadesEspeciales.map(ensureItem) : [],
     fortalezas:           Array.isArray(raw?.fortalezas)           ? raw.fortalezas.map(ensureFortaleza) : [],
+    notas:      raw?.notas ?? '',
   };
 }
 
 // ── Estilos compartidos ──────────────────────────────────────────────────────
-const LABEL = { fontFamily:'Orbitron,monospace', fontSize:'7.5px', letterSpacing:'0.12em', color:'rgba(0,212,255,0.5)', textTransform:'uppercase', whiteSpace:'nowrap', flexShrink:0 };
+const LABEL = { fontFamily:'Orbitron,monospace', fontSize:'7.5px', letterSpacing:'0.12em', color:'rgba(var(--cyan-rgb),0.5)', textTransform:'uppercase', whiteSpace:'nowrap', flexShrink:0 };
 const VALUE = { fontFamily:'Rajdhani,sans-serif', fontSize:'13px', color:'#e0e8f0', flex:1, minWidth:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' };
-const EDIT_INPUT = { background:'transparent', border:'none', borderBottom:'1px solid rgba(0,212,255,0.4)', color:'#e0e8f0', fontFamily:'Rajdhani,sans-serif', fontSize:'13px', padding:'1px 2px', outline:'none', flex:1, minWidth:0, caretColor:'#00d4ff', width:'100%' };
-const GLOW_LINE   = { height:'1px', background:'linear-gradient(to right,rgba(0,212,255,0.35),rgba(0,212,255,0.08),transparent)', marginTop:'3px' };
+const EDIT_INPUT = { background:'transparent', border:'none', borderBottom:'1px solid rgba(var(--cyan-rgb),0.4)', color:'#e0e8f0', fontFamily:'Rajdhani,sans-serif', fontSize:'13px', padding:'1px 2px', outline:'none', flex:1, minWidth:0, caretColor:'var(--cyan)', width:'100%' };
+const GLOW_LINE   = { height:'1px', background:'linear-gradient(to right,rgba(var(--cyan-rgb),0.35),rgba(var(--cyan-rgb),0.08),transparent)', marginTop:'3px' };
 const GOLD_LINE   = { height:'1px', background:'linear-gradient(to right,rgba(255,215,0,0.4),rgba(255,215,0,0.08),transparent)',   marginTop:'3px' };
-const PURPLE_LINE = { height:'1px', background:'linear-gradient(to right,rgba(124,58,237,0.4),rgba(124,58,237,0.08),transparent)', marginTop:'3px' };
+const DARK_GOLD_LINE = { height:'1px', background:'linear-gradient(to right,rgba(180,130,0,0.4),rgba(180,130,0,0.08),transparent)', marginTop:'3px' };
 
 const BASIC_FIELDS = [
   { label:'NOMBRE',    key:'nombre'    },
@@ -53,69 +54,51 @@ const BASIC_FIELDS = [
 // ── Componentes decorativos ──────────────────────────────────────────────────
 function Corner({ pos }) {
   const map = {
-    tl:{ top:0,    left:0,  borderTop:'1px solid rgba(0,212,255,0.55)',    borderLeft:'1px solid rgba(0,212,255,0.55)'  },
-    tr:{ top:0,    right:0, borderTop:'1px solid rgba(0,212,255,0.55)',    borderRight:'1px solid rgba(0,212,255,0.55)' },
-    bl:{ bottom:0, left:0,  borderBottom:'1px solid rgba(0,212,255,0.55)', borderLeft:'1px solid rgba(0,212,255,0.55)'  },
-    br:{ bottom:0, right:0, borderBottom:'1px solid rgba(0,212,255,0.55)', borderRight:'1px solid rgba(0,212,255,0.55)' },
+    tl:{ top:0,    left:0,  borderTop:'1px solid rgba(var(--cyan-rgb),0.55)',    borderLeft:'1px solid rgba(var(--cyan-rgb),0.55)'  },
+    tr:{ top:0,    right:0, borderTop:'1px solid rgba(var(--cyan-rgb),0.55)',    borderRight:'1px solid rgba(var(--cyan-rgb),0.55)' },
+    bl:{ bottom:0, left:0,  borderBottom:'1px solid rgba(var(--cyan-rgb),0.55)', borderLeft:'1px solid rgba(var(--cyan-rgb),0.55)'  },
+    br:{ bottom:0, right:0, borderBottom:'1px solid rgba(var(--cyan-rgb),0.55)', borderRight:'1px solid rgba(var(--cyan-rgb),0.55)' },
   };
   return <div style={{ position:'absolute', width:'10px', height:'10px', ...map[pos] }} />;
 }
 
-function DividerCircle() {
+// ── Separador discreto entre columnas ───────────────────────────────────────
+function SectionDivider() {
   return (
-    <div style={{ width:'14px', height:'14px', borderRadius:'50%', flexShrink:0, border:'1px solid rgba(0,212,255,0.45)', boxShadow:'0 0 8px rgba(0,212,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ width:'4px', height:'4px', borderRadius:'50%', background:'#00d4ff', boxShadow:'0 0 6px rgba(0,212,255,0.9)' }} />
-    </div>
-  );
-}
-
-// ── Divisor de energía animado — se extiende por las 3 filas ─────────────────
-function EnergyDivider() {
-  const tick = (pct, wide = false) => (
-    <>
-      <div style={{ position:'absolute', top:`${pct}%`, left:'50%', transform:'translateX(-50%)', width: wide ? '20px' : '14px', height:'1px', background:'rgba(0,212,255,0.35)' }} />
-      <div style={{ position:'absolute', top:`${pct}%`, left:'50%', transform:'translate(-50%,-50%)', width:'5px', height:'5px', borderRadius:'50%', background:'rgba(0,212,255,0.55)', boxShadow:'0 0 6px rgba(0,212,255,0.5)' }} />
-    </>
-  );
-  return (
-    <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center' }}>
-      {/* Línea con margen en extremos para no llegar al borde del recuadro */}
-      <div style={{ position:'absolute', top:'10px', bottom:'10px', left:'50%', width:'1px', marginLeft:'-0.5px', background:'linear-gradient(to bottom,transparent 0%,rgba(0,212,255,0.55) 15%,rgba(0,212,255,0.3) 50%,rgba(0,212,255,0.55) 85%,transparent 100%)', animation:'energy-line-pulse 2s ease-in-out infinite' }} />
-
-      {tick(33, true)} {/* límite fila 1/2 */}
-      {tick(67, true)} {/* límite fila 2/3 */}
-
-      {/* Runa central (50%) */}
-      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'26px', height:'26px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ position:'absolute', width:'22px', height:'22px', border:'1px solid rgba(0,212,255,0.18)', transform:'rotate(45deg)' }} />
-        <div style={{ position:'absolute', width:'14px', height:'14px', border:'1px solid rgba(0,212,255,0.65)', background:'rgba(0,212,255,0.06)', animation:'rune-rotate 3.5s linear infinite' }} />
-        <div style={{ position:'absolute', width:'8px',  height:'8px',  border:'1px solid rgba(0,212,255,0.4)', animation:'rune-counter 2.5s linear infinite', transform:'rotate(45deg)' }} />
-        <div style={{ position:'absolute', width:'4px',  height:'4px',  borderRadius:'50%', background:'#00d4ff', boxShadow:'0 0 10px rgba(0,212,255,1),0 0 20px rgba(0,212,255,0.6)', animation:'rune-glow-pulse 2s ease-in-out infinite' }} />
-      </div>
-
-      {/* Partículas */}
-      <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', width:'2px', height:'14px', borderRadius:'1px', background:'linear-gradient(to bottom,transparent,#00d4ff 50%,transparent)', boxShadow:'0 0 5px rgba(0,212,255,0.7)', animation:'energy-flow-down 3s ease-in-out infinite' }} />
-      <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', width:'2px', height:'9px',  borderRadius:'1px', background:'linear-gradient(to top,transparent,rgba(0,212,255,0.85) 50%,transparent)', boxShadow:'0 0 4px rgba(0,212,255,0.6)', animation:'energy-flow-up 3.5s ease-in-out 1.4s infinite' }} />
-      <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', width:'2px', height:'10px', borderRadius:'1px', background:'linear-gradient(to bottom,transparent,rgba(0,212,255,0.6) 50%,transparent)', animation:'energy-flow-down 3s ease-in-out 1.6s infinite' }} />
-      <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', width:'2px', height:'7px',  borderRadius:'1px', background:'linear-gradient(to top,transparent,rgba(0,212,255,0.5) 50%,transparent)', animation:'energy-flow-up 3.5s ease-in-out 3s infinite' }} />
+    <div style={{ position:'absolute', inset:0 }}>
+      <div style={{ position:'absolute', top:'8px', bottom:'8px', left:'50%', width:'1px', transform:'translateX(-50%)',
+        background:'linear-gradient(to bottom, transparent, rgba(var(--cyan-rgb),0.2) 15%, rgba(var(--cyan-rgb),0.12) 85%, transparent)' }} />
+      {[33, 67].map(pct => (
+        <div key={pct} style={{ position:'absolute', top:`${pct}%`, left:'50%', width:'5px', height:'5px',
+          transform:'translate(-50%,-50%) rotate(45deg)',
+          border:'1px solid rgba(var(--cyan-rgb),0.3)', background:'rgba(var(--cyan-rgb),0.05)' }} />
+      ))}
     </div>
   );
 }
 
 // ── Componente principal ─────────────────────────────────────────────────────
-export default function CharacterSheet({ username, isMaster, characters, onUpdate }) {
+export default function CharacterSheet({ username, isMaster, characters, onUpdate, onUpdateNotes }) {
   const [selectedPlayer, setSelectedPlayer] = useState(isMaster ? PLAYERS[0] : username);
   const [isEditing, setIsEditing]           = useState(false);
   const [draft, setDraft]                   = useState(null);
   const [isDragOver, setIsDragOver]         = useState(false);
   const [topExpanded, setTopExpanded]       = useState(true);
   const [tooltip, setTooltip]               = useState(null); // { x, y, goLeft, text }
+  const [isEditingNotas, setIsEditingNotas] = useState(false);
+  const [notasDraft, setNotasDraft]         = useState('');
   const fileRef  = useRef(null);
   const panelRef = useRef(null);
 
   const targetUser = isMaster ? selectedPlayer : username;
   const char = ensureChar(characters[targetUser]);
   const data = isEditing ? draft : char;
+
+  // Resetea el estado de notas al cambiar de jugador (relevante para el Master)
+  useEffect(() => {
+    setIsEditingNotas(false);
+    setNotasDraft('');
+  }, [targetUser]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const set       = (k, v)       => setDraft(p => ({ ...p, [k]: v }));
@@ -165,7 +148,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
         {!isEditing && (
           <>
-            {readItems.length === 0 && <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(0,212,255,0.2)', textAlign:'center', padding:'8px 0' }}>{emptyText}</div>}
+            {readItems.length === 0 && <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.2)', textAlign:'center', padding:'8px 0' }}>{emptyText}</div>}
             {readItems.map((item, i) => (
               <div
                 key={i}
@@ -175,7 +158,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
               >
                 <div style={{ width:'7px', height:'7px', borderRadius:'50%', flexShrink:0, border:`1px solid ${bulletColor}`, background:`${bulletColor}55`, boxShadow:`0 0 5px ${bulletColor}66` }} />
                 <span style={{ fontFamily: arrKey === 'inventario' ? 'Share Tech Mono,monospace' : 'Rajdhani,sans-serif', fontSize:'11px', color:'#c8d4e0', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.nombre}</span>
-                {item.descripcion && <span style={{ fontSize:'8px', color:'rgba(0,212,255,0.3)', flexShrink:0 }}>···</span>}
+                {item.descripcion && <span style={{ fontSize:'8px', color:'rgba(var(--cyan-rgb),0.3)', flexShrink:0 }}>···</span>}
               </div>
             ))}
           </>
@@ -184,14 +167,14 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         {isEditing && (
           <>
             {items.map((item, i) => (
-              <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(0,212,255,0.03)', border:'1px solid rgba(0,212,255,0.1)', borderRadius:'2px' }}>
+              <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(var(--cyan-rgb),0.03)', border:'1px solid rgba(var(--cyan-rgb),0.1)', borderRadius:'2px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'4px', marginBottom:'4px' }}>
                   <div style={{ width:'7px', height:'7px', borderRadius:'50%', flexShrink:0, border:`1px solid ${bulletColor}`, background:`${bulletColor}44` }} />
                   <input type="text" value={item.nombre} onChange={e => setItemField(arrKey, i, 'nombre', e.target.value)} placeholder="Nombre..." style={{ ...EDIT_INPUT, fontSize:'12px', fontWeight:600 }} />
                   <button onClick={() => removeItem(arrKey, i)} style={{ background:'transparent', border:'none', cursor:'pointer', color:'rgba(255,68,68,0.6)', fontSize:'14px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
                 </div>
                 <textarea value={item.descripcion} onChange={e => setItemField(arrKey, i, 'descripcion', e.target.value)} placeholder="Descripción (aparece al pasar el ratón)..." rows={2}
-                  style={{ background:'rgba(0,0,0,0.2)', border:'1px solid rgba(0,212,255,0.18)', color:'rgba(200,215,230,0.8)', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', padding:'4px 6px', outline:'none', width:'100%', resize:'vertical', caretColor:'#00d4ff', lineHeight:1.4, borderRadius:'1px' }} />
+                  style={{ background:'rgba(0,0,0,0.2)', border:'1px solid rgba(var(--cyan-rgb),0.18)', color:'rgba(200,215,230,0.8)', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', padding:'4px 6px', outline:'none', width:'100%', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.4, borderRadius:'1px' }} />
               </div>
             ))}
             <button className="cyber-btn" onClick={() => addItem(arrKey)} style={{ width:'100%', fontSize:'7.5px', padding:'5px', borderColor:`${accentColor}88`, color:accentColor, marginTop: items.length > 0 ? '4px' : 0 }}>+ AÑADIR</button>
@@ -206,12 +189,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
     const items = data?.fortalezas ?? [];
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
-        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(0,212,255,0.6)', textAlign:'center', marginBottom:'8px', borderBottom:'1px solid rgba(0,212,255,0.08)', paddingBottom:'6px' }}>
+        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', textAlign:'center', marginBottom:'8px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)', paddingBottom:'6px' }}>
           MIS FORTALEZAS
         </div>
         {!isEditing && (
           <>
-            {items.filter(f => f.nombre).length === 0 && <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(0,212,255,0.2)', textAlign:'center', padding:'8px 0' }}>Sin fortalezas</div>}
+            {items.filter(f => f.nombre).length === 0 && <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.2)', textAlign:'center', padding:'8px 0' }}>Sin fortalezas</div>}
             {items.filter(f => f.nombre).map((f, i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'5px' }}>
                 <div style={{ width:'10px', height:'10px', borderRadius:'2px', flexShrink:0, background:LEVEL_COLORS[f.nivel], boxShadow:`0 0 6px ${LEVEL_COLORS[f.nivel]}88` }} />
@@ -223,13 +206,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         {isEditing && (
           <>
             {items.map((f, i) => (
-              <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(0,212,255,0.03)', border:'1px solid rgba(0,212,255,0.1)', borderRadius:'2px' }}>
+              <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(var(--cyan-rgb),0.03)', border:'1px solid rgba(var(--cyan-rgb),0.1)', borderRadius:'2px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'4px', marginBottom:'6px' }}>
                   <div style={{ width:'10px', height:'10px', borderRadius:'2px', flexShrink:0, background:LEVEL_COLORS[f.nivel], boxShadow:`0 0 6px ${LEVEL_COLORS[f.nivel]}66`, transition:'background 0.2s' }} />
                   <input type="text" value={f.nombre} onChange={e => setItemField('fortalezas', i, 'nombre', e.target.value)} placeholder="Nombre de la fortaleza..." style={{ ...EDIT_INPUT, fontSize:'12px', fontWeight:600 }} />
                   <button onClick={() => removeItem('fortalezas', i)} style={{ background:'transparent', border:'none', cursor:'pointer', color:'rgba(255,68,68,0.6)', fontSize:'14px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
                 </div>
-                {/* Slider de nivel */}
                 <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
                   <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', color:LEVEL_COLORS[0], flexShrink:0 }}>0</span>
                   <input
@@ -255,11 +237,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   function renderContactos() {
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', display:'flex', flexDirection:'column' }}>
-        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(0,212,255,0.6)', textAlign:'center', marginBottom:'10px', borderBottom:'1px solid rgba(0,212,255,0.08)', paddingBottom:'6px', lineHeight:1.5 }}>
+        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(var(--cyan-rgb),0.6)', textAlign:'center', marginBottom:'10px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)', paddingBottom:'6px', lineHeight:1.5 }}>
           COMUNICADOR
         </div>
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'6px 0' }}>
-          {/* Símbolo prohibido */}
           <div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'2.5px solid rgba(255,68,68,0.4)', position:'relative', marginBottom:'10px', boxShadow:'0 0 14px rgba(255,68,68,0.12), inset 0 0 10px rgba(255,68,68,0.04)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <div style={{ position:'absolute', width:'2.5px', height:'40px', background:'rgba(255,68,68,0.4)', transform:'rotate(45deg)', borderRadius:'2px', boxShadow:'0 0 6px rgba(255,68,68,0.3)' }} />
           </div>
@@ -273,7 +254,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   function renderCurrencyPanel({ title, titleColor, titleShadow, objKey, lineStyle }) {
     return (
       <div className="glass-panel rounded-sm" style={{ padding:'12px 14px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px', paddingBottom:'7px', borderBottom:'1px solid rgba(0,212,255,0.1)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px', paddingBottom:'7px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.1)' }}>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${titleColor}55)` }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap' }}>{title}</span>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${titleColor}55)` }} />
@@ -295,6 +276,51 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
     );
   }
 
+  // ── Mis Notas ──────────────────────────────────────────────────────────────
+  function renderMisNotas() {
+    const notasValue = char.notas ?? '';
+    return (
+      <div className="glass-panel rounded-sm" style={{ padding:'10px', marginTop:'8px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px', paddingBottom:'6px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)' }}>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.3))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', whiteSpace:'nowrap' }}>MIS NOTAS</span>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.3))' }} />
+        </div>
+
+        {isEditingNotas ? (
+          <>
+            <textarea
+              value={notasDraft}
+              onChange={e => setNotasDraft(e.target.value)}
+              rows={4}
+              style={{ width:'100%', background:'rgba(0,0,0,0.25)', border:'1px solid rgba(var(--cyan-rgb),0.25)', color:'rgba(200,215,230,0.9)', fontFamily:'Rajdhani,sans-serif', fontSize:'12px', padding:'8px', outline:'none', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.55, borderRadius:'1px' }}
+            />
+            <div style={{ display:'flex', gap:'6px', marginTop:'6px' }}>
+              <button className="cyber-btn" style={{ flex:1, fontSize:'7.5px', padding:'5px', borderColor:'rgba(0,255,136,0.5)', color:'rgba(0,255,136,0.85)' }}
+                onClick={() => { onUpdateNotes(targetUser, notasDraft); setIsEditingNotas(false); }}>
+                GUARDAR
+              </button>
+              <button className="cyber-btn" style={{ flex:1, fontSize:'7.5px', padding:'5px', borderColor:'rgba(255,68,68,0.4)', color:'rgba(255,68,68,0.75)' }}
+                onClick={() => setIsEditingNotas(false)}>
+                CANCELAR
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'12px', color: notasValue ? 'rgba(200,215,230,0.8)' : 'rgba(var(--cyan-rgb),0.2)', minHeight:'52px', lineHeight:1.55, whiteSpace:'pre-wrap', padding:'2px' }}>
+              {notasValue || 'Sin notas...'}
+            </div>
+            <button className="cyber-btn" style={{ width:'100%', fontSize:'7.5px', padding:'5px', marginTop:'6px' }}
+              onClick={() => { setNotasDraft(notasValue); setIsEditingNotas(true); }}>
+              EDITAR
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <div
@@ -308,11 +334,11 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       </div>
 
       {/* ── CABECERA ──────────────────────────────────────────────────────── */}
-      <div style={{ padding:'10px 16px 8px', borderBottom:'1px solid rgba(0,212,255,0.12)', flexShrink:0 }}>
+      <div style={{ padding:'10px 16px 8px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.12)', flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(0,212,255,0.4))' }} />
-          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'9px', letterSpacing:'0.22em', color:'#00d4ff', textShadow:'0 0 10px rgba(0,212,255,0.6)', whiteSpace:'nowrap' }}>FICHA DE PERSONAJE</span>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(0,212,255,0.4))' }} />
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.4))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'9px', letterSpacing:'0.22em', color:'var(--cyan)', textShadow:'0 0 10px rgba(var(--cyan-rgb),0.6)', whiteSpace:'nowrap' }}>FICHA DE PERSONAJE</span>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.4))' }} />
         </div>
         {isMaster ? (
           <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
@@ -322,7 +348,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {!isEditing && <button className="cyber-btn" style={{ fontSize:'7.5px', padding:'4px 10px', flexShrink:0 }} onClick={startEdit}>EDITAR FICHA</button>}
           </div>
         ) : (
-          <div style={{ fontFamily:'Orbitron,monospace', fontSize:'8px', letterSpacing:'0.15em', color:'rgba(0,212,255,0.4)', textAlign:'center' }}>{username.toUpperCase()}</div>
+          <div style={{ fontFamily:'Orbitron,monospace', fontSize:'8px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.4)', textAlign:'center' }}>{username.toUpperCase()}</div>
         )}
       </div>
 
@@ -338,18 +364,18 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             onDrop={isEditing ? handleDrop : undefined}
             onDragOver={isEditing ? e => { e.preventDefault(); setIsDragOver(true); } : undefined}
             onDragLeave={isEditing ? () => setIsDragOver(false) : undefined}
-            style={{ width:'100px', height:'130px', flexShrink:0, border:`1px solid ${isDragOver?'rgba(0,212,255,0.9)':isEditing?'rgba(0,212,255,0.55)':'rgba(0,212,255,0.28)'}`, background:isDragOver?'rgba(0,212,255,0.12)':'rgba(0,212,255,0.03)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:isEditing?'pointer':'default', transition:'all 0.2s', position:'relative', overflow:'hidden', boxShadow:isEditing?'0 0 16px rgba(0,212,255,0.15)':'none' }}
+            style={{ width:'100px', height:'130px', flexShrink:0, border:`1px solid ${isDragOver?'rgba(var(--cyan-rgb),0.9)':isEditing?'rgba(var(--cyan-rgb),0.55)':'rgba(var(--cyan-rgb),0.28)'}`, background:isDragOver?'rgba(var(--cyan-rgb),0.12)':'rgba(var(--cyan-rgb),0.03)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:isEditing?'pointer':'default', transition:'all 0.2s', position:'relative', overflow:'hidden', boxShadow:isEditing?'0 0 16px rgba(var(--cyan-rgb),0.15)':'none' }}
           >
             {['tl','tr','bl','br'].map(p => <Corner key={p} pos={p} />)}
             {data?.avatar ? (
               <>
                 <img src={data.avatar} alt="Avatar" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                {isEditing && <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'4px' }}><span style={{ fontSize:'18px', color:'#00d4ff' }}>⇪</span><span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', color:'#00d4ff', letterSpacing:'0.1em' }}>{isDragOver?'SOLTAR':'CAMBIAR'}</span></div>}
+                {isEditing && <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'4px' }}><span style={{ fontSize:'18px', color:'var(--cyan)' }}>⇪</span><span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', color:'var(--cyan)', letterSpacing:'0.1em' }}>{isDragOver?'SOLTAR':'CAMBIAR'}</span></div>}
               </>
             ) : (
               <>
-                <span style={{ fontSize:'32px', color:'rgba(0,212,255,0.18)', textShadow:'0 0 20px rgba(0,212,255,0.3)', lineHeight:1, zIndex:1 }}>?</span>
-                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.1em', color:'rgba(0,212,255,0.28)', marginTop:'10px', zIndex:1, textAlign:'center', lineHeight:1.6 }}>{isEditing?(isDragOver?'SOLTAR\nAQUÍ':'ARRASTRAR\nO CLICK'):'EN\nESPERA'}</span>
+                <span style={{ fontSize:'32px', color:'rgba(var(--cyan-rgb),0.18)', textShadow:'0 0 20px rgba(var(--cyan-rgb),0.3)', lineHeight:1, zIndex:1 }}>?</span>
+                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.1em', color:'rgba(var(--cyan-rgb),0.28)', marginTop:'10px', zIndex:1, textAlign:'center', lineHeight:1.6 }}>{isEditing?(isDragOver?'SOLTAR\nAQUÍ':'ARRASTRAR\nO CLICK'):'EN\nESPERA'}</span>
               </>
             )}
           </div>
@@ -373,12 +399,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         </div>)}
 
         {/* Separador plegable */}
-        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'20px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(0,212,255,0.25))' }} />
-          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.15em', color:'rgba(0,212,255,0.5)', padding:'3px 10px', border:'1px solid rgba(0,212,255,0.22)', borderRadius:'1px', display:'flex', alignItems:'center', gap:'5px', flexShrink:0, whiteSpace:'nowrap' }}>
+        <button onClick={() => setTopExpanded(e => !e)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', marginBottom:'32px', background:'transparent', border:'none', cursor:'pointer', padding:'4px 0' }}>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.25))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.5)', padding:'3px 10px', border:'1px solid rgba(var(--cyan-rgb),0.22)', borderRadius:'1px', display:'flex', alignItems:'center', gap:'5px', flexShrink:0, whiteSpace:'nowrap' }}>
             {topExpanded ? '▲' : '▼'} PERSONAJE
           </span>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(0,212,255,0.25))' }} />
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.25))' }} />
         </button>
 
         {/* ── GRID PRINCIPAL: CSS Grid — alturas simétricas por fila ─────── */}
@@ -389,10 +415,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {renderCurrencyPanel({ title:'CRÉDITOS', titleColor:'#ffd700', titleShadow:'0 0 10px rgba(255,215,0,0.5)', objKey:'creditos', lineStyle:GOLD_LINE })}
           </div>
           <div style={{ gridColumn:2, gridRow:'1 / 4', position:'relative' }}>
-            <EnergyDivider />
+            <SectionDivider />
           </div>
           <div style={{ gridColumn:3, gridRow:1 }}>
-            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'rgba(200,165,255,1)', titleShadow:'0 0 10px rgba(124,58,237,0.6)', objKey:'realesDeAOcho', lineStyle:PURPLE_LINE })}
+            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8a200', titleShadow:'0 0 10px rgba(200,162,0,0.5)', objKey:'realesDeAOcho', lineStyle:DARK_GOLD_LINE })}
           </div>
 
           {/* Fila 2 */}
@@ -412,9 +438,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           </div>
         </div>
 
+        {/* ── MIS NOTAS ──────────────────────────────────────────────────── */}
+        {renderMisNotas()}
+
         {/* Controles de edición */}
         {isMaster && isEditing && (
-          <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
+          <div style={{ display:'flex', gap:'8px', marginTop:'12px' }}>
             <button className="cyber-btn" style={{ flex:1, fontSize:'8px', padding:'7px', borderColor:'rgba(0,255,136,0.5)', color:'rgba(0,255,136,0.85)' }} onClick={confirmEdit}>CONFIRMAR</button>
             <button className="cyber-btn" style={{ flex:1, fontSize:'8px', padding:'7px', borderColor:'rgba(255,68,68,0.4)', color:'rgba(255,68,68,0.75)' }} onClick={cancelEdit}>CANCELAR</button>
           </div>
@@ -431,14 +460,13 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             zIndex:100, pointerEvents:'none',
             maxWidth:'220px', minWidth:'120px',
             background:'rgba(7,9,15,0.97)',
-            border:'1px solid rgba(0,212,255,0.38)',
+            border:'1px solid rgba(var(--cyan-rgb),0.38)',
             borderRadius:'2px',
             padding:'9px 11px',
-            boxShadow:'0 0 24px rgba(0,212,255,0.12), 0 6px 24px rgba(0,0,0,0.8)',
+            boxShadow:'0 0 24px rgba(var(--cyan-rgb),0.12), 0 6px 24px rgba(0,0,0,0.8)',
             animation:'tooltip-scan 0.2s ease-out',
           }}
         >
-          {/* Esquinas del tooltip */}
           {['tl','tr','bl','br'].map(p => <Corner key={p} pos={p} />)}
           <p style={{ margin:0, fontFamily:'Rajdhani,sans-serif', fontSize:'11.5px', color:'rgba(195,215,235,0.92)', lineHeight:1.55, whiteSpace:'pre-wrap' }}>
             {tooltip.text}
