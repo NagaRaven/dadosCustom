@@ -276,10 +276,9 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                   filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
                 }} />
               ) : (
-                /* Símbolo créditos: negro transparente → filtro oro brillante */
                 <img src={logo} alt="" style={{
-                  width:'16px', height:'16px', objectFit:'contain', flexShrink:0,
-                  filter:'invert(1) sepia(1) saturate(6) brightness(1.15)',
+                  width:'28px', height:'28px', objectFit:'contain', flexShrink:0,
+                  filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
                 }} />
               )
             )}
