@@ -349,7 +349,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   function renderCurrencyPanel({ title, titleColor, titleShadow, objKey, lineStyle, logo }) {
     return (
       <div className="glass-panel rounded-sm" style={{ padding:'12px 14px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px', paddingBottom:'7px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.1)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px' }}>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${titleColor}55)` }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
             {logo && (
