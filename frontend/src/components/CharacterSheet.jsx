@@ -99,10 +99,9 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   const [tooltip, setTooltip]               = useState(null); // { x, y, goLeft, text }
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notasDraft, setNotasDraft]         = useState('');
-  const [fortAddMode, setFortAddMode]       = useState(null); // null | 'select' | 'new'
+  const [fortAddMode, setFortAddMode]       = useState(null); // null | 'new'
   const [fortNewName, setFortNewName]       = useState('');
   const [fortNewDesc, setFortNewDesc]       = useState('');
-  const [fortSelectVal, setFortSelectVal]   = useState('');
   const fileRef  = useRef(null);
   const panelRef = useRef(null);
 
@@ -124,7 +123,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   const removeItem= (arr, i)     => setDraft(p => ({ ...p, [arr]: p[arr].filter((_,j) => j !== i) }));
 
   function startEdit()   { setDraft(JSON.parse(JSON.stringify(char))); setIsEditing(true); }
-  function cancelEdit()  { setDraft(null); setIsEditing(false); setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); setFortSelectVal(''); }
+  function cancelEdit()  { setDraft(null); setIsEditing(false); setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); }
   function confirmEdit() { onUpdate(targetUser, draft); setDraft(null); setIsEditing(false); }
 
   function handleDrop(e) {
@@ -204,17 +203,17 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   function renderFortalezas() {
     const items = data?.fortalezas ?? [];
 
-    // Nombres únicos de todas las fichas, orden alfabético
-    const allNames = [...new Set(
-      Object.values(characters)
+    // Catálogo: nombres únicos de todas las fichas + draft actual, orden alfabético
+    const allNames = [...new Set([
+      ...Object.values(characters)
         .flatMap(c => Array.isArray(c?.fortalezas) ? c.fortalezas : [])
-        .map(f => (typeof f === 'string' ? f : f?.nombre) || '')
-        .filter(Boolean)
-    )].sort((a, b) => a.localeCompare(b, 'es'));
+        .map(f => (typeof f === 'string' ? f : f?.nombre) || ''),
+      ...items.map(f => f?.nombre || ''),
+    ].filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
 
-    // Primera descripción encontrada para cada nombre
+    // Primera descripción encontrada para cada nombre (chars guardados + draft)
     const descByName = {};
-    Object.values(characters).forEach(c => {
+    [...Object.values(characters), ...(draft ? [draft] : [])].forEach(c => {
       (Array.isArray(c?.fortalezas) ? c.fortalezas : []).forEach(f => {
         const n = typeof f === 'string' ? f : f?.nombre;
         const d = typeof f === 'string' ? '' : (f?.descripcion || '');
@@ -222,18 +221,20 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       });
     });
 
-    function confirmAdd() {
-      if (fortAddMode === 'select') {
-        if (!fortSelectVal) return;
-        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortSelectVal, nivel: 5, descripcion: descByName[fortSelectVal] || '' }] }));
-      } else {
-        if (!fortNewName.trim()) return;
-        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortNewName.trim(), nivel: 5, descripcion: fortNewDesc }] }));
-      }
-      setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); setFortSelectVal('');
+    // Cambia el nombre de una fila y actualiza la descripción desde el catálogo
+    function changeNombre(i, newName) {
+      setDraft(p => {
+        const a = [...p.fortalezas];
+        a[i] = { ...a[i], nombre: newName, descripcion: descByName[newName] ?? a[i].descripcion };
+        return { ...p, fortalezas: a };
+      });
     }
 
-    const TAB_BASE = { flex:1, fontSize:'6.5px', padding:'3px', fontFamily:'Orbitron,monospace', letterSpacing:'0.1em', border:'1px solid rgba(var(--cyan-rgb),0.3)', cursor:'pointer', borderRadius:'1px', transition:'all 0.15s' };
+    function confirmAdd() {
+      if (!fortNewName.trim()) return;
+      setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortNewName.trim(), nivel: 5, descripcion: fortNewDesc }] }));
+      setFortAddMode(null); setFortNewName(''); setFortNewDesc('');
+    }
 
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
@@ -241,7 +242,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           MIS FORTALEZAS
         </div>
 
-        {/* Vista lectura (todos los usuarios) */}
+        {/* Vista lectura — todos los usuarios */}
         {!isEditing && (
           <>
             {items.filter(f => f.nombre).length === 0 && (
@@ -265,60 +266,45 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         {/* Vista edición — solo el Master llega aquí */}
         {isEditing && (
           <>
-            {items.map((f, i) => (
-              <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(var(--cyan-rgb),0.03)', border:'1px solid rgba(var(--cyan-rgb),0.1)', borderRadius:'2px' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'4px', marginBottom:'6px' }}>
-                  <div style={{ width:'10px', height:'10px', borderRadius:'2px', flexShrink:0, background:LEVEL_COLORS[f.nivel], boxShadow:`0 0 6px ${LEVEL_COLORS[f.nivel]}66`, transition:'background 0.2s' }} />
-                  <input type="text" value={f.nombre} onChange={e => setItemField('fortalezas', i, 'nombre', e.target.value)} placeholder="Nombre de la fortaleza..." style={{ ...EDIT_INPUT, fontSize:'12px', fontWeight:600 }} />
-                  <button onClick={() => removeItem('fortalezas', i)} style={{ background:'transparent', border:'none', cursor:'pointer', color:'rgba(255,68,68,0.6)', fontSize:'14px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
+            {items.map((f, i) => {
+              // Opciones del select: catálogo global + nombre actual si aún no está
+              const opts = allNames.includes(f.nombre) || !f.nombre ? allNames : [...allNames, f.nombre].sort((a, b) => a.localeCompare(b, 'es'));
+              return (
+                <div key={i} style={{ marginBottom:'8px', padding:'6px 8px', background:'rgba(var(--cyan-rgb),0.03)', border:'1px solid rgba(var(--cyan-rgb),0.1)', borderRadius:'2px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'4px', marginBottom:'6px' }}>
+                    <div style={{ width:'10px', height:'10px', borderRadius:'2px', flexShrink:0, background:LEVEL_COLORS[f.nivel], boxShadow:`0 0 6px ${LEVEL_COLORS[f.nivel]}66`, transition:'background 0.2s' }} />
+                    <select value={f.nombre} onChange={e => changeNombre(i, e.target.value)} className="cyber-input" style={{ flex:1, fontSize:'11px', padding:'2px 6px', height:'24px' }}>
+                      {opts.length === 0
+                        ? <option value="">Sin fortalezas definidas</option>
+                        : opts.map(n => <option key={n} value={n}>{n}</option>)
+                      }
+                    </select>
+                    <button onClick={() => removeItem('fortalezas', i)} style={{ background:'transparent', border:'none', cursor:'pointer', color:'rgba(255,68,68,0.6)', fontSize:'14px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                    <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', color:LEVEL_COLORS[0], flexShrink:0 }}>0</span>
+                    <input type="range" min="0" max="10" step="1" value={f.nivel} onChange={e => setItemField('fortalezas', i, 'nivel', parseInt(e.target.value))} className="strength-slider" style={{ '--level-color': LEVEL_COLORS[f.nivel] }} />
+                    <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', color:LEVEL_COLORS[10], flexShrink:0 }}>10</span>
+                    <span style={{ fontFamily:'Orbitron,monospace', fontSize:'9px', fontWeight:700, color:LEVEL_COLORS[f.nivel], textShadow:`0 0 8px ${LEVEL_COLORS[f.nivel]}99`, minWidth:'16px', textAlign:'center', flexShrink:0, transition:'color 0.2s' }}>{f.nivel}</span>
+                  </div>
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-                  <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', color:LEVEL_COLORS[0], flexShrink:0 }}>0</span>
-                  <input type="range" min="0" max="10" step="1" value={f.nivel} onChange={e => setItemField('fortalezas', i, 'nivel', parseInt(e.target.value))} className="strength-slider" style={{ '--level-color': LEVEL_COLORS[f.nivel] }} />
-                  <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6px', color:LEVEL_COLORS[10], flexShrink:0 }}>10</span>
-                  <span style={{ fontFamily:'Orbitron,monospace', fontSize:'9px', fontWeight:700, color:LEVEL_COLORS[f.nivel], textShadow:`0 0 8px ${LEVEL_COLORS[f.nivel]}99`, minWidth:'16px', textAlign:'center', flexShrink:0, transition:'color 0.2s' }}>{f.nivel}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
-            {/* Panel de añadir */}
+            {/* Botón añadir / formulario nueva fortaleza */}
             {fortAddMode === null ? (
-              <button className="cyber-btn" onClick={() => { setFortAddMode('select'); if (allNames.length > 0) setFortSelectVal(allNames[0]); }} style={{ width:'100%', fontSize:'7.5px', padding:'5px' }}>+ AÑADIR</button>
+              <button className="cyber-btn" onClick={() => setFortAddMode('new')} style={{ width:'100%', fontSize:'7.5px', padding:'5px' }}>+ AÑADIR FORTALEZA</button>
             ) : (
               <div style={{ padding:'8px', background:'rgba(var(--cyan-rgb),0.04)', border:'1px solid rgba(var(--cyan-rgb),0.15)', borderRadius:'2px' }}>
-                {/* Tabs modo */}
-                <div style={{ display:'flex', gap:'4px', marginBottom:'8px' }}>
-                  {[['select','EXISTENTE'],['new','NUEVA']].map(([mode, label]) => (
-                    <button key={mode}
-                      onClick={() => { setFortAddMode(mode); if (mode === 'select' && allNames.length > 0 && !fortSelectVal) setFortSelectVal(allNames[0]); }}
-                      style={{ ...TAB_BASE, background: fortAddMode === mode ? 'rgba(var(--cyan-rgb),0.15)' : 'transparent', color: fortAddMode === mode ? 'var(--cyan)' : 'rgba(var(--cyan-rgb),0.35)' }}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                {fortAddMode === 'select' && (
-                  allNames.length === 0
-                    ? <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.3)', textAlign:'center', padding:'4px 0 8px' }}>Aún no hay fortalezas definidas</div>
-                    : <select value={fortSelectVal} onChange={e => setFortSelectVal(e.target.value)} className="cyber-input" style={{ width:'100%', fontSize:'11px', padding:'4px 8px', marginBottom:'8px', height:'28px' }}>
-                        {allNames.map(n => <option key={n} value={n}>{n}</option>)}
-                      </select>
-                )}
-
-                {fortAddMode === 'new' && (
-                  <>
-                    <input type="text" value={fortNewName} onChange={e => setFortNewName(e.target.value)}
-                      placeholder="Nombre de la fortaleza..."
-                      style={{ ...EDIT_INPUT, fontSize:'12px', fontWeight:600, marginBottom:'6px', display:'block', width:'100%', boxSizing:'border-box' }} />
-                    <textarea value={fortNewDesc} onChange={e => setFortNewDesc(e.target.value)}
-                      placeholder="Descripción (aparece al pasar el ratón)..." rows={2}
-                      style={{ background:'rgba(0,0,0,0.2)', border:'1px solid rgba(var(--cyan-rgb),0.18)', color:'rgba(200,215,230,0.8)', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', padding:'4px 6px', outline:'none', width:'100%', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.4, borderRadius:'1px', marginBottom:'6px', boxSizing:'border-box' }} />
-                  </>
-                )}
-
+                <input type="text" value={fortNewName} onChange={e => setFortNewName(e.target.value)}
+                  placeholder="Nombre de la fortaleza..."
+                  style={{ ...EDIT_INPUT, fontSize:'12px', fontWeight:600, marginBottom:'6px', display:'block', width:'100%', boxSizing:'border-box' }} />
+                <textarea value={fortNewDesc} onChange={e => setFortNewDesc(e.target.value)}
+                  placeholder="Descripción (aparece al pasar el ratón)..." rows={2}
+                  style={{ background:'rgba(0,0,0,0.2)', border:'1px solid rgba(var(--cyan-rgb),0.18)', color:'rgba(200,215,230,0.8)', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', padding:'4px 6px', outline:'none', width:'100%', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.4, borderRadius:'1px', marginBottom:'6px', boxSizing:'border-box' }} />
                 <div style={{ display:'flex', gap:'4px' }}>
                   <button className="cyber-btn" onClick={confirmAdd} style={{ flex:1, fontSize:'7px', padding:'4px' }}>AÑADIR</button>
-                  <button className="cyber-btn" onClick={() => { setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); setFortSelectVal(''); }} style={{ flex:1, fontSize:'7px', padding:'4px', borderColor:'rgba(255,68,68,0.3)', color:'rgba(255,68,68,0.6)' }}>CANCELAR</button>
+                  <button className="cyber-btn" onClick={() => { setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); }} style={{ flex:1, fontSize:'7px', padding:'4px', borderColor:'rgba(255,68,68,0.3)', color:'rgba(255,68,68,0.6)' }}>CANCELAR</button>
                 </div>
               </div>
             )}
