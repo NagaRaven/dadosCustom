@@ -53,7 +53,7 @@ const VALUE = { fontFamily:'Rajdhani,sans-serif', fontSize:'13px', color:'#e0e8f
 const EDIT_INPUT = { background:'transparent', border:'none', borderBottom:'1px solid rgba(var(--cyan-rgb),0.4)', color:'#e0e8f0', fontFamily:'Rajdhani,sans-serif', fontSize:'13px', padding:'1px 2px', outline:'none', flex:1, minWidth:0, caretColor:'var(--cyan)', width:'100%' };
 const GLOW_LINE   = { height:'1px', background:'linear-gradient(to right,rgba(var(--cyan-rgb),0.35),rgba(var(--cyan-rgb),0.08),transparent)', marginTop:'3px' };
 const GOLD_LINE   = { height:'1px', background:'linear-gradient(to right,rgba(255,215,0,0.4),rgba(255,215,0,0.08),transparent)',   marginTop:'3px' };
-const DARK_GOLD_LINE = { height:'1px', background:'linear-gradient(to right,rgba(180,130,0,0.4),rgba(180,130,0,0.08),transparent)', marginTop:'3px' };
+const BROWN_LINE     = { height:'1px', background:'linear-gradient(to right,rgba(200,150,106,0.4),rgba(200,150,106,0.08),transparent)', marginTop:'3px' };
 
 const BASIC_FIELDS = [
   { label:'NOMBRE',    key:'nombre'    },
@@ -270,17 +270,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${titleColor}55)` }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
             {logo && (
-              logo === '/simbolo-reales.png' ? (
-                <img src={logo} alt="" style={{
-                  width:'28px', height:'28px', objectFit:'contain', flexShrink:0,
-                  filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
-                }} />
-              ) : (
-                <img src={logo} alt="" style={{
-                  width:'28px', height:'28px', objectFit:'contain', flexShrink:0,
-                  filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
-                }} />
-              )
+              <img src={logo} alt="" style={{
+                height:'28px', width:'auto', maxWidth:'32px', objectFit:'contain', flexShrink:0,
+                filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
+              }} />
             )}
             {title}
           </span>
@@ -471,7 +464,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             <SectionDivider />
           </div>
           <div style={{ gridColumn:3, gridRow:1 }}>
-            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8a200', titleShadow:'0 0 10px rgba(200,162,0,0.5)', objKey:'realesDeAOcho', lineStyle:DARK_GOLD_LINE, logo:'/simbolo-reales.png' })}
+            {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8966a', titleShadow:'0 0 10px rgba(200,150,106,0.5)', objKey:'realesDeAOcho', lineStyle:BROWN_LINE, logo:'/simbolo-reales.png' })}
           </div>
 
           {/* Fila 2 */}
