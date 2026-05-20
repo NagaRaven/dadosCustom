@@ -271,14 +271,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
             {logo && (
               logo === '/simbolo-reales.png' ? (
-                /* Monedas: fondo dorado + trazos oscuros encima = efecto grabado en oro */
-                <span style={{
-                  display:'inline-block', width:'28px', height:'24px', flexShrink:0,
-                  background: titleColor, borderRadius:'3px', overflow:'hidden',
-                  boxShadow:`0 0 6px ${titleColor}88`,
-                }}>
-                  <img src={logo} alt="" style={{ width:'100%', height:'100%', objectFit:'contain', display:'block' }} />
-                </span>
+                <img src={logo} alt="" style={{
+                  width:'28px', height:'28px', objectFit:'contain', flexShrink:0,
+                  filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
+                }} />
               ) : (
                 /* Símbolo créditos: negro transparente → filtro oro brillante */
                 <img src={logo} alt="" style={{
