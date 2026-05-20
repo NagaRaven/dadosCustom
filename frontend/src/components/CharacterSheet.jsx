@@ -233,6 +233,19 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       });
     });
 
+    // Elimina una fortaleza del catálogo global (todas las fichas + draft)
+    function deleteFromCatalog(name) {
+      if (draft) setDraft(p => ({ ...p, fortalezas: p.fortalezas.filter(f => f.nombre !== name) }));
+      Object.entries(characters).forEach(([player, char]) => {
+        if (player === targetUser) return; // el draft maneja al jugador actual
+        const c = ensureChar(char);
+        if (c.fortalezas.some(f => f.nombre === name)) {
+          onUpdate(player, { ...c, fortalezas: c.fortalezas.filter(f => f.nombre !== name) });
+        }
+      });
+      if (fortSelectVal === name) setFortSelectVal('');
+    }
+
     // Cambia el nombre de una fila y actualiza la descripción desde el catálogo
     function changeNombre(i, newName) {
       setDraft(p => {
@@ -244,8 +257,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
-        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', textAlign:'center', marginBottom:'8px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)', paddingBottom:'6px' }}>
-          MIS FORTALEZAS
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.4))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', whiteSpace:'nowrap' }}>MIS FORTALEZAS</span>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.4))' }} />
         </div>
 
         {/* Vista lectura — todos los usuarios */}
@@ -304,19 +319,32 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
             {fortAddMode === 'select' && (
               <div style={{ padding:'8px', background:'rgba(var(--cyan-rgb),0.04)', border:'1px solid rgba(var(--cyan-rgb),0.15)', borderRadius:'2px' }}>
-                <select
-                  value={fortSelectVal}
-                  onChange={e => {
-                    if (e.target.value === '__nuevo__') { setFortAddMode('new'); setFortNewName(''); setFortNewDesc(''); }
-                    else { setFortSelectVal(e.target.value); }
-                  }}
-                  className="cyber-input"
-                  style={{ width:'100%', fontSize:'11px', padding:'4px 8px', marginBottom:'8px', height:'28px' }}
-                >
-                  <option value="">— Seleccionar —</option>
-                  {allNames.map(n => <option key={n} value={n}>{n}</option>)}
-                  <option value="__nuevo__">+ Nuevo</option>
-                </select>
+                {/* Lista custom con botón eliminar por entrada */}
+                <div style={{ maxHeight:'130px', overflowY:'auto', marginBottom:'8px', border:'1px solid rgba(var(--cyan-rgb),0.12)', borderRadius:'2px' }}>
+                  {allNames.length === 0 && (
+                    <div style={{ padding:'8px', textAlign:'center', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.3)' }}>Sin fortalezas definidas</div>
+                  )}
+                  {allNames.map(n => (
+                    <div key={n}
+                      style={{ display:'flex', alignItems:'center', padding:'5px 8px', cursor:'pointer', background: fortSelectVal === n ? 'rgba(var(--cyan-rgb),0.14)' : 'transparent', borderBottom:'1px solid rgba(var(--cyan-rgb),0.06)', transition:'background 0.1s' }}
+                      onClick={() => setFortSelectVal(n)}
+                    >
+                      <span style={{ flex:1, fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color: fortSelectVal === n ? 'var(--cyan)' : 'rgba(200,215,230,0.8)', userSelect:'none' }}>{n}</span>
+                      <button
+                        onClick={e => { e.stopPropagation(); deleteFromCatalog(n); }}
+                        style={{ background:'transparent', border:'none', cursor:'pointer', color:'rgba(255,68,68,0.5)', fontSize:'13px', padding:'0 3px', lineHeight:1, flexShrink:0 }}
+                        title="Eliminar del catálogo"
+                      >×</button>
+                    </div>
+                  ))}
+                  {/* Opción Nuevo al final */}
+                  <div
+                    onClick={() => { setFortAddMode('new'); setFortNewName(''); setFortNewDesc(''); }}
+                    style={{ display:'flex', alignItems:'center', padding:'5px 8px', cursor:'pointer', borderTop: allNames.length > 0 ? '1px solid rgba(var(--cyan-rgb),0.1)' : 'none' }}
+                  >
+                    <span style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(var(--cyan-rgb),0.5)', userSelect:'none' }}>+ NUEVO</span>
+                  </div>
+                </div>
                 <div style={{ display:'flex', gap:'4px' }}>
                   <button className="cyber-btn"
                     onClick={() => {
