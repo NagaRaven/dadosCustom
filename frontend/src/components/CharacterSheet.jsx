@@ -354,8 +354,8 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:titleColor, textShadow:titleShadow, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
             {logo && (
               <img src={logo} alt="" style={{
-                height:'28px', width:'auto', maxWidth:'32px', objectFit:'contain', flexShrink:0,
-                filter:`drop-shadow(0 0 4px ${titleColor}aa)`,
+                height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0,
+                filter:`drop-shadow(0 0 3px ${titleColor}aa)`,
               }} />
             )}
             {title}
