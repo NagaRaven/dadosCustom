@@ -153,14 +153,25 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   }
 
   // ── Sección de items con tooltip ──────────────────────────────────────────
-  function renderItemSection({ arrKey, label, accentColor, bulletColor, emptyText }) {
+  function renderItemSection({ arrKey, label, accentColor, bulletColor, emptyText, logo }) {
     const items = data?.[arrKey] ?? [];
     const readItems = items.filter(it => it.nombre);
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
-        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textAlign:'center', marginBottom:'8px', borderBottom:`1px solid ${accentColor}22`, paddingBottom:'6px' }}>
-          {label}
-        </div>
+        {logo ? (
+          <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
+            <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor}55)` }} />
+            <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:accentColor, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
+              <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:`drop-shadow(0 0 3px ${accentColor}aa)` }} />
+              {label}
+            </span>
+            <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor}55)` }} />
+          </div>
+        ) : (
+          <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textAlign:'center', marginBottom:'8px', borderBottom:`1px solid ${accentColor}22`, paddingBottom:'6px' }}>
+            {label}
+          </div>
+        )}
 
         {!isEditing && (
           <>
@@ -569,7 +580,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
           {/* Fila 2 */}
           <div style={{ gridColumn:1, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'inventario', label:'OBJETOS IMPORTANTES', accentColor:'rgba(0,212,255,0.6)', bulletColor:'rgba(0,212,255,0.7)', emptyText:'Sin objetos' })}
+            {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.6)', bulletColor:'rgba(0,212,255,0.7)', emptyText:'Sin objetos', logo:'/simbolo-objetos.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
             {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.6)', bulletColor:'rgba(0,255,136,0.7)', emptyText:'Sin habilidades' })}
