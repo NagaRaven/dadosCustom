@@ -100,11 +100,6 @@ export default function Dashboard({ username, onLogout }) {
             · xl+   : solo dados/master — ancho fijo 320px (360px en 2xl) */}
         <div className="flex flex-col gap-4 shrink-0 min-h-0 md:w-[40%] xl:w-[320px] 2xl:w-[360px]">
 
-          {/* Historial — tablet y móvil (oculto en escritorio xl+) */}
-          <div className="flex-1 min-h-0 xl:hidden" style={{ minHeight: '200px' }}>
-            <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
-          </div>
-
           {/* Dados */}
           <div className="glass-panel-bright rounded-sm p-4 shrink-0">
             <div
@@ -135,6 +130,11 @@ export default function Dashboard({ username, onLogout }) {
               />
             </>
           )}
+
+          {/* Historial — tablet (oculto en escritorio xl+) */}
+          <div className="flex-1 min-h-0 xl:hidden" style={{ minHeight: '200px' }}>
+            <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+          </div>
 
           <div
             className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center shrink-0"

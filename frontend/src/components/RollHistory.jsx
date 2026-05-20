@@ -91,7 +91,7 @@ export default function RollHistory({ history, currentUser, isAnimating }) {
           REGISTRO GLOBAL
         </h2>
         <span className="font-mono text-xs" style={{ color: 'rgba(0,212,255,0.35)' }}>
-          {reversed.length} / 20
+          {reversed.length}
         </span>
       </div>
 
