@@ -99,7 +99,8 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   const [tooltip, setTooltip]               = useState(null); // { x, y, goLeft, text }
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notasDraft, setNotasDraft]         = useState('');
-  const [fortAddMode, setFortAddMode]       = useState(null); // null | 'new'
+  const [fortAddMode, setFortAddMode]       = useState(null); // null | 'select' | 'new'
+  const [fortSelectVal, setFortSelectVal]   = useState('');
   const [fortNewName, setFortNewName]       = useState('');
   const [fortNewDesc, setFortNewDesc]       = useState('');
   const fileRef  = useRef(null);
@@ -123,7 +124,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   const removeItem= (arr, i)     => setDraft(p => ({ ...p, [arr]: p[arr].filter((_,j) => j !== i) }));
 
   function startEdit()   { setDraft(JSON.parse(JSON.stringify(char))); setIsEditing(true); }
-  function cancelEdit()  { setDraft(null); setIsEditing(false); setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); }
+  function cancelEdit()  { setDraft(null); setIsEditing(false); setFortAddMode(null); setFortSelectVal(''); setFortNewName(''); setFortNewDesc(''); }
   function confirmEdit() { onUpdate(targetUser, draft); setDraft(null); setIsEditing(false); }
 
   function handleDrop(e) {
@@ -172,7 +173,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 onMouseLeave={() => setTooltip(null)}
               >
                 <div style={{ width:'7px', height:'7px', borderRadius:'50%', flexShrink:0, border:`1px solid ${bulletColor}`, background:`${bulletColor}55`, boxShadow:`0 0 5px ${bulletColor}66` }} />
-                <span style={{ fontFamily: arrKey === 'inventario' ? 'Share Tech Mono,monospace' : 'Rajdhani,sans-serif', fontSize:'11px', color:'#c8d4e0', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.nombre}</span>
+                <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'#c8d4e0', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.nombre}</span>
                 {item.descripcion && <span style={{ fontSize:'8px', color:'rgba(var(--cyan-rgb),0.3)', flexShrink:0 }}>···</span>}
               </div>
             ))}
@@ -230,12 +231,6 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       });
     }
 
-    function confirmAdd() {
-      if (!fortNewName.trim()) return;
-      setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortNewName.trim(), nivel: 5, descripcion: fortNewDesc }] }));
-      setFortAddMode(null); setFortNewName(''); setFortNewDesc('');
-    }
-
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
         <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', textAlign:'center', marginBottom:'8px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)', paddingBottom:'6px' }}>
@@ -291,10 +286,40 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
               );
             })}
 
-            {/* Botón añadir / formulario nueva fortaleza */}
-            {fortAddMode === null ? (
-              <button className="cyber-btn" onClick={() => setFortAddMode('new')} style={{ width:'100%', fontSize:'7.5px', padding:'5px' }}>+ AÑADIR FORTALEZA</button>
-            ) : (
+            {/* Botón añadir / panel de selección / formulario nueva */}
+            {fortAddMode === null && (
+              <button className="cyber-btn" onClick={() => { setFortAddMode('select'); setFortSelectVal(''); }} style={{ width:'100%', fontSize:'7.5px', padding:'5px' }}>+ AÑADIR FORTALEZA</button>
+            )}
+
+            {fortAddMode === 'select' && (
+              <div style={{ padding:'8px', background:'rgba(var(--cyan-rgb),0.04)', border:'1px solid rgba(var(--cyan-rgb),0.15)', borderRadius:'2px' }}>
+                <select
+                  value={fortSelectVal}
+                  onChange={e => {
+                    if (e.target.value === '__nuevo__') { setFortAddMode('new'); setFortNewName(''); setFortNewDesc(''); }
+                    else { setFortSelectVal(e.target.value); }
+                  }}
+                  className="cyber-input"
+                  style={{ width:'100%', fontSize:'11px', padding:'4px 8px', marginBottom:'8px', height:'28px' }}
+                >
+                  <option value="">— Seleccionar —</option>
+                  {allNames.map(n => <option key={n} value={n}>{n}</option>)}
+                  <option value="__nuevo__">+ Nuevo</option>
+                </select>
+                <div style={{ display:'flex', gap:'4px' }}>
+                  <button className="cyber-btn"
+                    onClick={() => {
+                      if (!fortSelectVal) return;
+                      setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortSelectVal, nivel: 5, descripcion: descByName[fortSelectVal] || '' }] }));
+                      setFortAddMode(null); setFortSelectVal('');
+                    }}
+                    style={{ flex:1, fontSize:'7px', padding:'4px', opacity: fortSelectVal ? 1 : 0.4 }}>AÑADIR</button>
+                  <button className="cyber-btn" onClick={() => { setFortAddMode(null); setFortSelectVal(''); }} style={{ flex:1, fontSize:'7px', padding:'4px', borderColor:'rgba(255,68,68,0.3)', color:'rgba(255,68,68,0.6)' }}>CANCELAR</button>
+                </div>
+              </div>
+            )}
+
+            {fortAddMode === 'new' && (
               <div style={{ padding:'8px', background:'rgba(var(--cyan-rgb),0.04)', border:'1px solid rgba(var(--cyan-rgb),0.15)', borderRadius:'2px' }}>
                 <input type="text" value={fortNewName} onChange={e => setFortNewName(e.target.value)}
                   placeholder="Nombre de la fortaleza..."
@@ -303,8 +328,14 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                   placeholder="Descripción (aparece al pasar el ratón)..." rows={2}
                   style={{ background:'rgba(0,0,0,0.2)', border:'1px solid rgba(var(--cyan-rgb),0.18)', color:'rgba(200,215,230,0.8)', fontFamily:'Rajdhani,sans-serif', fontSize:'11px', padding:'4px 6px', outline:'none', width:'100%', resize:'vertical', caretColor:'var(--cyan)', lineHeight:1.4, borderRadius:'1px', marginBottom:'6px', boxSizing:'border-box' }} />
                 <div style={{ display:'flex', gap:'4px' }}>
-                  <button className="cyber-btn" onClick={confirmAdd} style={{ flex:1, fontSize:'7px', padding:'4px' }}>AÑADIR</button>
-                  <button className="cyber-btn" onClick={() => { setFortAddMode(null); setFortNewName(''); setFortNewDesc(''); }} style={{ flex:1, fontSize:'7px', padding:'4px', borderColor:'rgba(255,68,68,0.3)', color:'rgba(255,68,68,0.6)' }}>CANCELAR</button>
+                  <button className="cyber-btn"
+                    onClick={() => {
+                      if (!fortNewName.trim()) return;
+                      setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortNewName.trim(), nivel: 5, descripcion: fortNewDesc }] }));
+                      setFortAddMode(null); setFortNewName(''); setFortNewDesc('');
+                    }}
+                    style={{ flex:1, fontSize:'7px', padding:'4px' }}>ACEPTAR</button>
+                  <button className="cyber-btn" onClick={() => { setFortAddMode('select'); setFortNewName(''); setFortNewDesc(''); }} style={{ flex:1, fontSize:'7px', padding:'4px', borderColor:'rgba(255,68,68,0.3)', color:'rgba(255,68,68,0.6)' }}>VOLVER</button>
                 </div>
               </div>
             )}
