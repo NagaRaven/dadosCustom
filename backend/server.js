@@ -6,7 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const { validateLogin, processRoll, limitHistory, FORCE_PLAYERS } = require('./gameLogic');
 
-const isProd = process.env.NODE_ENV === 'production';
+// Railway siempre inyecta RAILWAY_ENVIRONMENT; también acepta NODE_ENV=production
+const isProd = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT;
 
 const app = express();
 const server = http.createServer(app);
@@ -218,9 +219,15 @@ io.on('connection', (socket) => {
 // ── Producción: servir el frontend compilado ─────────────────────────────────
 if (isProd) {
   const distPath = path.join(__dirname, '..', 'frontend', 'dist');
+  const indexHtml = path.join(distPath, 'index.html');
   app.use(express.static(distPath));
-  // Catch-all para React Router (después de las rutas API)
-  app.get('*', (_req, res) => res.sendFile(path.join(distPath, 'index.html')));
+  app.get('*', (_req, res) => {
+    if (fs.existsSync(indexHtml)) {
+      res.sendFile(indexHtml);
+    } else {
+      res.status(503).json({ error: 'Frontend no compilado' });
+    }
+  });
 }
 
 module.exports = { app, server, io };
