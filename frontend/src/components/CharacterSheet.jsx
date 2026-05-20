@@ -162,7 +162,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
             <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor}55)` }} />
             <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:accentColor, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
-              <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:`drop-shadow(0 0 3px ${accentColor}aa)` }} />
+              <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:`drop-shadow(0 0 4px rgba(0,212,255,0.9)) drop-shadow(0 0 8px rgba(0,212,255,0.5))` }} />
               {label}
             </span>
             <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor}55)` }} />
