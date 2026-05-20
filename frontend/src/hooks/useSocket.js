@@ -18,7 +18,7 @@ export function useSocket(username) {
   useEffect(() => {
     if (!username) return;
 
-    socketRef.current = io(SERVER_URL, { transports: ['websocket'] });
+    socketRef.current = io(SERVER_URL, { transports: ['polling', 'websocket'] });
 
     socketRef.current.on('connect', () => {
       setIsConnected(true);
