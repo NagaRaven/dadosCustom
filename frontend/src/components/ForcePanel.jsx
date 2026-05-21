@@ -56,9 +56,11 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, fo
   const [editDesc, setEditDesc]       = useState('');
   const [hoverIdx, setHoverIdx]       = useState(null);
 
+  const sortCatalog = (arr) => [...arr].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
   function addEntry() {
     if (!newNombre.trim()) return;
-    onUpdateCatalog([...fortalezasCatalog, { nombre: newNombre.trim(), descripcion: newDesc.trim() }]);
+    onUpdateCatalog(sortCatalog([...fortalezasCatalog, { nombre: newNombre.trim(), descripcion: newDesc.trim() }]));
     setNewNombre(''); setNewDesc('');
   }
 
@@ -66,7 +68,7 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, fo
     if (!editNombre.trim()) return;
     const updated = [...fortalezasCatalog];
     updated[i] = { nombre: editNombre.trim(), descripcion: editDesc.trim() };
-    onUpdateCatalog(updated);
+    onUpdateCatalog(sortCatalog(updated));
     setEditingIdx(null);
   }
 
