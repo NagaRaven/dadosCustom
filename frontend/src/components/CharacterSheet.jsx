@@ -159,12 +159,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
         {logo ? (
           <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
-            <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor}55)` }} />
+            <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor})` }} />
             <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:accentColor, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
               <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:'sepia(1) saturate(8) hue-rotate(165deg) brightness(0.85) drop-shadow(0 0 4px rgba(0,212,255,1)) drop-shadow(0 0 10px rgba(0,212,255,0.55))' }} />
               {label}
             </span>
-            <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor}55)` }} />
+            <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor})` }} />
           </div>
         ) : (
           <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textAlign:'center', marginBottom:'8px', borderBottom:`1px solid ${accentColor}22`, paddingBottom:'6px' }}>
@@ -228,7 +228,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {items.filter(f => f.nombre).length === 0 && (
               <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.2)', textAlign:'center', padding:'8px 0' }}>Sin fortalezas</div>
             )}
-            {items.filter(f => f.nombre).map((f, i) => (
+            {items.filter(f => f.nombre).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).map((f, i) => (
               <div
                 key={i}
                 style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'5px', cursor: f.descripcion ? 'help' : 'default', padding:'2px 0' }}
@@ -292,7 +292,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                       onClick={() => {
                         if (!fortPickName) return;
                         const desc = fortalezasCatalog.find(f => f.nombre === fortPickName)?.descripcion ?? '';
-                        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortPickName, nivel: fortPickLevel, descripcion: desc }] }));
+                        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortPickName, nivel: fortPickLevel, descripcion: desc }].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')) }));
                         setFortPickOpen(false);
                       }}
                       style={{ flex:1, fontSize:'7px', padding:'4px' }}>AÑADIR</button>
