@@ -157,20 +157,15 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
     const readItems = items.filter(it => it.nombre);
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
-        {logo ? (
-          <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
-            <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor})` }} />
-            <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.18em', color:accentColor, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
-              <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:'sepia(1) saturate(8) hue-rotate(165deg) brightness(0.85) drop-shadow(0 0 4px rgba(0,212,255,1)) drop-shadow(0 0 10px rgba(0,212,255,0.55))' }} />
-              {label}
-            </span>
-            <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor})` }} />
-          </div>
-        ) : (
-          <div style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textAlign:'center', marginBottom:'8px', borderBottom:`1px solid ${accentColor}22`, paddingBottom:'6px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
+          <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor})` }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textShadow:`0 0 10px ${accentColor}`, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
+            {logo && <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:'sepia(1) saturate(8) hue-rotate(165deg) brightness(0.85) drop-shadow(0 0 4px rgba(0,212,255,1)) drop-shadow(0 0 10px rgba(0,212,255,0.55))' }} />}
             {label}
-          </div>
-        )}
+          </span>
+          <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor})` }} />
+        </div>
+
 
         {!isEditing && (
           <>
@@ -531,10 +526,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
           {/* Fila 2 */}
           <div style={{ gridColumn:1, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.9)', bulletColor:'rgba(0,212,255,1)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
+            {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.75)', bulletColor:'rgba(0,212,255,0.9)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.6)', bulletColor:'rgba(0,255,136,0.7)', emptyText:'Sin habilidades' })}
+            {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.75)', bulletColor:'rgba(0,255,136,0.9)', emptyText:'Sin habilidades' })}
           </div>
 
           {/* Fila 3 */}

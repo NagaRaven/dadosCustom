@@ -90,9 +90,6 @@ export default function RollHistory({ history, currentUser, isAnimating }) {
         <h2 className="font-orbitron text-xs tracking-widest text-glow-cyan" style={{ color: '#00d4ff' }}>
           REGISTRO GLOBAL
         </h2>
-        <span className="font-mono text-xs" style={{ color: 'rgba(0,212,255,0.35)' }}>
-          {reversed.length}
-        </span>
       </div>
 
       {/* Lista */}

@@ -97,6 +97,7 @@ function saveFortalezas(catalog) {
 
 let fortalezasCatalog = loadFortalezas();
 let characters = loadCharacters();
+let archiveImage = null; // temporal — no se persiste
 
 // Puntos de Fuerza — inicializados a 2 por jugador (el Master no tiene)
 let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
@@ -134,6 +135,7 @@ io.on('connection', (socket) => {
   socket.emit('characters_update', characters);
   socket.emit('theme_update', currentTheme);
   socket.emit('fortalezas_catalog_update', fortalezasCatalog);
+  socket.emit('archive_image_update', archiveImage);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -238,6 +240,15 @@ io.on('connection', (socket) => {
     characters[targetUser] = { ...characters[targetUser], notas };
     saveCharacters(characters);
     io.emit('characters_update', characters);
+  });
+
+  // Master: imagen temporal (no se persiste, solo vive en memoria)
+  socket.on('set_archive_image', (imageData) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (imageData !== null && typeof imageData !== 'string') return;
+    archiveImage = imageData;
+    io.emit('archive_image_update', archiveImage);
   });
 
   socket.on('disconnect', () => {

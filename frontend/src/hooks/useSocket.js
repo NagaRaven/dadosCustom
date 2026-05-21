@@ -15,6 +15,7 @@ export function useSocket(username) {
   const [characters, setCharacters]         = useState({});
   const [theme, setThemeState]              = useState('blue');
   const [fortalezasCatalog, setFortalezasCatalog] = useState([]);
+  const [archiveImage, setArchiveImageState]       = useState(null);
 
   useEffect(() => {
     if (!username) return;
@@ -40,6 +41,7 @@ export function useSocket(username) {
     socketRef.current.on('force_powers_update', (powers) => setForcePowers(powers));
     socketRef.current.on('characters_update', (chars) => setCharacters(chars));
     socketRef.current.on('fortalezas_catalog_update', (cat) => setFortalezasCatalog(cat));
+    socketRef.current.on('archive_image_update', (img) => setArchiveImageState(img));
 
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
@@ -98,5 +100,10 @@ export function useSocket(username) {
     socketRef.current.emit('update_fortalezas_catalog', catalog);
   };
 
-  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, fortalezasCatalog, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog };
+  const setArchiveImage = (imageData) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('set_archive_image', imageData);
+  };
+
+  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, fortalezasCatalog, archiveImage, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage };
 }

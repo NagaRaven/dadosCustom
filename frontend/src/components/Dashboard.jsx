@@ -5,6 +5,7 @@ import RollHistory from './RollHistory';
 import MasterControls from './MasterControls';
 import ForcePanel from './ForcePanel';
 import CharacterSheet from './CharacterSheet';
+import ArchiveTemp from './ArchiveTemp';
 
 const isMaster = (u) => u === 'Master';
 
@@ -12,7 +13,7 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, theme, fortalezasCatalog, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog,
+    characters, theme, fortalezasCatalog, archiveImage, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -133,9 +134,14 @@ export default function Dashboard({ username, onLogout }) {
             </>
           )}
 
-          {/* Historial — tablet (oculto en escritorio xl+) */}
-          <div className="flex-1 min-h-0 xl:hidden" style={{ minHeight: '200px' }}>
-            <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+          {/* Historial + Archivo Temporal — tablet (oculto en escritorio xl+) */}
+          <div className="flex-1 min-h-0 xl:hidden flex flex-col gap-4" style={{ minHeight: '200px' }}>
+            <div className="flex-1 min-h-0">
+              <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+            </div>
+            <div style={{ height: '190px', flexShrink: 0 }}>
+              <ArchiveTemp isMaster={isMaster(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
+            </div>
           </div>
 
           <div
@@ -146,9 +152,14 @@ export default function Dashboard({ username, onLogout }) {
           </div>
         </div>
 
-        {/* ── Historial central — solo escritorio xl+ ─────────────────────── */}
-        <div className="hidden xl:flex flex-col flex-1 min-h-0" style={{ minHeight: '400px' }}>
-          <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+        {/* ── Historial + Archivo Temporal — solo escritorio xl+ ──────────── */}
+        <div className="hidden xl:flex flex-col flex-1 min-h-0 gap-4" style={{ minHeight: '400px' }}>
+          <div className="flex-1 min-h-0">
+            <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
+          </div>
+          <div style={{ height: '210px', flexShrink: 0 }}>
+            <ArchiveTemp isMaster={isMaster(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
+          </div>
         </div>
 
         {/* ── Ficha de personaje ────────────────────────────────────────────
