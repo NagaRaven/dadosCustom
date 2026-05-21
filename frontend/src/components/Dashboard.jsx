@@ -136,10 +136,10 @@ export default function Dashboard({ username, onLogout }) {
 
           {/* Historial + Archivo Temporal — tablet (oculto en escritorio xl+) */}
           <div className="flex-1 min-h-0 xl:hidden flex flex-col gap-4" style={{ minHeight: '200px' }}>
-            <div className="flex-1 min-h-0">
+            <div className="shrink-0">
               <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
             </div>
-            <div style={{ height: '190px', flexShrink: 0 }}>
+            <div className="flex-1 min-h-0">
               <ArchiveTemp isMaster={isMaster(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
             </div>
           </div>
@@ -154,10 +154,10 @@ export default function Dashboard({ username, onLogout }) {
 
         {/* ── Historial + Archivo Temporal — solo escritorio xl+ ──────────── */}
         <div className="hidden xl:flex flex-col flex-1 min-h-0 gap-4" style={{ minHeight: '400px' }}>
-          <div className="flex-1 min-h-0">
+          <div className="shrink-0">
             <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
           </div>
-          <div style={{ height: '210px', flexShrink: 0 }}>
+          <div className="flex-1 min-h-0">
             <ArchiveTemp isMaster={isMaster(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
           </div>
         </div>

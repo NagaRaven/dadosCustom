@@ -84,18 +84,18 @@ export default function RollHistory({ history, currentUser, isAnimating }) {
   const rest     = reversed.slice(5);
 
   return (
-    <div className="flex flex-col h-full hud-corners-full glass-panel rounded-sm overflow-hidden">
+    <div className="hud-corners-full glass-panel rounded-sm overflow-hidden">
       {/* Cabecera */}
-      <div className="px-4 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid rgba(0,212,255,0.15)' }}>
+      <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(0,212,255,0.15)' }}>
         <h2 className="font-orbitron text-xs tracking-widest text-glow-cyan" style={{ color: '#00d4ff' }}>
           REGISTRO GLOBAL
         </h2>
       </div>
 
-      {/* Lista */}
-      <div className="flex-1 overflow-y-auto py-2 space-y-0.5">
+      {/* Lista — crece con el contenido, sin scroll */}
+      <div className="py-2 space-y-0.5">
         {reversed.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center" style={{ minHeight: '72px' }}>
             <p className="font-mono text-xs text-center" style={{ color: 'rgba(0,212,255,0.25)' }} data-testid="empty-history">
               Sin tiradas registradas.
               <br />Pulsa el botón para empezar.
