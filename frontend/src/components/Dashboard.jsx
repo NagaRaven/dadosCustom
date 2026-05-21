@@ -12,7 +12,7 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, theme, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus,
+    characters, theme, fortalezasCatalog, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -127,6 +127,8 @@ export default function Dashboard({ username, onLogout }) {
                 connectedUsers={connectedUsers}
                 forcePowers={forcePowers}
                 onAddForce={addForcePoint}
+                fortalezasCatalog={fortalezasCatalog}
+                onUpdateCatalog={updateFortalezasCatalog}
               />
             </>
           )}
@@ -159,6 +161,7 @@ export default function Dashboard({ username, onLogout }) {
             characters={characters}
             onUpdate={updateCharacter}
             onUpdateNotes={updateNotes}
+            fortalezasCatalog={fortalezasCatalog}
           />
         </div>
       </main>

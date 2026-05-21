@@ -27,6 +27,7 @@ app.use(express.json());
 // ── Persistencia del historial ───────────────────────────────────────────────
 const HISTORY_FILE    = path.join(__dirname, 'data', 'history.json');
 const CHARACTERS_FILE = path.join(__dirname, 'data', 'characters.json');
+const FORTALEZAS_FILE = path.join(__dirname, 'data', 'fortalezas.json');
 
 function loadHistory() {
   try {
@@ -77,6 +78,24 @@ function saveCharacters(chars) {
   } catch {}
 }
 
+// ── Persistencia del catálogo de fortalezas ─────────────────────────────────
+function loadFortalezas() {
+  try {
+    if (fs.existsSync(FORTALEZAS_FILE)) {
+      return JSON.parse(fs.readFileSync(FORTALEZAS_FILE, 'utf8'));
+    }
+  } catch {}
+  return [];
+}
+
+function saveFortalezas(catalog) {
+  try {
+    fs.mkdirSync(path.dirname(FORTALEZAS_FILE), { recursive: true });
+    fs.writeFileSync(FORTALEZAS_FILE, JSON.stringify(catalog, null, 2));
+  } catch {}
+}
+
+let fortalezasCatalog = loadFortalezas();
 let characters = loadCharacters();
 
 // Puntos de Fuerza — inicializados a 2 por jugador (el Master no tiene)
@@ -114,6 +133,7 @@ io.on('connection', (socket) => {
   socket.emit('force_powers_update', forcePowers);
   socket.emit('characters_update', characters);
   socket.emit('theme_update', currentTheme);
+  socket.emit('fortalezas_catalog_update', fortalezasCatalog);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -185,6 +205,16 @@ io.on('connection', (socket) => {
     }
 
     socket.emit('force_confirmed', { type, value: forcedResult });
+  });
+
+  // Master: actualizar catálogo global de fortalezas
+  socket.on('update_fortalezas_catalog', (catalog) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (!Array.isArray(catalog)) return;
+    fortalezasCatalog = catalog.filter(f => f && typeof f.nombre === 'string' && f.nombre.trim());
+    saveFortalezas(fortalezasCatalog);
+    io.emit('fortalezas_catalog_update', fortalezasCatalog);
   });
 
   // Master: cambiar el estado de un jugador
