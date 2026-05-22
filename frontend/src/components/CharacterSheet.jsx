@@ -28,9 +28,11 @@ function ensureChar(raw) {
     afiliacion: raw?.afiliacion ?? '',
     creditos:      { enPosesion: raw?.creditos?.enPosesion      ?? '', enElBanco: raw?.creditos?.enElBanco      ?? '' },
     realesDeAOcho: { enPosesion: raw?.realesDeAOcho?.enPosesion ?? '', enElBanco: raw?.realesDeAOcho?.enElBanco ?? '' },
-    inventario:           Array.isArray(raw?.inventario)           ? raw.inventario.map(ensureItem)       : [],
+    inventario:           Array.isArray(raw?.inventario)           ? raw.inventario.map(ensureItem)           : [],
+    posesiones:           Array.isArray(raw?.posesiones)           ? raw.posesiones.map(ensureItem)           : [],
     habilidadesEspeciales: Array.isArray(raw?.habilidadesEspeciales) ? raw.habilidadesEspeciales.map(ensureItem) : [],
-    fortalezas:           Array.isArray(raw?.fortalezas)           ? raw.fortalezas.map(ensureFortaleza) : [],
+    dolencias:            Array.isArray(raw?.dolencias)            ? raw.dolencias.map(ensureItem)            : [],
+    fortalezas:           Array.isArray(raw?.fortalezas)           ? raw.fortalezas.map(ensureFortaleza)      : [],
     notas:      raw?.notas ?? '',
     estado:     raw?.estado ?? 'Intacto',
   };
@@ -513,30 +515,38 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         {/* ── GRID PRINCIPAL: CSS Grid — alturas simétricas por fila ─────── */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 32px 1fr', rowGap:'8px', marginBottom:'14px' }}>
 
-          {/* Fila 1 */}
+          {/* Fila 1 — Monedas */}
           <div style={{ gridColumn:1, gridRow:1 }}>
             {renderCurrencyPanel({ title:'CRÉDITOS', titleColor:'#ffd700', titleShadow:'0 0 10px rgba(255,215,0,0.5)', objKey:'creditos', lineStyle:GOLD_LINE, logo:'/simbolo-creditos.png' })}
           </div>
-          <div style={{ gridColumn:2, gridRow:'1 / 4', position:'relative' }}>
+          <div style={{ gridColumn:2, gridRow:'1 / 5', position:'relative' }}>
             <SectionDivider />
           </div>
           <div style={{ gridColumn:3, gridRow:1 }}>
             {renderCurrencyPanel({ title:'REALES DE A OCHO', titleColor:'#c8966a', titleShadow:'0 0 10px rgba(200,150,106,0.5)', objKey:'realesDeAOcho', lineStyle:BROWN_LINE, logo:'/simbolo-reales.png' })}
           </div>
 
-          {/* Fila 2 */}
+          {/* Fila 2 — Inventario / Posesiones */}
           <div style={{ gridColumn:1, gridRow:2, display:'flex', flexDirection:'column' }}>
             {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.75)', bulletColor:'rgba(0,212,255,0.9)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.75)', bulletColor:'rgba(0,255,136,0.9)', emptyText:'Sin habilidades' })}
+            {renderItemSection({ arrKey:'posesiones', label:'POSESIONES', accentColor:'rgba(30,100,210,0.85)', bulletColor:'rgba(30,100,210,1)', emptyText:'Sin posesiones' })}
           </div>
 
-          {/* Fila 3 */}
+          {/* Fila 3 — Habilidades Especiales / Dolencias */}
           <div style={{ gridColumn:1, gridRow:3, display:'flex', flexDirection:'column' }}>
-            {renderContactos()}
+            {renderItemSection({ arrKey:'habilidadesEspeciales', label:'HABILIDADES ESPECIALES', accentColor:'rgba(0,255,136,0.75)', bulletColor:'rgba(0,255,136,0.9)', emptyText:'Sin habilidades' })}
           </div>
           <div style={{ gridColumn:3, gridRow:3, display:'flex', flexDirection:'column' }}>
+            {renderItemSection({ arrKey:'dolencias', label:'DOLENCIAS', accentColor:'rgba(220,50,50,0.85)', bulletColor:'rgba(220,50,50,1)', emptyText:'Sin dolencias' })}
+          </div>
+
+          {/* Fila 4 — Contactos / Fortalezas */}
+          <div style={{ gridColumn:1, gridRow:4, display:'flex', flexDirection:'column' }}>
+            {renderContactos()}
+          </div>
+          <div style={{ gridColumn:3, gridRow:4, display:'flex', flexDirection:'column' }}>
             {renderFortalezas()}
           </div>
         </div>
