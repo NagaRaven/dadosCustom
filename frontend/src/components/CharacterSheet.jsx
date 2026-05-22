@@ -214,9 +214,9 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', minWidth:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(var(--cyan-rgb),0.4))' }} />
-          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(var(--cyan-rgb),0.6)', whiteSpace:'nowrap' }}>MIS FORTALEZAS</span>
-          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(var(--cyan-rgb),0.4))' }} />
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(180,190,200,0.35))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(180,190,200,0.6)', whiteSpace:'nowrap' }}>MIS FORTALEZAS</span>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(180,190,200,0.35))' }} />
         </div>
 
         {/* Vista lectura */}
@@ -308,8 +308,10 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   function renderContactos() {
     return (
       <div className="glass-panel rounded-sm" style={{ flex:1, padding:'10px', display:'flex', flexDirection:'column' }}>
-        <div style={{ fontFamily:'Orbitron,monospace', fontSize:'6.5px', letterSpacing:'0.1em', color:'rgba(var(--cyan-rgb),0.6)', textAlign:'center', marginBottom:'10px', borderBottom:'1px solid rgba(var(--cyan-rgb),0.08)', paddingBottom:'6px', lineHeight:1.5 }}>
-          COMUNICADOR
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px' }}>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to right,transparent,rgba(180,190,200,0.35))' }} />
+          <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:'rgba(180,190,200,0.6)', whiteSpace:'nowrap' }}>COMUNICADOR</span>
+          <div style={{ flex:1, height:'1px', background:'linear-gradient(to left,transparent,rgba(180,190,200,0.35))' }} />
         </div>
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'6px 0' }}>
           <div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'2.5px solid rgba(255,68,68,0.4)', position:'relative', marginBottom:'10px', boxShadow:'0 0 14px rgba(255,68,68,0.12), inset 0 0 10px rgba(255,68,68,0.04)', display:'flex', alignItems:'center', justifyContent:'center' }}>
