@@ -531,7 +531,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.75)', bulletColor:'rgba(0,212,255,0.9)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'posesiones', label:'POSESIONES', accentColor:'rgba(30,100,210,0.85)', bulletColor:'rgba(30,100,210,1)', emptyText:'Sin posesiones' })}
+            {renderItemSection({ arrKey:'posesiones', label:'PROPIEDADES', accentColor:'rgba(80,160,255,0.85)', bulletColor:'rgba(80,160,255,1)', emptyText:'Sin propiedades' })}
           </div>
 
           {/* Fila 3 — Habilidades Especiales / Dolencias */}
