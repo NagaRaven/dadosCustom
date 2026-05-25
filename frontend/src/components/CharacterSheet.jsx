@@ -159,7 +159,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
   }
 
   // ── Sección de items con tooltip ──────────────────────────────────────────
-  function renderItemSection({ arrKey, label, accentColor, bulletColor, emptyText, logo }) {
+  function renderItemSection({ arrKey, label, accentColor, bulletColor, emptyText, logo, logoFilter }) {
     const items = data?.[arrKey] ?? [];
     const readItems = items.filter(it => it.nombre);
     return (
@@ -167,7 +167,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
         <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' }}>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to right,transparent,${accentColor})` }} />
           <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.15em', color:accentColor, textShadow:`0 0 10px ${accentColor}`, whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'5px' }}>
-            {logo && <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter:'sepia(1) saturate(8) hue-rotate(165deg) brightness(0.85) drop-shadow(0 0 4px rgba(0,212,255,1)) drop-shadow(0 0 10px rgba(0,212,255,0.55))' }} />}
+            {logo && <img src={logo} alt="" style={{ height:'14px', width:'auto', maxWidth:'18px', objectFit:'contain', flexShrink:0, filter: logoFilter ?? 'sepia(1) saturate(8) hue-rotate(165deg) brightness(0.85) drop-shadow(0 0 4px rgba(0,212,255,1)) drop-shadow(0 0 10px rgba(0,212,255,0.55))' }} />}
             {label}
           </span>
           <div style={{ flex:1, height:'1px', background:`linear-gradient(to left,transparent,${accentColor})` }} />
@@ -538,7 +538,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.75)', bulletColor:'rgba(0,212,255,0.9)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'posesiones', label:'PROPIEDADES', accentColor:'rgba(80,160,255,0.85)', bulletColor:'rgba(80,160,255,1)', emptyText:'Sin propiedades' })}
+            {renderItemSection({ arrKey:'posesiones', label:'PROPIEDADES', accentColor:'rgba(80,160,255,0.85)', bulletColor:'rgba(80,160,255,1)', emptyText:'Sin propiedades', logo:'/simbolo-propiedades.png', logoFilter:'sepia(1) saturate(6) hue-rotate(195deg) brightness(1.1) drop-shadow(0 0 4px rgba(80,160,255,0.9)) drop-shadow(0 0 8px rgba(80,160,255,0.4))' })}
           </div>
 
           {/* Fila 3 — Habilidades Especiales / Dolencias */}
