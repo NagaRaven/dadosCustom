@@ -114,6 +114,20 @@ let currentTheme  = 'blue';      // 'blue' | 'yellow' | 'red' | 'orange'
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// Descarga completa de la BD — solo para uso del Master
+app.get('/api/export-db', (_req, res) => {
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    history: rollHistory,
+    characters,
+    fortalezasCatalog,
+  };
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  res.setHeader('Content-Disposition', `attachment; filename="d20-backup-${ts}.json"`);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.json(exportData);
+});
+
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};

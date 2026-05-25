@@ -112,86 +112,95 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
         </div>
       )}
 
-      {/* Botones crítico / pifia */}
-      <div className="flex gap-3 mb-4">
+      {/* Controles de forzado — todo en una sola fila */}
+      <div className="flex gap-2 mb-4 items-center">
+
+        {/* Crítico — cuadrado amarillo, sin texto */}
         <button
           onClick={() => onForce('critical')}
           disabled={isArmed}
-          className="flex-1 py-2.5 rounded-sm font-orbitron text-xs tracking-wider transition-all"
+          title="Forzar crítico (20)"
           style={{
+            width: '40px', height: '40px', flexShrink: 0,
             background: isArmed ? 'transparent' : 'rgba(255,215,0,0.08)',
             border: `1px solid ${isArmed ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.55)'}`,
             color: isArmed ? 'rgba(255,215,0,0.3)' : '#ffd700',
             cursor: isArmed ? 'not-allowed' : 'pointer',
             boxShadow: isArmed ? 'none' : '0 0 10px rgba(255,215,0,0.15)',
+            borderRadius: '2px',
+            fontFamily: 'Orbitron, monospace',
+            fontSize: '13px',
+            fontWeight: 'bold',
           }}
           data-testid="force-critical"
         >
-          FORZAR CRÍTICO
+          20
         </button>
 
+        {/* Pifia — cuadrado rojo, sin texto */}
         <button
           onClick={() => onForce('fumble')}
           disabled={isArmed}
-          className="flex-1 py-2.5 rounded-sm font-orbitron text-xs tracking-wider transition-all"
+          title="Forzar pifia (1)"
           style={{
+            width: '40px', height: '40px', flexShrink: 0,
             background: isArmed ? 'transparent' : 'rgba(255,68,68,0.08)',
             border: `1px solid ${isArmed ? 'rgba(255,68,68,0.2)' : 'rgba(255,68,68,0.55)'}`,
             color: isArmed ? 'rgba(255,68,68,0.3)' : '#ff4444',
             cursor: isArmed ? 'not-allowed' : 'pointer',
             boxShadow: isArmed ? 'none' : '0 0 10px rgba(255,68,68,0.15)',
+            borderRadius: '2px',
+            fontFamily: 'Orbitron, monospace',
+            fontSize: '13px',
+            fontWeight: 'bold',
           }}
           data-testid="force-fumble"
         >
-          FORZAR PIFIA
+          1
         </button>
-      </div>
 
-      {/* Separador */}
-      <div
-        className="h-px w-full mb-4"
-        style={{ background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.4), transparent)' }}
-      />
+        {/* Input tirada personalizada */}
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="1–20"
+          value={customValue}
+          onChange={handleInput}
+          onKeyDown={(e) => e.key === 'Enter' && handleForceCustom()}
+          disabled={isArmed}
+          className="cyber-input text-center font-orbitron text-sm flex-1"
+          style={{
+            height: '40px',
+            borderColor: isArmed
+              ? 'rgba(124,58,237,0.15)'
+              : isCustomValid
+              ? 'rgba(124,58,237,0.7)'
+              : 'rgba(124,58,237,0.3)',
+            color: isCustomValid ? '#c4b5fd' : 'rgba(196,181,253,0.5)',
+            background: 'rgba(124,58,237,0.06)',
+            cursor: isArmed ? 'not-allowed' : 'text',
+          }}
+          data-testid="custom-value-input"
+        />
 
-      {/* Input + botón tirada personalizada */}
-      <div className="flex gap-3 items-stretch">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="1 – 20"
-            value={customValue}
-            onChange={handleInput}
-            disabled={isArmed}
-            className="cyber-input h-full text-center font-orbitron text-sm"
-            style={{
-              borderColor: isArmed
-                ? 'rgba(124,58,237,0.15)'
-                : isCustomValid
-                ? 'rgba(124,58,237,0.7)'
-                : 'rgba(124,58,237,0.3)',
-              color: isCustomValid ? '#c4b5fd' : 'rgba(196,181,253,0.5)',
-              background: 'rgba(124,58,237,0.06)',
-              cursor: isArmed ? 'not-allowed' : 'text',
-            }}
-            data-testid="custom-value-input"
-          />
-        </div>
-
+        {/* Confirmar tirada personalizada — icono ▶ */}
         <button
           onClick={handleForceCustom}
           disabled={isArmed || !isCustomValid}
-          className="flex-1 py-2.5 rounded-sm font-orbitron text-xs tracking-wider transition-all"
+          title="Forzar tirada personalizada"
           style={{
+            width: '40px', height: '40px', flexShrink: 0,
             background: isArmed || !isCustomValid ? 'transparent' : 'rgba(124,58,237,0.12)',
             border: `1px solid ${isArmed || !isCustomValid ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.7)'}`,
             color: isArmed || !isCustomValid ? 'rgba(124,58,237,0.3)' : '#c4b5fd',
             cursor: isArmed || !isCustomValid ? 'not-allowed' : 'pointer',
             boxShadow: isArmed || !isCustomValid ? 'none' : '0 0 12px rgba(124,58,237,0.25)',
+            borderRadius: '2px',
+            fontSize: '16px',
           }}
           data-testid="force-custom"
         >
-          FORZAR TIRADA
+          ▶
         </button>
       </div>
 

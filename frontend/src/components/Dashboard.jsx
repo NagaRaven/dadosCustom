@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 import { useSocket } from '../hooks/useSocket';
 import DiceRoller from './DiceRoller';
 import RollHistory from './RollHistory';
@@ -145,10 +147,34 @@ export default function Dashboard({ username, onLogout }) {
           </div>
 
           <div
-            className="glass-panel rounded-sm px-4 py-3 font-mono text-xs text-center shrink-0"
-            style={{ color: 'rgba(0,212,255,0.35)' }}
+            className="glass-panel rounded-sm px-4 py-3 font-mono text-xs shrink-0"
+            style={{ color: 'rgba(0,212,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
           >
-            Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas
+            <span>Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas</span>
+            {isMaster(username) && (
+              <button
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = `${API_URL}/api/export-db`;
+                  a.click();
+                }}
+                title="Exportar base de datos"
+                style={{
+                  background: 'rgba(0,212,255,0.08)',
+                  border: '1px solid rgba(0,212,255,0.35)',
+                  color: 'rgba(0,212,255,0.75)',
+                  borderRadius: '2px',
+                  padding: '2px 8px',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                  fontSize: '0.55rem',
+                  letterSpacing: '0.08em',
+                  flexShrink: 0,
+                }}
+              >
+                ↓ EXPORTAR BD
+              </button>
+            )}
           </div>
         </div>
 
