@@ -17,6 +17,7 @@ const corsOrigin = isProd ? false : ['http://localhost:5173', 'http://localhost:
 
 const io = new Server(server, {
   cors: { origin: corsOrigin, methods: ['GET', 'POST'] },
+  maxHttpBufferSize: 10 * 1024 * 1024, // 10 MB — suficiente para imágenes arrastradas
 });
 
 if (!isProd) {
