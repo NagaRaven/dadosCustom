@@ -126,7 +126,12 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
 
   function startEdit()   { setDraft(JSON.parse(JSON.stringify(char))); setIsEditing(true); }
   function cancelEdit()  { setDraft(null); setIsEditing(false); setFortPickOpen(false); setFortPickName(''); setFortPickLevel(5); }
-  function confirmEdit() { onUpdate(targetUser, draft); setDraft(null); setIsEditing(false); }
+  function confirmEdit() {
+    const sorted = { ...draft, fortalezas: [...draft.fortalezas].sort((a, b) => b.nivel - a.nivel) };
+    onUpdate(targetUser, sorted);
+    setDraft(null);
+    setIsEditing(false);
+  }
 
   function handleDrop(e) {
     e.preventDefault(); setIsDragOver(false);
@@ -225,7 +230,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {items.filter(f => f.nombre).length === 0 && (
               <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(var(--cyan-rgb),0.2)', textAlign:'center', padding:'8px 0' }}>Sin fortalezas</div>
             )}
-            {items.filter(f => f.nombre).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).map((f, i) => (
+            {items.filter(f => f.nombre).sort((a, b) => b.nivel - a.nivel).map((f, i) => (
               <div
                 key={i}
                 style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'5px', cursor: f.descripcion ? 'help' : 'default', padding:'2px 0' }}
@@ -289,7 +294,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                       onClick={() => {
                         if (!fortPickName) return;
                         const desc = fortalezasCatalog.find(f => f.nombre === fortPickName)?.descripcion ?? '';
-                        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortPickName, nivel: fortPickLevel, descripcion: desc }].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')) }));
+                        setDraft(p => ({ ...p, fortalezas: [...p.fortalezas, { nombre: fortPickName, nivel: fortPickLevel, descripcion: desc }].sort((a, b) => b.nivel - a.nivel) }));
                         setFortPickOpen(false);
                       }}
                       style={{ flex:1, fontSize:'7px', padding:'4px' }}>AÑADIR</button>
