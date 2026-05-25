@@ -223,8 +223,7 @@ export default function Dashboard({ username, onLogout }) {
             className="glass-panel rounded-sm px-4 py-3 font-mono text-xs shrink-0"
             style={{ color: 'rgba(0,212,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
           >
-            <span>Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas</span>
-            {isMaster(username) && (
+{isMaster(username) && (
               <>
                 <input ref={importInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportDB} />
                 <button
