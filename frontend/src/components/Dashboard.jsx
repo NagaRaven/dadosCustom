@@ -83,7 +83,7 @@ export default function Dashboard({ username, onLogout }) {
                   background: '#0d0d14',
                   border: '1px solid rgba(0,212,255,0.25)',
                   borderRadius: '3px',
-                  minWidth: '180px',
+                  minWidth: '230px',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
                 }}
               >
