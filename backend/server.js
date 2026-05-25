@@ -129,6 +129,30 @@ app.get('/api/export-db', (_req, res) => {
 });
 
 
+// Importar BD — reemplaza todos los datos con el fichero de backup
+app.post('/api/import-db', (req, res) => {
+  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas } = req.body || {};
+  if (!importedChars || typeof importedChars !== 'object') {
+    return res.status(400).json({ success: false, message: 'Fichero inválido: falta characters' });
+  }
+  if (Array.isArray(importedFortalezas)) {
+    fortalezasCatalog = importedFortalezas;
+    saveFortalezas(fortalezasCatalog);
+    io.emit('fortalezas_catalog_update', fortalezasCatalog);
+  }
+  if (Array.isArray(history)) {
+    rollHistory = history;
+    saveHistory(rollHistory);
+    io.emit('history', rollHistory);
+  }
+  characters = Object.fromEntries(
+    FORCE_PLAYERS.map(p => [p, importedChars[p] || makeDefaultCharacter()])
+  );
+  saveCharacters(characters);
+  io.emit('characters_update', characters);
+  res.json({ success: true });
+});
+
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
 

@@ -538,7 +538,7 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
             {renderItemSection({ arrKey:'inventario', label:'INVENTARIO', accentColor:'rgba(0,212,255,0.75)', bulletColor:'rgba(0,212,255,0.9)', emptyText:'Sin objetos', logo:'/simbolo-inventario.png' })}
           </div>
           <div style={{ gridColumn:3, gridRow:2, display:'flex', flexDirection:'column' }}>
-            {renderItemSection({ arrKey:'posesiones', label:'PROPIEDADES', accentColor:'rgba(80,160,255,0.85)', bulletColor:'rgba(80,160,255,1)', emptyText:'Sin propiedades', logo:'/simbolo-propiedades.png', logoFilter:'sepia(1) saturate(6) hue-rotate(195deg) brightness(1.1) drop-shadow(0 0 4px rgba(80,160,255,0.9)) drop-shadow(0 0 8px rgba(80,160,255,0.4))' })}
+            {renderItemSection({ arrKey:'posesiones', label:'PROPIEDADES', accentColor:'rgba(80,160,255,0.85)', bulletColor:'rgba(80,160,255,1)', emptyText:'Sin propiedades', logo:'/simbolo-propiedades.png', logoFilter:'sepia(1) saturate(6) hue-rotate(195deg) brightness(0.7) drop-shadow(0 0 3px rgba(80,160,255,0.6)) drop-shadow(0 0 6px rgba(80,160,255,0.25))' })}
           </div>
 
           {/* Fila 3 — Habilidades Especiales / Dolencias */}

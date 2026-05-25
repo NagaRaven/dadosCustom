@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 import { useSocket } from '../hooks/useSocket';
@@ -8,6 +8,7 @@ import MasterControls from './MasterControls';
 import ForcePanel from './ForcePanel';
 import CharacterSheet from './CharacterSheet';
 import ArchiveTemp from './ArchiveTemp';
+import CharacterRegistry from './CharacterRegistry';
 
 const isMaster = (u) => u === 'Master';
 
@@ -18,6 +19,31 @@ export default function Dashboard({ username, onLogout }) {
     characters, theme, fortalezasCatalog, archiveImage, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [currentView, setCurrentView] = useState('main');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const importInputRef = useRef(null);
+
+  function handleImportDB(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        const res = await fetch(`${API_URL}/api/import-db`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!json.success) alert('Error al importar: ' + json.message);
+      } catch {
+        alert('Fichero inválido o error de red.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
 
   return (
     <div className="min-h-screen grid-bg flex flex-col" style={{ background: '#0a0a0f' }}>
@@ -41,6 +67,64 @@ export default function Dashboard({ username, onLogout }) {
           >
             STAR WARS — LA TIERRA PROMETIDA
           </span>
+          {/* Menú hamburguesa */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              title="Menú"
+              style={{
+                background: menuOpen ? 'rgba(0,212,255,0.12)' : 'transparent',
+                border: '1px solid rgba(0,212,255,0.25)',
+                borderRadius: '3px',
+                color: 'rgba(0,212,255,0.7)',
+                cursor: 'pointer',
+                padding: '4px 7px',
+                fontSize: '14px',
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              ☰
+            </button>
+            {menuOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  zIndex: 50,
+                  background: '#0d0d14',
+                  border: '1px solid rgba(0,212,255,0.25)',
+                  borderRadius: '3px',
+                  minWidth: '180px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+                }}
+              >
+                <button
+                  onClick={() => { setCurrentView(currentView === 'registry' ? 'main' : 'registry'); setMenuOpen(false); }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '1px solid rgba(0,212,255,0.08)',
+                    color: 'rgba(0,212,255,0.75)',
+                    fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.6rem',
+                    letterSpacing: '0.1em',
+                    padding: '10px 14px',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  REGISTRO DE PERSONAJES
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Usuarios online */}
@@ -88,14 +172,11 @@ export default function Dashboard({ username, onLogout }) {
       </header>
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
-      {/*
-        Layout responsivo:
-          móvil     (< md)   : columna única
-          tableta   (md-xl)  : izquierda [historial + dados] | derecha [ficha >55%]
-                               cubre todos los iPad en horizontal (1024–1366px)
-          escritorio (xl+)   : 3 cols — dados (320px) | historial | ficha (700px)
-          escritorio grande (2xl+): dados 360px | historial | ficha 792px
-      */}
+      {currentView === 'registry' ? (
+        <main className="flex-1 flex flex-col min-h-0">
+          <CharacterRegistry onBack={() => setCurrentView('main')} />
+        </main>
+      ) : (
       <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 min-h-0">
 
         {/* ── Columna izquierda ─────────────────────────────────────────────
@@ -152,28 +233,49 @@ export default function Dashboard({ username, onLogout }) {
           >
             <span>Dado activo: d20 · Rango 1–20 · Historial máx. 20 tiradas</span>
             {isMaster(username) && (
-              <button
-                onClick={() => {
-                  const a = document.createElement('a');
-                  a.href = `${API_URL}/api/export-db`;
-                  a.click();
-                }}
-                title="Exportar base de datos"
-                style={{
-                  background: 'rgba(0,212,255,0.08)',
-                  border: '1px solid rgba(0,212,255,0.35)',
-                  color: 'rgba(0,212,255,0.75)',
-                  borderRadius: '2px',
-                  padding: '2px 8px',
-                  cursor: 'pointer',
-                  fontFamily: 'Orbitron, monospace',
-                  fontSize: '0.55rem',
-                  letterSpacing: '0.08em',
-                  flexShrink: 0,
-                }}
-              >
-                ↓ EXPORTAR BD
-              </button>
+              <>
+                <input ref={importInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportDB} />
+                <button
+                  onClick={() => {
+                    const a = document.createElement('a');
+                    a.href = `${API_URL}/api/export-db`;
+                    a.click();
+                  }}
+                  title="Exportar base de datos"
+                  style={{
+                    background: 'rgba(0,212,255,0.08)',
+                    border: '1px solid rgba(0,212,255,0.35)',
+                    color: 'rgba(0,212,255,0.75)',
+                    borderRadius: '2px',
+                    padding: '2px 8px',
+                    cursor: 'pointer',
+                    fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.55rem',
+                    letterSpacing: '0.08em',
+                    flexShrink: 0,
+                  }}
+                >
+                  ↓ EXPORTAR BD
+                </button>
+                <button
+                  onClick={() => importInputRef.current?.click()}
+                  title="Importar base de datos"
+                  style={{
+                    background: 'rgba(0,212,255,0.08)',
+                    border: '1px solid rgba(0,212,255,0.35)',
+                    color: 'rgba(0,212,255,0.75)',
+                    borderRadius: '2px',
+                    padding: '2px 8px',
+                    cursor: 'pointer',
+                    fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.55rem',
+                    letterSpacing: '0.08em',
+                    flexShrink: 0,
+                  }}
+                >
+                  ↑ IMPORTAR BD
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -202,6 +304,7 @@ export default function Dashboard({ username, onLogout }) {
           />
         </div>
       </main>
+      )}
     </div>
   );
 }
