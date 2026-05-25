@@ -55,34 +55,20 @@ export default function Dashboard({ username, onLogout }) {
         style={{ borderBottom: '1px solid rgba(var(--cyan-rgb),0.12)' }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-            style={{ border: '1px solid rgba(var(--cyan-rgb),0.5)', boxShadow: '0 0 10px rgba(var(--cyan-rgb),0.3)' }}
-          >
-            ⬡
-          </div>
-          <span
-            className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
-            style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)' }}
-          >
-            STAR WARS — LA TIERRA PROMETIDA
-          </span>
-          {/* Menú hamburguesa */}
+          {/* Menú hamburguesa — sustituye al octógono */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setMenuOpen(v => !v)}
               title="Menú"
+              className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{
                 background: menuOpen ? 'rgba(0,212,255,0.12)' : 'transparent',
-                border: '1px solid rgba(0,212,255,0.25)',
-                borderRadius: '3px',
-                color: 'rgba(0,212,255,0.7)',
+                border: '1px solid rgba(var(--cyan-rgb),0.5)',
+                boxShadow: '0 0 10px rgba(var(--cyan-rgb),0.3)',
+                color: 'rgba(0,212,255,0.85)',
                 cursor: 'pointer',
-                padding: '4px 7px',
-                fontSize: '14px',
+                fontSize: '16px',
                 lineHeight: 1,
-                display: 'flex',
-                alignItems: 'center',
               }}
             >
               ☰
@@ -125,6 +111,12 @@ export default function Dashboard({ username, onLogout }) {
               </div>
             )}
           </div>
+          <span
+            className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
+            style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)' }}
+          >
+            STAR WARS — LA TIERRA PROMETIDA
+          </span>
         </div>
 
         {/* Usuarios online */}
