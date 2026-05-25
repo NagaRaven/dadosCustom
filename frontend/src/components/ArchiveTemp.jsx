@@ -1,13 +1,10 @@
 import { useState } from 'react';
 
-const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
-
 export default function ArchiveTemp({ isMaster, archiveImage, onSetImage }) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   function loadFile(file) {
     if (!file?.type.startsWith('image/')) return;
-    if (file.size > MAX_BYTES) return;
     const reader = new FileReader();
     reader.onload = ev => onSetImage(ev.target.result);
     reader.readAsDataURL(file);
