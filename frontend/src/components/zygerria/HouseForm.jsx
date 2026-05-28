@@ -4,9 +4,9 @@ import { STATUSES, CHAR_STATES } from './constants';
 const EMPTY_CHAR = () => ({ id: String(Date.now() + Math.random()), name: '', role: '', state: 'Vivo', avatar: null });
 
 const inputStyle = {
-  background: 'rgba(201,162,39,0.04)',
-  border: '1px solid rgba(201,162,39,0.22)',
-  color: '#e8d5a3',
+  background: 'rgba(0,212,255,0.04)',
+  border: '1px solid rgba(0,212,255,0.18)',
+  color: 'rgba(255,255,255,0.8)',
   fontFamily: 'monospace',
   fontSize: '0.7rem',
   padding: '8px 12px',
@@ -19,10 +19,21 @@ const inputStyle = {
 const labelStyle = {
   display: 'block',
   fontSize: '0.48rem',
-  color: 'rgba(201,162,39,0.52)',
+  color: 'rgba(0,212,255,0.5)',
   fontFamily: 'Orbitron, monospace',
   letterSpacing: '0.14em',
   marginBottom: '5px',
+};
+
+const smallBtnStyle = {
+  background: 'rgba(0,212,255,0.06)',
+  border: '1px solid rgba(0,212,255,0.28)',
+  color: 'rgba(0,212,255,0.7)',
+  fontFamily: 'Orbitron, monospace',
+  fontSize: '0.45rem',
+  letterSpacing: '0.1em',
+  padding: '4px 9px',
+  cursor: 'pointer',
 };
 
 export default function HouseForm({ house, onSave, onCancel }) {
@@ -75,7 +86,7 @@ export default function HouseForm({ house, onSave, onCancel }) {
       onClick={onCancel}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: visible ? 'rgba(4,1,1,0.9)' : 'rgba(4,1,1,0)',
+        background: visible ? 'rgba(0,0,8,0.9)' : 'rgba(0,0,8,0)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         backdropFilter: 'blur(6px)',
         padding: '20px',
@@ -85,25 +96,25 @@ export default function HouseForm({ house, onSave, onCancel }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(160deg, #0f0804 0%, #170b07 50%, #0f0804 100%)',
-          border: '1px solid rgba(201,162,39,0.32)',
+          background: 'linear-gradient(160deg, #0a0a0f 0%, #0d0d16 50%, #0a0a0f 100%)',
+          border: '1px solid rgba(0,212,255,0.25)',
           borderRadius: '2px',
           maxWidth: '580px', width: '100%',
           maxHeight: '90vh', overflowY: 'auto',
-          boxShadow: '0 0 60px rgba(201,162,39,0.12), 0 0 140px rgba(0,0,0,0.85)',
+          boxShadow: '0 0 50px rgba(0,212,255,0.1), 0 0 120px rgba(0,0,0,0.85)',
           opacity: visible ? 1 : 0,
           transform: visible ? 'scale(1) translateY(0)' : 'scale(0.96) translateY(8px)',
           transition: 'opacity 0.22s ease, transform 0.22s ease',
         }}
       >
-        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, #c9a227, transparent)' }} />
+        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.6), transparent)' }} />
 
         <div style={{ padding: '24px 26px 26px' }}>
           {/* Título */}
           <div style={{
             fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 900,
-            color: '#c9a227', letterSpacing: '0.16em', marginBottom: '22px',
-            textShadow: '0 0 10px rgba(201,162,39,0.35)',
+            color: '#00d4ff', letterSpacing: '0.16em', marginBottom: '22px',
+            textShadow: '0 0 10px rgba(0,212,255,0.4)',
           }}>
             {isEdit ? 'EDITAR CASA NOBLE' : 'REGISTRAR NUEVA CASA'}
           </div>
@@ -114,18 +125,18 @@ export default function HouseForm({ house, onSave, onCancel }) {
               onClick={() => emblemRef.current?.click()}
               style={{
                 width: '76px', height: '76px', borderRadius: '50%', flexShrink: 0,
-                border: '2px dashed rgba(201,162,39,0.28)',
-                background: 'rgba(201,162,39,0.04)',
+                border: '2px dashed rgba(0,212,255,0.24)',
+                background: 'rgba(0,212,255,0.04)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', overflow: 'hidden',
                 transition: 'border-color 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(201,162,39,0.55)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(201,162,39,0.28)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.24)'}
             >
               {form.emblem
                 ? <img src={form.emblem} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '26px', color: 'rgba(201,162,39,0.28)' }}>⚜</span>
+                : <span style={{ fontSize: '26px', color: 'rgba(0,212,255,0.22)' }}>⚜</span>
               }
             </div>
             <input ref={emblemRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEmblemUpload} />
@@ -148,10 +159,10 @@ export default function HouseForm({ house, onSave, onCancel }) {
             <input
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              placeholder="Casa Valorian..."
-              style={{ ...inputStyle, borderColor: form.name.trim() ? 'rgba(201,162,39,0.22)' : 'rgba(204,50,50,0.4)' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(201,162,39,0.5)'}
-              onBlur={e => e.target.style.borderColor = form.name.trim() ? 'rgba(201,162,39,0.22)' : 'rgba(204,50,50,0.4)'}
+              placeholder="Casa..."
+              style={{ ...inputStyle, borderColor: form.name.trim() ? 'rgba(0,212,255,0.18)' : 'rgba(204,50,50,0.4)' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
+              onBlur={e => e.target.style.borderColor = form.name.trim() ? 'rgba(0,212,255,0.18)' : 'rgba(204,50,50,0.4)'}
             />
           </div>
 
@@ -159,7 +170,7 @@ export default function HouseForm({ house, onSave, onCancel }) {
           <div style={{ marginBottom: '14px' }}>
             <label style={labelStyle}>ESTADO</label>
             <select value={form.status} onChange={e => set('status', e.target.value)} style={{ ...inputStyle }}>
-              {STATUSES.map(s => <option key={s} value={s} style={{ background: '#0f0804', color: '#e8d5a3' }}>{s}</option>)}
+              {STATUSES.map(s => <option key={s} value={s} style={{ background: '#0a0a0f', color: 'rgba(255,255,255,0.8)' }}>{s}</option>)}
             </select>
           </div>
 
@@ -171,8 +182,8 @@ export default function HouseForm({ house, onSave, onCancel }) {
               onChange={e => set('territory', e.target.value)}
               placeholder="Zygerria Prime..."
               style={inputStyle}
-              onFocus={e => e.target.style.borderColor = 'rgba(201,162,39,0.5)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(201,162,39,0.22)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(0,212,255,0.18)'}
             />
           </div>
 
@@ -185,8 +196,8 @@ export default function HouseForm({ house, onSave, onCancel }) {
               rows={4}
               placeholder="La historia de esta noble casa..."
               style={{ ...inputStyle, resize: 'vertical', lineHeight: '1.65' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(201,162,39,0.5)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(201,162,39,0.22)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(0,212,255,0.18)'}
             />
           </div>
 
@@ -198,16 +209,10 @@ export default function HouseForm({ house, onSave, onCancel }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {form.characters.map((char, i) => (
-                <CharacterEntry
-                  key={char.id || i}
-                  char={char}
-                  index={i}
-                  onUpdate={updateChar}
-                  onRemove={removeCharacter}
-                />
+                <CharacterEntry key={char.id || i} char={char} index={i} onUpdate={updateChar} onRemove={removeCharacter} />
               ))}
               {form.characters.length === 0 && (
-                <div style={{ fontSize: '0.58rem', color: 'rgba(201,162,39,0.25)', fontFamily: 'monospace', padding: '10px', textAlign: 'center', border: '1px dashed rgba(201,162,39,0.12)' }}>
+                <div style={{ fontSize: '0.58rem', color: 'rgba(0,212,255,0.2)', fontFamily: 'monospace', padding: '10px', textAlign: 'center', border: '1px dashed rgba(0,212,255,0.1)' }}>
                   Sin personajes añadidos
                 </div>
               )}
@@ -215,32 +220,32 @@ export default function HouseForm({ house, onSave, onCancel }) {
           </div>
 
           {/* Botones */}
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid rgba(201,162,39,0.1)' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid rgba(0,212,255,0.08)' }}>
             <button
               onClick={onCancel}
-              style={{ background: 'transparent', border: '1px solid rgba(201,162,39,0.2)', color: 'rgba(201,162,39,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', letterSpacing: '0.1em', padding: '8px 16px', cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,162,39,0.45)'; e.currentTarget.style.color = 'rgba(201,162,39,0.8)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(201,162,39,0.2)'; e.currentTarget.style.color = 'rgba(201,162,39,0.5)'; }}
+              style={{ background: 'transparent', border: '1px solid rgba(0,212,255,0.18)', color: 'rgba(0,212,255,0.45)', fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', letterSpacing: '0.1em', padding: '8px 16px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,212,255,0.4)'; e.currentTarget.style.color = 'rgba(0,212,255,0.75)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,212,255,0.18)'; e.currentTarget.style.color = 'rgba(0,212,255,0.45)'; }}
             >CANCELAR</button>
             <button
               onClick={handleSave}
               disabled={!canSave}
               style={{
-                background: canSave ? 'rgba(201,162,39,0.12)' : 'rgba(201,162,39,0.03)',
-                border: `1px solid ${canSave ? 'rgba(201,162,39,0.58)' : 'rgba(201,162,39,0.14)'}`,
-                color: canSave ? '#c9a227' : 'rgba(201,162,39,0.28)',
+                background: canSave ? 'rgba(0,212,255,0.1)' : 'rgba(0,212,255,0.03)',
+                border: `1px solid ${canSave ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.12)'}`,
+                color: canSave ? '#00d4ff' : 'rgba(0,212,255,0.25)',
                 fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', letterSpacing: '0.1em',
                 padding: '8px 18px', cursor: canSave ? 'pointer' : 'not-allowed',
-                boxShadow: canSave ? '0 0 12px rgba(201,162,39,0.18)' : 'none',
+                boxShadow: canSave ? '0 0 10px rgba(0,212,255,0.15)' : 'none',
                 fontWeight: 700, transition: 'background 0.15s',
               }}
-              onMouseEnter={e => { if (canSave) e.currentTarget.style.background = 'rgba(201,162,39,0.2)'; }}
-              onMouseLeave={e => { if (canSave) e.currentTarget.style.background = 'rgba(201,162,39,0.12)'; }}
+              onMouseEnter={e => { if (canSave) e.currentTarget.style.background = 'rgba(0,212,255,0.18)'; }}
+              onMouseLeave={e => { if (canSave) e.currentTarget.style.background = 'rgba(0,212,255,0.1)'; }}
             >GUARDAR</button>
           </div>
         </div>
 
-        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, #c9a227, transparent)' }} />
+        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.6), transparent)' }} />
       </div>
     </div>
   );
@@ -258,56 +263,46 @@ function CharacterEntry({ char, index, onUpdate, onRemove }) {
     e.target.value = '';
   }
 
+  const charInput = {
+    background: 'rgba(0,212,255,0.04)',
+    border: '1px solid rgba(0,212,255,0.14)',
+    color: 'rgba(255,255,255,0.78)',
+    fontFamily: 'monospace', fontSize: '0.65rem',
+    padding: '5px 9px', width: '100%', outline: 'none', boxSizing: 'border-box',
+  };
+
   return (
     <div style={{
-      background: 'rgba(201,162,39,0.03)', border: '1px solid rgba(201,162,39,0.1)',
+      background: 'rgba(0,212,255,0.02)', border: '1px solid rgba(0,212,255,0.08)',
       padding: '12px', display: 'flex', gap: '12px', alignItems: 'flex-start',
     }}>
-      {/* Avatar */}
       <div
         onClick={() => avatarRef.current?.click()}
         style={{
           width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0,
-          border: '1px dashed rgba(201,162,39,0.28)',
-          background: 'rgba(201,162,39,0.04)',
+          border: '1px dashed rgba(0,212,255,0.24)',
+          background: 'rgba(0,212,255,0.04)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', overflow: 'hidden',
-          transition: 'border-color 0.15s',
+          cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.15s',
         }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(201,162,39,0.55)'}
-        onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(201,162,39,0.28)'}
+        onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.24)'}
       >
         {char.avatar
           ? <img src={char.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={{ fontSize: '14px', color: 'rgba(201,162,39,0.28)' }}>◈</span>
+          : <span style={{ fontSize: '14px', color: 'rgba(0,212,255,0.24)' }}>◈</span>
         }
       </div>
       <input ref={avatarRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
 
-      {/* Campos */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <input
-          value={char.name}
-          onChange={e => onUpdate(index, 'name', e.target.value)}
-          placeholder="Nombre del personaje"
-          style={{ ...charInputStyle }}
-        />
-        <input
-          value={char.role}
-          onChange={e => onUpdate(index, 'role', e.target.value)}
-          placeholder="Título / Rol (ej. Reina, Comandante)"
-          style={{ ...charInputStyle }}
-        />
-        <select
-          value={char.state}
-          onChange={e => onUpdate(index, 'state', e.target.value)}
-          style={{ ...charInputStyle }}
-        >
-          {CHAR_STATES.map(s => <option key={s} value={s} style={{ background: '#0f0804', color: '#e8d5a3' }}>{s}</option>)}
+        <input value={char.name} onChange={e => onUpdate(index, 'name', e.target.value)} placeholder="Nombre del personaje" style={charInput} />
+        <input value={char.role} onChange={e => onUpdate(index, 'role', e.target.value)} placeholder="Título / Rol" style={charInput} />
+        <select value={char.state} onChange={e => onUpdate(index, 'state', e.target.value)} style={charInput}>
+          {CHAR_STATES.map(s => <option key={s} value={s} style={{ background: '#0a0a0f', color: 'rgba(255,255,255,0.8)' }}>{s}</option>)}
         </select>
       </div>
 
-      {/* Eliminar */}
       <button
         onClick={() => onRemove(index)}
         style={{ background: 'transparent', border: 'none', color: 'rgba(204,68,68,0.45)', cursor: 'pointer', fontSize: '15px', flexShrink: 0, padding: '2px', lineHeight: 1, transition: 'color 0.15s' }}
@@ -317,26 +312,3 @@ function CharacterEntry({ char, index, onUpdate, onRemove }) {
     </div>
   );
 }
-
-const charInputStyle = {
-  background: 'rgba(201,162,39,0.04)',
-  border: '1px solid rgba(201,162,39,0.18)',
-  color: '#e8d5a3',
-  fontFamily: 'monospace',
-  fontSize: '0.65rem',
-  padding: '5px 9px',
-  width: '100%',
-  outline: 'none',
-  boxSizing: 'border-box',
-};
-
-const smallBtnStyle = {
-  background: 'rgba(201,162,39,0.07)',
-  border: '1px solid rgba(201,162,39,0.3)',
-  color: 'rgba(201,162,39,0.75)',
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '0.45rem',
-  letterSpacing: '0.1em',
-  padding: '4px 9px',
-  cursor: 'pointer',
-};
