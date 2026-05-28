@@ -2,22 +2,15 @@ import { useState } from 'react';
 import HouseCard from './zygerria/HouseCard';
 import HouseModal from './zygerria/HouseModal';
 import HouseForm from './zygerria/HouseForm';
-import { STATUSES } from './zygerria/constants';
-
-const ALL = 'TODAS';
-const FILTERS = [ALL, ...STATUSES];
 
 export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHouse, onDeleteHouse }) {
   const [selectedHouse, setSelectedHouse] = useState(null);
-  const [editingHouse, setEditingHouse]   = useState(null); // null | {} (nueva) | house (editar)
+  const [editingHouse, setEditingHouse]   = useState(null);
   const [search, setSearch]               = useState('');
-  const [filter, setFilter]               = useState(ALL);
 
   const filtered = houses.filter(h => {
     const q = search.toLowerCase();
-    const matchSearch = !q || h.name.toLowerCase().includes(q) || (h.territory || '').toLowerCase().includes(q);
-    const matchFilter = filter === ALL || h.status === filter;
-    return matchSearch && matchFilter;
+    return !q || h.name.toLowerCase().includes(q) || (h.territory || '').toLowerCase().includes(q);
   });
 
   function handleSave(formData) {
@@ -88,57 +81,32 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
           )}
         </div>
 
-        {/* Buscador + filtros */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: '1 1 200px', minWidth: '140px' }}>
-            <span style={{
-              position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
-              color: 'rgba(201,162,39,0.35)', fontSize: '12px', pointerEvents: 'none',
-            }}>◈</span>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar casa o territorio..."
-              style={{
-                background: 'rgba(201,162,39,0.04)', border: '1px solid rgba(201,162,39,0.18)',
-                color: '#e8d5a3', fontFamily: 'monospace', fontSize: '0.65rem',
-                padding: '7px 12px 7px 26px', outline: 'none', width: '100%',
-                boxSizing: 'border-box', transition: 'border-color 0.15s',
-              }}
-              onFocus={e => e.target.style.borderColor = 'rgba(201,162,39,0.45)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(201,162,39,0.18)'}
-            />
-          </div>
-
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {FILTERS.map(f => {
-              const active = filter === f;
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  style={{
-                    background: active ? 'rgba(201,162,39,0.14)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(201,162,39,0.52)' : 'rgba(201,162,39,0.14)'}`,
-                    color: active ? '#c9a227' : 'rgba(201,162,39,0.38)',
-                    fontFamily: 'Orbitron, monospace', fontSize: '0.41rem',
-                    letterSpacing: '0.06em', padding: '4px 9px', cursor: 'pointer',
-                    boxShadow: active ? '0 0 8px rgba(201,162,39,0.18)' : 'none',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {f}
-                </button>
-              );
-            })}
-          </div>
+        {/* Buscador */}
+        <div style={{ position: 'relative', maxWidth: '360px' }}>
+          <span style={{
+            position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
+            color: 'rgba(201,162,39,0.35)', fontSize: '12px', pointerEvents: 'none',
+          }}>◈</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar casa o territorio..."
+            style={{
+              background: 'rgba(201,162,39,0.04)', border: '1px solid rgba(201,162,39,0.18)',
+              color: '#e8d5a3', fontFamily: 'monospace', fontSize: '0.65rem',
+              padding: '7px 12px 7px 26px', outline: 'none', width: '100%',
+              boxSizing: 'border-box', transition: 'border-color 0.15s',
+            }}
+            onFocus={e => e.target.style.borderColor = 'rgba(201,162,39,0.45)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(201,162,39,0.18)'}
+          />
         </div>
       </div>
 
       {/* ── Grid de casas ──────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px' }}>
         {filtered.length === 0 ? (
-          <EmptyState hasFilters={!!search || filter !== ALL} />
+          <EmptyState hasSearch={!!search} />
         ) : (
           <>
             <div style={{
@@ -146,7 +114,6 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
               fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: '14px',
             }}>
               {filtered.length} casa{filtered.length !== 1 ? 's' : ''} registrada{filtered.length !== 1 ? 's' : ''}
-              {filter !== ALL ? ` — ${filter}` : ''}
             </div>
             <div style={{
               display: 'grid',
@@ -184,7 +151,7 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
   );
 }
 
-function EmptyState({ hasFilters }) {
+function EmptyState({ hasSearch }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -192,9 +159,9 @@ function EmptyState({ hasFilters }) {
     }}>
       <div style={{ fontSize: '40px', color: 'rgba(201,162,39,0.12)' }}>⚜</div>
       <div style={{ fontSize: '0.58rem', color: 'rgba(201,162,39,0.28)', fontFamily: 'Orbitron, monospace', letterSpacing: '0.22em', textAlign: 'center' }}>
-        {hasFilters ? 'SIN RESULTADOS' : 'SIN CASAS REGISTRADAS'}
+        {hasSearch ? 'SIN RESULTADOS' : 'SIN CASAS REGISTRADAS'}
       </div>
-      {!hasFilters && (
+      {!hasSearch && (
         <div style={{ fontSize: '0.55rem', color: 'rgba(201,162,39,0.18)', fontFamily: 'monospace', letterSpacing: '0.1em' }}>
           El Master puede añadir casas nobles al registro
         </div>

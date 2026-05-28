@@ -165,7 +165,7 @@ export default function HouseForm({ house, onSave, onCancel }) {
 
           {/* Territorio */}
           <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>TERRITORIO / PLANETA</label>
+            <label style={labelStyle}>TERRITORIO</label>
             <input
               value={form.territory}
               onChange={e => set('territory', e.target.value)}
