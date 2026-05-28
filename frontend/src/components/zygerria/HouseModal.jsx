@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { STATUS_STYLE, CHAR_STATE_COLOR } from './constants';
+import { CHAR_STATE_COLOR } from './constants';
 
 export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose }) {
-  const st = STATUS_STYLE[house.status] || STATUS_STYLE['Neutral'];
   const [visible, setVisible] = useState(false);
 
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
@@ -39,8 +38,7 @@ export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose 
           transition: 'opacity 0.22s ease, transform 0.22s ease',
         }}
       >
-        {/* Línea superior de color de estado */}
-        <div style={{ height: '2px', background: `linear-gradient(to right, transparent, ${st.color}, transparent)` }} />
+        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.6), transparent)' }} />
 
         {/* Cabecera */}
         <div style={{ padding: '28px 28px 20px', display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
@@ -51,7 +49,7 @@ export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose 
             background: 'radial-gradient(circle, rgba(0,212,255,0.06) 0%, rgba(0,212,255,0.02) 70%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden',
-            boxShadow: '0 0 24px rgba(0,212,255,0.15), 0 0 48px rgba(0,212,255,0.06), inset 0 0 20px rgba(0,212,255,0.04)',
+            boxShadow: '0 0 24px rgba(0,212,255,0.15), 0 0 48px rgba(0,212,255,0.06)',
           }}>
             {house.emblem
               ? <img src={house.emblem} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -71,17 +69,6 @@ export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose 
             }}>
               {house.name}
             </div>
-
-            <div style={{
-              display: 'inline-block', padding: '3px 10px', marginBottom: '12px',
-              background: st.bg, border: `1px solid ${st.border}`,
-              color: st.color, fontSize: '0.5rem',
-              fontFamily: 'Orbitron, monospace', letterSpacing: '0.1em',
-              boxShadow: st.glow, borderRadius: '1px',
-            }}>
-              {house.status}
-            </div>
-
             <div style={{ fontSize: '0.62rem', color: 'rgba(0,212,255,0.45)', fontFamily: 'monospace', marginBottom: '6px' }}>
               ◈ {house.territory || 'Territorio desconocido'}
             </div>
@@ -143,7 +130,7 @@ export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose 
           </>
         )}
 
-        <div style={{ height: '2px', background: `linear-gradient(to right, transparent, ${st.color}, transparent)` }} />
+        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.6), transparent)' }} />
       </div>
     </div>
   );

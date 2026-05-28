@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { STATUSES, CHAR_STATES } from './constants';
+import { CHAR_STATES } from './constants';
 
 const EMPTY_CHAR = () => ({ id: String(Date.now() + Math.random()), name: '', role: '', state: 'Vivo', avatar: null });
 
@@ -41,7 +41,6 @@ export default function HouseForm({ house, onSave, onCancel }) {
   const [visible, setVisible] = useState(false);
   const [form, setForm] = useState({
     name:        house?.name        || '',
-    status:      house?.status      || 'Activa',
     territory:   house?.territory   || '',
     description: house?.description || '',
     emblem:      house?.emblem      || null,
@@ -164,14 +163,6 @@ export default function HouseForm({ house, onSave, onCancel }) {
               onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
               onBlur={e => e.target.style.borderColor = form.name.trim() ? 'rgba(0,212,255,0.18)' : 'rgba(204,50,50,0.4)'}
             />
-          </div>
-
-          {/* Estado */}
-          <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>ESTADO</label>
-            <select value={form.status} onChange={e => set('status', e.target.value)} style={{ ...inputStyle }}>
-              {STATUSES.map(s => <option key={s} value={s} style={{ background: '#0a0a0f', color: 'rgba(255,255,255,0.8)' }}>{s}</option>)}
-            </select>
           </div>
 
           {/* Territorio */}

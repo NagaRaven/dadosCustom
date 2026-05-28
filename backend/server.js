@@ -103,7 +103,9 @@ function saveFortalezas(catalog) {
 function loadZygerriaHouses() {
   try {
     if (fs.existsSync(ZYGERRIA_FILE)) {
-      return JSON.parse(fs.readFileSync(ZYGERRIA_FILE, 'utf8'));
+      const houses = JSON.parse(fs.readFileSync(ZYGERRIA_FILE, 'utf8'));
+      // Eliminar campo status si existía en datos anteriores
+      return houses.map(({ status, ...rest }) => rest);
     }
   } catch {}
   return [];

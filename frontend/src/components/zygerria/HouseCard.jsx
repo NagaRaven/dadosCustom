@@ -1,7 +1,4 @@
-import { STATUS_STYLE } from './constants';
-
 export default function HouseCard({ house, onClick }) {
-  const st = STATUS_STYLE[house.status] || STATUS_STYLE['Neutral'];
   const charCount = house.characters?.length || 0;
 
   return (
@@ -30,8 +27,7 @@ export default function HouseCard({ house, onClick }) {
         e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
-      {/* Línea de color de estado */}
-      <div style={{ height: '2px', background: `linear-gradient(to right, transparent, ${st.color}, transparent)` }} />
+      <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.5), transparent)' }} />
 
       <div style={{ padding: '18px 18px 16px' }}>
         {/* Emblema */}
@@ -59,17 +55,6 @@ export default function HouseCard({ house, onClick }) {
           {house.name}
         </div>
 
-        {/* Estado */}
-        <div style={{
-          display: 'inline-block', padding: '2px 8px', marginBottom: '9px',
-          background: st.bg, border: `1px solid ${st.border}`,
-          color: st.color, fontSize: '0.47rem',
-          fontFamily: 'Orbitron, monospace', letterSpacing: '0.08em',
-          boxShadow: st.glow, borderRadius: '1px',
-        }}>
-          {house.status}
-        </div>
-
         {/* Territorio */}
         <div style={{ fontSize: '0.58rem', color: 'rgba(0,212,255,0.38)', fontFamily: 'monospace', marginBottom: '7px' }}>
           ◈ {house.territory || 'Territorio desconocido'}
@@ -81,7 +66,6 @@ export default function HouseCard({ house, onClick }) {
         </div>
       </div>
 
-      {/* Esquina decorativa */}
       <div style={{
         position: 'absolute', bottom: 0, right: 0,
         width: '22px', height: '22px',
