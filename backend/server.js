@@ -180,7 +180,7 @@ io.on('connection', (socket) => {
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
-    io.emit('users_update', Object.values(connectedUsers));
+    io.emit('users_update', [...new Set(Object.values(connectedUsers))]);
   });
 
   socket.on('roll_dice', ({ username, usedForce }) => {
@@ -294,7 +294,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     delete connectedUsers[socket.id];
-    io.emit('users_update', Object.values(connectedUsers));
+    io.emit('users_update', [...new Set(Object.values(connectedUsers))]);
   });
 });
 

@@ -9,6 +9,8 @@ import ForcePanel from './ForcePanel';
 import CharacterSheet from './CharacterSheet';
 import ArchiveTemp from './ArchiveTemp';
 import CharacterRegistry from './CharacterRegistry';
+import LocationRegistry from './LocationRegistry';
+import Zygerria from './Zygerria';
 
 const isMaster = (u) => u === 'Master';
 
@@ -88,25 +90,49 @@ export default function Dashboard({ username, onLogout }) {
                 }}
               >
                 <button
-                  onClick={() => { setCurrentView(currentView === 'registry' ? 'main' : 'registry'); setMenuOpen(false); }}
+                  onClick={() => { setCurrentView('registry'); setMenuOpen(false); }}
                   style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    background: 'transparent',
-                    border: 'none',
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'transparent', border: 'none',
                     borderBottom: '1px solid rgba(0,212,255,0.08)',
-                    color: 'rgba(0,212,255,0.75)',
-                    fontFamily: 'Orbitron, monospace',
-                    fontSize: '0.6rem',
-                    letterSpacing: '0.1em',
-                    padding: '10px 14px',
-                    cursor: 'pointer',
+                    color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.6rem', letterSpacing: '0.1em',
+                    padding: '10px 14px', cursor: 'pointer',
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   REGISTRO DE PERSONAJES
+                </button>
+                <button
+                  onClick={() => { setCurrentView('locations'); setMenuOpen(false); }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'transparent', border: 'none',
+                    borderBottom: '1px solid rgba(0,212,255,0.08)',
+                    color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.6rem', letterSpacing: '0.1em',
+                    padding: '10px 14px', cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  REGISTRO DE UBICACIONES
+                </button>
+                <button
+                  onClick={() => { setCurrentView('zygerria'); setMenuOpen(false); }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'rgba(0,212,255,0.06)', border: 'none',
+                    color: 'var(--cyan)', fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.65rem', fontWeight: 900,
+                    letterSpacing: '0.18em', padding: '12px 14px', cursor: 'pointer',
+                    textShadow: '0 0 10px rgba(0,212,255,0.5)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.12)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,212,255,0.06)'}
+                >
+                  ✦ ZYGERRIA
                 </button>
               </div>
             )}
@@ -167,6 +193,14 @@ export default function Dashboard({ username, onLogout }) {
       {currentView === 'registry' ? (
         <main className="flex-1 flex flex-col min-h-0">
           <CharacterRegistry onBack={() => setCurrentView('main')} />
+        </main>
+      ) : currentView === 'locations' ? (
+        <main className="flex-1 flex flex-col min-h-0">
+          <LocationRegistry onBack={() => setCurrentView('main')} />
+        </main>
+      ) : currentView === 'zygerria' ? (
+        <main className="flex-1 flex flex-col min-h-0">
+          <Zygerria onBack={() => setCurrentView('main')} />
         </main>
       ) : (
       <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 min-h-0">
