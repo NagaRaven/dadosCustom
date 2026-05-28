@@ -29,6 +29,7 @@ app.use(express.json());
 const HISTORY_FILE    = path.join(__dirname, 'data', 'history.json');
 const CHARACTERS_FILE = path.join(__dirname, 'data', 'characters.json');
 const FORTALEZAS_FILE = path.join(__dirname, 'data', 'fortalezas.json');
+const ZYGERRIA_FILE   = path.join(__dirname, 'data', 'zygerria.json');
 
 function loadHistory() {
   try {
@@ -98,7 +99,25 @@ function saveFortalezas(catalog) {
   } catch {}
 }
 
+// ── Persistencia de casas nobles Zygerrianas ─────────────────────────────────
+function loadZygerriaHouses() {
+  try {
+    if (fs.existsSync(ZYGERRIA_FILE)) {
+      return JSON.parse(fs.readFileSync(ZYGERRIA_FILE, 'utf8'));
+    }
+  } catch {}
+  return [];
+}
+
+function saveZygerriaHouses(houses) {
+  try {
+    fs.mkdirSync(path.dirname(ZYGERRIA_FILE), { recursive: true });
+    fs.writeFileSync(ZYGERRIA_FILE, JSON.stringify(houses, null, 2));
+  } catch {}
+}
+
 let fortalezasCatalog = loadFortalezas();
+let zygerriaHouses   = loadZygerriaHouses();
 let characters = loadCharacters();
 let archiveImage = null; // temporal — no se persiste
 
@@ -122,6 +141,7 @@ app.get('/api/export-db', (_req, res) => {
     history: rollHistory,
     characters,
     fortalezasCatalog,
+    zygerriaHouses,
   };
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   res.setHeader('Content-Disposition', `attachment; filename="d20-backup-${ts}.json"`);
@@ -132,7 +152,7 @@ app.get('/api/export-db', (_req, res) => {
 
 // Importar BD — reemplaza todos los datos con el fichero de backup
 app.post('/api/import-db', (req, res) => {
-  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas } = req.body || {};
+  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg } = req.body || {};
   if (!importedChars || typeof importedChars !== 'object') {
     return res.status(400).json({ success: false, message: 'Fichero inválido: falta characters' });
   }
@@ -151,6 +171,11 @@ app.post('/api/import-db', (req, res) => {
   );
   saveCharacters(characters);
   io.emit('characters_update', characters);
+  if (Array.isArray(importedZyg)) {
+    zygerriaHouses = importedZyg;
+    saveZygerriaHouses(zygerriaHouses);
+    io.emit('zygerria_houses_update', zygerriaHouses);
+  }
   res.json({ success: true });
 });
 
@@ -177,6 +202,7 @@ io.on('connection', (socket) => {
   socket.emit('theme_update', currentTheme);
   socket.emit('fortalezas_catalog_update', fortalezasCatalog);
   socket.emit('archive_image_update', archiveImage);
+  socket.emit('zygerria_houses_update', zygerriaHouses);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -290,6 +316,31 @@ io.on('connection', (socket) => {
     if (imageData !== null && typeof imageData !== 'string') return;
     archiveImage = imageData;
     io.emit('archive_image_update', archiveImage);
+  });
+
+  // Master: CRUD de casas nobles Zygerrianas
+  socket.on('add_zygerria_house', (house) => {
+    if (connectedUsers[socket.id] !== 'Master') return;
+    const newHouse = { id: String(Date.now()), ...house };
+    zygerriaHouses.push(newHouse);
+    saveZygerriaHouses(zygerriaHouses);
+    io.emit('zygerria_houses_update', zygerriaHouses);
+  });
+
+  socket.on('update_zygerria_house', ({ id, data }) => {
+    if (connectedUsers[socket.id] !== 'Master') return;
+    const idx = zygerriaHouses.findIndex(h => h.id === id);
+    if (idx === -1) return;
+    zygerriaHouses[idx] = { ...zygerriaHouses[idx], ...data };
+    saveZygerriaHouses(zygerriaHouses);
+    io.emit('zygerria_houses_update', zygerriaHouses);
+  });
+
+  socket.on('delete_zygerria_house', (id) => {
+    if (connectedUsers[socket.id] !== 'Master') return;
+    zygerriaHouses = zygerriaHouses.filter(h => h.id !== id);
+    saveZygerriaHouses(zygerriaHouses);
+    io.emit('zygerria_houses_update', zygerriaHouses);
   });
 
   socket.on('disconnect', () => {

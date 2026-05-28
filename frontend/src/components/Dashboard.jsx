@@ -18,7 +18,10 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, theme, fortalezasCatalog, archiveImage, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
+    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
+    rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
+    updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
+    addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentView, setCurrentView] = useState('main');
@@ -200,7 +203,13 @@ export default function Dashboard({ username, onLogout }) {
         </main>
       ) : currentView === 'zygerria' ? (
         <main className="flex-1 flex flex-col min-h-0">
-          <Zygerria onBack={() => setCurrentView('main')} />
+          <Zygerria
+            isMaster={isMaster(username)}
+            houses={zygerriaHouses}
+            onAddHouse={addZygerriaHouse}
+            onUpdateHouse={updateZygerriaHouse}
+            onDeleteHouse={deleteZygerriaHouse}
+          />
         </main>
       ) : (
       <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 min-h-0">

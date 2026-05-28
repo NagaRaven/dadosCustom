@@ -16,6 +16,7 @@ export function useSocket(username) {
   const [theme, setThemeState]              = useState('blue');
   const [fortalezasCatalog, setFortalezasCatalog] = useState([]);
   const [archiveImage, setArchiveImageState]       = useState(null);
+  const [zygerriaHouses, setZygerriaHouses]        = useState([]);
 
   useEffect(() => {
     if (!username) return;
@@ -42,6 +43,7 @@ export function useSocket(username) {
     socketRef.current.on('characters_update', (chars) => setCharacters(chars));
     socketRef.current.on('fortalezas_catalog_update', (cat) => setFortalezasCatalog(cat));
     socketRef.current.on('archive_image_update', (img) => setArchiveImageState(img));
+    socketRef.current.on('zygerria_houses_update', (houses) => setZygerriaHouses(houses));
 
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
@@ -105,5 +107,26 @@ export function useSocket(username) {
     socketRef.current.emit('set_archive_image', imageData);
   };
 
-  return { history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected, characters, theme, fortalezasCatalog, archiveImage, rollDice, forceResult, addForcePoint, updateCharacter, setTheme, updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage };
+  const addZygerriaHouse = (house) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('add_zygerria_house', house);
+  };
+
+  const updateZygerriaHouse = (id, data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('update_zygerria_house', { id, data });
+  };
+
+  const deleteZygerriaHouse = (id) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('delete_zygerria_house', id);
+  };
+
+  return {
+    history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,
+    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
+    rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
+    updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
+    addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
+  };
 }
