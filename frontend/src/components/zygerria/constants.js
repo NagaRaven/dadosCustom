@@ -1,4 +1,5 @@
 export const CHAR_STATES = ['Vivo', 'Muerto', 'Desaparecido', 'Prisionero', 'Exiliado'];
+export const CHAR_TYPES  = ['ciudadano', 'esclavo'];
 
 export const CHAR_STATE_COLOR = {
   'Vivo':        '#22aa44',

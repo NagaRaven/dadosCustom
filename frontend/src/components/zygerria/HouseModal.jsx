@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { CHAR_STATE_COLOR } from './constants';
 
+function sortChars(chars) {
+  const rank = c => c.isLord ? 0 : c.type === 'esclavo' ? 2 : 1;
+  return [...chars].sort((a, b) => rank(a) - rank(b));
+}
+
 export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose }) {
   const [visible, setVisible] = useState(false);
 
@@ -111,7 +116,7 @@ export default function HouseModal({ house, isMaster, onEdit, onDelete, onClose 
             <div style={{ padding: '20px 28px' }}>
               <SectionLabel>PERSONAJES VINCULADOS</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {house.characters.map((char, i) => (
+                {sortChars(house.characters).map((char, i) => (
                   <CharacterRow key={i} char={char} />
                 ))}
               </div>
@@ -150,16 +155,21 @@ function SectionLabel({ children }) {
 
 function CharacterRow({ char }) {
   const stateColor = CHAR_STATE_COLOR[char.state] || '#777';
+  const isLord = !!char.isLord;
+  const isEsclavo = char.type === 'esclavo';
+  const typeColor = isEsclavo ? 'rgba(200,70,70,0.7)' : 'rgba(0,212,255,0.45)';
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '14px',
       padding: '10px 14px',
-      background: 'rgba(0,212,255,0.03)',
-      border: '1px solid rgba(0,212,255,0.08)',
+      background: isLord ? 'rgba(212,168,80,0.05)' : 'rgba(0,212,255,0.03)',
+      border: isLord ? '1px solid rgba(212,168,80,0.28)' : '1px solid rgba(0,212,255,0.08)',
+      boxShadow: isLord ? '0 0 14px rgba(212,168,80,0.12)' : 'none',
     }}>
       <div style={{
         width: '42px', height: '42px', borderRadius: '50%', flexShrink: 0,
-        border: '1px solid rgba(0,212,255,0.22)',
+        border: isLord ? '1px solid rgba(212,168,80,0.45)' : '1px solid rgba(0,212,255,0.22)',
         background: 'rgba(0,212,255,0.04)',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -170,21 +180,39 @@ function CharacterRow({ char }) {
         }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '0.64rem', color: 'rgba(0,212,255,0.85)', fontFamily: 'Orbitron, monospace', fontWeight: 700, marginBottom: '3px' }}>
-          {char.name}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '3px' }}>
+          <div style={{ fontSize: '0.64rem', color: isLord ? '#d4a850' : 'rgba(0,212,255,0.85)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>
+            {char.name}
+          </div>
+          {isLord && (
+            <div style={{ fontSize: '0.38rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.1em', color: '#d4a850', padding: '1px 5px', border: '1px solid rgba(212,168,80,0.35)', background: 'rgba(212,168,80,0.08)', whiteSpace: 'nowrap' }}>
+              SEÑOR
+            </div>
+          )}
         </div>
         <div style={{ fontSize: '0.54rem', color: 'rgba(0,212,255,0.4)', fontFamily: 'monospace' }}>
           {char.role}
         </div>
       </div>
-      <div style={{
-        fontSize: '0.46rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.06em',
-        color: stateColor, padding: '2px 7px',
-        border: `1px solid ${stateColor}44`,
-        background: `${stateColor}11`,
-        whiteSpace: 'nowrap',
-      }}>
-        {char.state}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+        <div style={{
+          fontSize: '0.4rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.06em',
+          color: typeColor, padding: '1px 6px',
+          border: `1px solid ${typeColor.replace('0.7', '0.25')}`,
+          background: typeColor.replace('0.7', '0.07'),
+          whiteSpace: 'nowrap',
+        }}>
+          {isEsclavo ? '⛓ ESCLAVO' : '◈ CIUDADANO'}
+        </div>
+        <div style={{
+          fontSize: '0.46rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.06em',
+          color: stateColor, padding: '2px 7px',
+          border: `1px solid ${stateColor}44`,
+          background: `${stateColor}11`,
+          whiteSpace: 'nowrap',
+        }}>
+          {char.state}
+        </div>
       </div>
     </div>
   );

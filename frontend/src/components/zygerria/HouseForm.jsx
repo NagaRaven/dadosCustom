@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { CHAR_STATES } from './constants';
+import { CHAR_STATES, CHAR_TYPES } from './constants';
 
-const EMPTY_CHAR = () => ({ id: String(Date.now() + Math.random()), name: '', role: '', state: 'Vivo', avatar: null });
+const EMPTY_CHAR = () => ({ id: String(Date.now() + Math.random()), name: '', role: '', state: 'Vivo', type: 'ciudadano', isLord: false, avatar: null });
+
+function sortChars(chars) {
+  const rank = c => c.isLord ? 0 : c.type === 'esclavo' ? 2 : 1;
+  return [...chars].sort((a, b) => rank(a) - rank(b));
+}
 
 const inputStyle = {
   background: 'rgba(0,212,255,0.04)',
@@ -45,7 +50,7 @@ export default function HouseForm({ house, onSave, onCancel }) {
     territory:   house?.territory   || '',
     description: house?.description || '',
     emblem:      house?.emblem      || null,
-    characters:  house?.characters ? house.characters.map(c => ({ ...c })) : [],
+    characters:  house?.characters ? house.characters.map(c => ({ type: 'ciudadano', isLord: false, ...c })) : [],
   });
   const emblemRef = useRef(null);
 
@@ -232,9 +237,10 @@ export default function HouseForm({ house, onSave, onCancel }) {
               <button onClick={addCharacter} style={smallBtnStyle}>+ AÑADIR</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {form.characters.map((char, i) => (
-                <CharacterEntry key={char.id || i} char={char} index={i} onUpdate={updateChar} onRemove={removeCharacter} />
-              ))}
+              {sortChars(form.characters).map((char) => {
+                const i = form.characters.findIndex(c => c.id === char.id);
+                return <CharacterEntry key={char.id} char={char} index={i} onUpdate={updateChar} onRemove={removeCharacter} />;
+              })}
               {form.characters.length === 0 && (
                 <div style={{ fontSize: '0.58rem', color: 'rgba(0,212,255,0.2)', fontFamily: 'monospace', padding: '10px', textAlign: 'center', border: '1px dashed rgba(0,212,255,0.1)' }}>
                   Sin personajes añadidos
@@ -295,22 +301,27 @@ function CharacterEntry({ char, index, onUpdate, onRemove }) {
     padding: '5px 9px', width: '100%', outline: 'none', boxSizing: 'border-box',
   };
 
+  const lordColor = 'rgba(212,168,80,';
+
   return (
     <div style={{
-      background: 'rgba(0,212,255,0.02)', border: '1px solid rgba(0,212,255,0.08)',
+      background: char.isLord ? 'rgba(212,168,80,0.04)' : 'rgba(0,212,255,0.02)',
+      border: `1px solid ${char.isLord ? lordColor + '0.3)' : 'rgba(0,212,255,0.08)'}`,
+      boxShadow: char.isLord ? `0 0 12px ${lordColor}0.1)` : 'none',
       padding: '12px', display: 'flex', gap: '12px', alignItems: 'flex-start',
+      transition: 'all 0.2s',
     }}>
       <div
         onClick={() => avatarRef.current?.click()}
         style={{
           width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0,
-          border: '1px dashed rgba(0,212,255,0.24)',
+          border: `1px dashed ${char.isLord ? lordColor + '0.4)' : 'rgba(0,212,255,0.24)'}`,
           background: 'rgba(0,212,255,0.04)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.15s',
         }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
-        onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.24)'}
+        onMouseEnter={e => e.currentTarget.style.borderColor = char.isLord ? lordColor + '0.7)' : 'rgba(0,212,255,0.5)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = char.isLord ? lordColor + '0.4)' : 'rgba(0,212,255,0.24)'}
       >
         {char.avatar
           ? <img src={char.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -322,9 +333,47 @@ function CharacterEntry({ char, index, onUpdate, onRemove }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <input value={char.name} onChange={e => onUpdate(index, 'name', e.target.value)} placeholder="Nombre del personaje" style={charInput} />
         <input value={char.role} onChange={e => onUpdate(index, 'role', e.target.value)} placeholder="Título / Rol" style={charInput} />
+
+        {/* Tipo: ciudadano / esclavo */}
+        <div style={{ display: 'flex', gap: '5px' }}>
+          {CHAR_TYPES.map(t => {
+            const active = char.type === t;
+            return (
+              <button key={t} onClick={() => onUpdate(index, 'type', t)} style={{
+                flex: 1,
+                background: active ? (t === 'ciudadano' ? 'rgba(0,212,255,0.1)' : 'rgba(180,60,60,0.1)') : 'rgba(0,212,255,0.02)',
+                border: `1px solid ${active ? (t === 'ciudadano' ? 'rgba(0,212,255,0.4)' : 'rgba(180,60,60,0.4)') : 'rgba(0,212,255,0.1)'}`,
+                color: active ? (t === 'ciudadano' ? 'rgba(0,212,255,0.9)' : 'rgba(220,80,80,0.9)') : 'rgba(0,212,255,0.3)',
+                fontFamily: 'Orbitron, monospace', fontSize: '0.38rem', letterSpacing: '0.1em',
+                padding: '4px 6px', cursor: 'pointer', fontWeight: active ? 700 : 400,
+                transition: 'all 0.15s',
+              }}>
+                {t === 'ciudadano' ? '◈ CIUDADANO' : '⛓ ESCLAVO'}
+              </button>
+            );
+          })}
+        </div>
+
         <select value={char.state} onChange={e => onUpdate(index, 'state', e.target.value)} style={charInput}>
           {CHAR_STATES.map(s => <option key={s} value={s} style={{ background: '#0a0a0f', color: 'rgba(255,255,255,0.8)' }}>{s}</option>)}
         </select>
+
+        {/* Señor de la Casa */}
+        <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={!!char.isLord}
+            onChange={e => onUpdate(index, 'isLord', e.target.checked)}
+            style={{ accentColor: '#d4a850', width: '12px', height: '12px', cursor: 'pointer' }}
+          />
+          <span style={{
+            fontFamily: 'Orbitron, monospace', fontSize: '0.38rem', letterSpacing: '0.12em',
+            color: char.isLord ? '#d4a850' : 'rgba(212,168,80,0.35)',
+            transition: 'color 0.15s',
+          }}>
+            SEÑOR DE LA CASA
+          </span>
+        </label>
       </div>
 
       <button

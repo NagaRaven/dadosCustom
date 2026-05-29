@@ -48,15 +48,16 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{
-              fontSize: '0.48rem', color: 'rgba(0,212,255,0.35)',
-              fontFamily: 'Orbitron, monospace', letterSpacing: '0.32em', marginBottom: '5px',
+              fontFamily: 'Orbitron, monospace', fontSize: '1.45rem', fontWeight: 900,
+              color: '#d9a84a', letterSpacing: '0.18em', marginBottom: '4px',
+              textShadow: '0 0 24px rgba(217,168,74,0.45)',
             }}>
-              ZYGERRIA — SISTEMA NOBLE
+              ZYGERRIA
             </div>
             <div style={{
-              fontFamily: 'Orbitron, monospace', fontSize: '1.05rem', fontWeight: 900,
-              color: 'var(--cyan)', letterSpacing: '0.1em',
-              textShadow: '0 0 20px rgba(0,212,255,0.4)',
+              fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', fontWeight: 700,
+              color: 'rgba(0,212,255,0.55)', letterSpacing: '0.22em',
+              textShadow: '0 0 10px rgba(0,212,255,0.2)',
             }}>
               REGISTRO DE CASAS NOBLES
             </div>

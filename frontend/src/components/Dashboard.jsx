@@ -24,7 +24,10 @@ export default function Dashboard({ username, onLogout }) {
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentView, setCurrentView] = useState('main');
+  const [currentView, setCurrentView] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('view') || 'main';
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const importInputRef = useRef(null);
 
@@ -93,6 +96,21 @@ export default function Dashboard({ username, onLogout }) {
                 }}
               >
                 <button
+                  onClick={() => { setCurrentView('main'); setMenuOpen(false); }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'transparent', border: 'none',
+                    borderBottom: '1px solid rgba(0,212,255,0.08)',
+                    color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.6rem', letterSpacing: '0.1em',
+                    padding: '10px 14px', cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  ⌂ HOME
+                </button>
+                <button
                   onClick={() => { setCurrentView('registry'); setMenuOpen(false); }}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
@@ -123,26 +141,28 @@ export default function Dashboard({ username, onLogout }) {
                   REGISTRO DE UBICACIONES
                 </button>
                 <button
-                  onClick={() => { setCurrentView('zygerria'); setMenuOpen(false); }}
+                  onClick={() => { window.open(`${window.location.origin}?view=zygerria`, '_blank'); setMenuOpen(false); }}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
-                    background: 'rgba(0,212,255,0.06)', border: 'none',
-                    color: 'var(--cyan)', fontFamily: 'Orbitron, monospace',
+                    background: 'rgba(217,168,74,0.07)', border: 'none',
+                    color: '#d9a84a', fontFamily: 'Orbitron, monospace',
                     fontSize: '0.65rem', fontWeight: 900,
                     letterSpacing: '0.18em', padding: '12px 14px', cursor: 'pointer',
-                    textShadow: '0 0 10px rgba(0,212,255,0.5)',
+                    textShadow: '0 0 10px rgba(217,168,74,0.4)',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.12)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,212,255,0.06)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(217,168,74,0.14)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(217,168,74,0.07)'}
                 >
-                  ✦ ZYGERRIA
+                  ✦ ZYGERRIA ↗
                 </button>
               </div>
             )}
           </div>
           <span
             className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
-            style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)' }}
+            style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)', cursor: 'pointer' }}
+            onClick={() => setCurrentView('main')}
+            title="Ir a la pantalla principal"
           >
             STAR WARS — LA TIERRA PROMETIDA
           </span>
