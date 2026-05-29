@@ -341,9 +341,9 @@ function CharacterEntry({ char, index, onUpdate, onRemove }) {
             return (
               <button key={t} onClick={() => onUpdate(index, 'type', t)} style={{
                 flex: 1,
-                background: active ? (t === 'ciudadano' ? 'rgba(15,50,130,0.75)' : 'rgba(180,60,60,0.1)') : 'rgba(0,212,255,0.02)',
-                border: `1px solid ${active ? (t === 'ciudadano' ? 'rgba(60,120,220,0.6)' : 'rgba(180,60,60,0.4)') : 'rgba(0,212,255,0.1)'}`,
-                color: active ? (t === 'ciudadano' ? 'rgba(200,225,255,0.95)' : 'rgba(220,80,80,0.9)') : 'rgba(0,212,255,0.3)',
+                background: 'transparent',
+                border: `1px solid ${active ? (t === 'ciudadano' ? 'rgba(60,120,220,0.7)' : 'rgba(180,60,60,0.6)') : 'rgba(0,212,255,0.1)'}`,
+                color: active ? (t === 'ciudadano' ? 'rgba(120,170,255,0.95)' : 'rgba(220,80,80,0.9)') : 'rgba(0,212,255,0.3)',
                 fontFamily: 'Orbitron, monospace', fontSize: '0.38rem', letterSpacing: '0.1em',
                 padding: '4px 6px', cursor: 'pointer', fontWeight: active ? 700 : 400,
                 transition: 'all 0.15s',
