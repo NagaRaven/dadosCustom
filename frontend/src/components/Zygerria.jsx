@@ -103,19 +103,21 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
           <>
             <div style={{
               fontSize: '0.46rem', color: 'rgba(0,212,255,0.25)',
-              fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: '14px',
+              fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: '20px',
             }}>
               {filtered.length} casa{filtered.length !== 1 ? 's' : ''} registrada{filtered.length !== 1 ? 's' : ''}
             </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
-              gap: '14px',
-            }}>
-              {filtered.map(house => (
-                <HouseCard key={house.id} house={house} onClick={setSelectedHouse} />
-              ))}
-            </div>
+
+            <HouseSection
+              title="⚜ CASAS MAYORES"
+              houses={filtered.filter(h => !h.rank || h.rank === 'mayor')}
+              onSelect={setSelectedHouse}
+            />
+            <HouseSection
+              title="◈ CASAS MENORES"
+              houses={filtered.filter(h => h.rank === 'menor')}
+              onSelect={setSelectedHouse}
+            />
           </>
         )}
       </div>
@@ -137,6 +139,37 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
           onCancel={() => setEditingHouse(null)}
         />
       )}
+    </div>
+  );
+}
+
+function HouseSection({ title, houses, onSelect }) {
+  if (houses.length === 0) return null;
+  return (
+    <div style={{ marginBottom: '32px' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px',
+      }}>
+        <div style={{
+          fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', fontWeight: 700,
+          color: 'rgba(0,212,255,0.55)', letterSpacing: '0.2em',
+        }}>
+          {title}
+        </div>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(0,212,255,0.1)' }} />
+        <div style={{ fontSize: '0.44rem', color: 'rgba(0,212,255,0.25)', fontFamily: 'monospace', letterSpacing: '0.1em' }}>
+          {houses.length}
+        </div>
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+        gap: '14px',
+      }}>
+        {houses.map(house => (
+          <HouseCard key={house.id} house={house} onClick={onSelect} />
+        ))}
+      </div>
     </div>
   );
 }

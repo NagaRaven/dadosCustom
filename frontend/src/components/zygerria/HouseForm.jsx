@@ -41,6 +41,7 @@ export default function HouseForm({ house, onSave, onCancel }) {
   const [visible, setVisible] = useState(false);
   const [form, setForm] = useState({
     name:        house?.name        || '',
+    rank:        house?.rank        || 'mayor',
     territory:   house?.territory   || '',
     description: house?.description || '',
     emblem:      house?.emblem      || null,
@@ -163,6 +164,38 @@ export default function HouseForm({ house, onSave, onCancel }) {
               onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
               onBlur={e => e.target.style.borderColor = form.name.trim() ? 'rgba(0,212,255,0.18)' : 'rgba(204,50,50,0.4)'}
             />
+          </div>
+
+          {/* Rango */}
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>RANGO DE LA CASA</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['mayor', 'menor'].map(r => {
+                const active = form.rank === r;
+                return (
+                  <button
+                    key={r}
+                    onClick={() => set('rank', r)}
+                    style={{
+                      flex: 1,
+                      background: active ? 'rgba(0,212,255,0.12)' : 'rgba(0,212,255,0.03)',
+                      border: `1px solid ${active ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.15)'}`,
+                      color: active ? '#00d4ff' : 'rgba(0,212,255,0.35)',
+                      fontFamily: 'Orbitron, monospace',
+                      fontSize: '0.48rem',
+                      letterSpacing: '0.14em',
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      fontWeight: active ? 700 : 400,
+                      boxShadow: active ? '0 0 8px rgba(0,212,255,0.12)' : 'none',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {r === 'mayor' ? '⚜ CASA MAYOR' : '◈ CASA MENOR'}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Territorio */}
