@@ -111,12 +111,12 @@ export default function Zygerria({ isMaster, houses = [], onAddHouse, onUpdateHo
 
             <HouseSection
               title="⚜ CASAS MAYORES"
-              houses={filtered.filter(h => !h.rank || h.rank === 'mayor')}
+              houses={filtered.filter(h => !h.rank || h.rank === 'mayor').sort((a, b) => a.name.localeCompare(b.name))}
               onSelect={setSelectedHouse}
             />
             <HouseSection
               title="◈ CASAS MENORES"
-              houses={filtered.filter(h => h.rank === 'menor')}
+              houses={filtered.filter(h => h.rank === 'menor').sort((a, b) => a.name.localeCompare(b.name))}
               onSelect={setSelectedHouse}
             />
           </>
