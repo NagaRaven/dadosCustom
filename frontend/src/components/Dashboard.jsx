@@ -24,10 +24,7 @@ export default function Dashboard({ username, onLogout }) {
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentView, setCurrentView] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('view') || 'main';
-  });
+  const [currentView, setCurrentView] = useState('main');
   const [menuOpen, setMenuOpen] = useState(false);
   const importInputRef = useRef(null);
 
@@ -141,7 +138,7 @@ export default function Dashboard({ username, onLogout }) {
                   REGISTRO DE UBICACIONES
                 </button>
                 <button
-                  onClick={() => { window.open(`${window.location.origin}?view=zygerria`, '_blank'); setMenuOpen(false); }}
+                  onClick={() => { setCurrentView('zygerria'); setMenuOpen(false); }}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'rgba(217,168,74,0.07)', border: 'none',
@@ -153,7 +150,7 @@ export default function Dashboard({ username, onLogout }) {
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(217,168,74,0.14)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'rgba(217,168,74,0.07)'}
                 >
-                  ✦ ZYGERRIA ↗
+                  ✦ ZYGERRIA
                 </button>
               </div>
             )}
