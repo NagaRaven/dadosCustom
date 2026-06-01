@@ -157,7 +157,8 @@ function CharacterRow({ char }) {
   const stateColor = CHAR_STATE_COLOR[char.state] || '#777';
   const isLord = !!char.isLord;
   const isEsclavo = char.type === 'esclavo';
-  const typeColor = isEsclavo ? 'rgba(200,70,70,0.7)' : 'rgba(0,212,255,0.45)';
+  const typeBorderColor = isEsclavo ? 'rgba(220,130,40,0.75)' : 'rgba(60,140,255,0.7)';
+  const typeTextColor   = isEsclavo ? 'rgba(235,155,60,0.95)' : 'rgba(100,170,255,0.9)';
 
   return (
     <div style={{
@@ -197,9 +198,9 @@ function CharacterRow({ char }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
         <div style={{
           fontSize: '0.4rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.06em',
-          color: typeColor, padding: '1px 6px',
-          border: `1px solid ${typeColor.replace('0.7', '0.25')}`,
-          background: typeColor.replace('0.7', '0.07'),
+          color: typeTextColor, padding: '1px 6px',
+          border: `1px solid ${typeBorderColor}`,
+          background: 'transparent',
           whiteSpace: 'nowrap',
         }}>
           {isEsclavo ? '⛓ ESCLAVO' : '◈ CIUDADANO'}
