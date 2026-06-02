@@ -19,7 +19,7 @@ export default function Dashboard({ username, onLogout }) {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
-    rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
+    rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
   } = useSocket(username);
@@ -263,6 +263,7 @@ export default function Dashboard({ username, onLogout }) {
                 connectedUsers={connectedUsers}
                 forcePowers={forcePowers}
                 onAddForce={addForcePoint}
+                onSubtractForce={subtractForcePoint}
                 fortalezasCatalog={fortalezasCatalog}
                 onUpdateCatalog={updateFortalezasCatalog}
               />

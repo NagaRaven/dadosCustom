@@ -45,8 +45,9 @@ const SMALL_BTN = {
   borderRadius: '1px',
 };
 
-export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, fortalezasCatalog = [], onUpdateCatalog }) {
-  const players = connectedUsers.filter(u => u !== 'Master');
+export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, onSubtractForce, fortalezasCatalog = [], onUpdateCatalog }) {
+  const players = Object.keys(forcePowers);
+  const onlineSet = new Set(connectedUsers);
 
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [newNombre, setNewNombre]     = useState('');
@@ -86,39 +87,44 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, fo
           </span>
         </div>
 
-        {players.length === 0 ? (
-          <p className="font-mono text-xs text-center" style={{ color: 'rgba(0,255,136,0.25)' }}>
-            Sin jugadores conectados
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {players.map((player) => {
-              const pts = forcePowers[player] ?? 0;
-              return (
-                <div key={player} className="flex items-center justify-between px-3 py-2 rounded-sm"
-                  style={{ background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.1)' }}>
-                  <span className="font-rajdhani font-semibold text-sm" style={{ color: '#a0b4cc', minWidth: '80px' }}>{player}</span>
-                  <div className="flex items-center gap-2 flex-1 justify-center">
-                    <ForceDots count={pts} />
-                    <span className="font-orbitron font-black text-sm"
-                      style={{ color: pts > 0 ? '#00ff88' : 'rgba(0,255,136,0.3)', minWidth: '16px', textAlign: 'right' }}>
-                      {pts}
-                    </span>
-                  </div>
+        <div className="space-y-2">
+          {players.map((player) => {
+            const pts = forcePowers[player] ?? 0;
+            const online = onlineSet.has(player);
+            return (
+              <div key={player} className="flex items-center justify-between px-3 py-2 rounded-sm"
+                style={{ background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.1)' }}>
+                <div className="flex items-center gap-2" style={{ minWidth: '90px' }}>
+                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', flexShrink: 0, background: online ? '#00ff88' : 'rgba(0,255,136,0.15)', boxShadow: online ? '0 0 4px #00ff88' : 'none' }} />
+                  <span className="font-rajdhani font-semibold text-sm" style={{ color: online ? '#a0b4cc' : 'rgba(160,180,204,0.45)' }}>{player}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-1 justify-center">
+                  <ForceDots count={pts} />
+                  <span className="font-orbitron font-black text-sm"
+                    style={{ color: pts > 0 ? '#00ff88' : 'rgba(0,255,136,0.3)', minWidth: '16px', textAlign: 'right' }}>
+                    {pts}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => onSubtractForce(player)}
+                    className="font-orbitron text-xs px-2 py-1 rounded-sm transition-all"
+                    style={{ background: 'rgba(255,68,68,0.06)', border: '1px solid rgba(255,68,68,0.35)', color: 'rgba(255,100,100,0.8)', cursor: pts > 0 ? 'pointer' : 'not-allowed', letterSpacing: '0.05em', opacity: pts > 0 ? 1 : 0.35 }}
+                    onMouseEnter={e => { if (pts > 0) e.currentTarget.style.boxShadow = '0 0 8px rgba(255,68,68,0.3)'; }}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                    data-testid={`subtract-force-${player}`}
+                  >−</button>
                   <button onClick={() => onAddForce(player)}
                     className="font-orbitron text-xs px-2 py-1 rounded-sm transition-all"
                     style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.4)', color: '#00ff88', cursor: 'pointer', letterSpacing: '0.05em' }}
                     onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,136,0.35)'}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
                     data-testid={`add-force-${player}`}
-                  >
-                    + FUERZA
-                  </button>
+                  >+</button>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Catálogo de Fortalezas (plegable) ────────────────────────────── */}

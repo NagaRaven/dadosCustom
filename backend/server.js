@@ -26,10 +26,11 @@ if (!isProd) {
 app.use(express.json());
 
 // ── Persistencia del historial ───────────────────────────────────────────────
-const HISTORY_FILE    = path.join(__dirname, 'data', 'history.json');
-const CHARACTERS_FILE = path.join(__dirname, 'data', 'characters.json');
-const FORTALEZAS_FILE = path.join(__dirname, 'data', 'fortalezas.json');
-const ZYGERRIA_FILE   = path.join(__dirname, 'data', 'zygerria.json');
+const HISTORY_FILE     = path.join(__dirname, 'data', 'history.json');
+const CHARACTERS_FILE  = path.join(__dirname, 'data', 'characters.json');
+const FORTALEZAS_FILE  = path.join(__dirname, 'data', 'fortalezas.json');
+const ZYGERRIA_FILE    = path.join(__dirname, 'data', 'zygerria.json');
+const FORCE_FILE       = path.join(__dirname, 'data', 'force_powers.json');
 
 function loadHistory() {
   try {
@@ -118,13 +119,30 @@ function saveZygerriaHouses(houses) {
   } catch {}
 }
 
+function loadForcePowers() {
+  try {
+    if (fs.existsSync(FORCE_FILE)) {
+      const saved = JSON.parse(fs.readFileSync(FORCE_FILE, 'utf8'));
+      return Object.fromEntries(FORCE_PLAYERS.map(p => [p, saved[p] ?? 2]));
+    }
+  } catch {}
+  return Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
+}
+
+function saveForcePowers(powers) {
+  try {
+    fs.mkdirSync(path.dirname(FORCE_FILE), { recursive: true });
+    fs.writeFileSync(FORCE_FILE, JSON.stringify(powers, null, 2));
+  } catch {}
+}
+
 let fortalezasCatalog = loadFortalezas();
 let zygerriaHouses   = loadZygerriaHouses();
 let characters = loadCharacters();
 let archiveImage = null; // temporal — no se persiste
 
-// Puntos de Fuerza — inicializados a 2 por jugador (el Master no tiene)
-let forcePowers = Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
+// Puntos de Fuerza — se cargan desde disco (default 2 por jugador)
+let forcePowers = loadForcePowers();
 
 // Estado compartido del servidor
 let rollHistory = loadHistory();  // persiste entre reinicios
@@ -217,6 +235,7 @@ io.on('connection', (socket) => {
     if (usedForce && forcePowers[username] !== undefined && forcePowers[username] > 0) {
       forcePowers[username]--;
       forceUsed = true;
+      saveForcePowers(forcePowers);
       io.emit('force_powers_update', forcePowers);
     }
 
@@ -238,6 +257,17 @@ io.on('connection', (socket) => {
     if (sender !== 'Master') return;
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
     forcePowers[targetUsername]++;
+    saveForcePowers(forcePowers);
+    io.emit('force_powers_update', forcePowers);
+  });
+
+  // Master: restar un punto de Fuerza a un jugador (mínimo 0)
+  socket.on('subtract_force_point', ({ targetUsername }) => {
+    const sender = connectedUsers[socket.id];
+    if (sender !== 'Master') return;
+    if (!FORCE_PLAYERS.includes(targetUsername)) return;
+    if (forcePowers[targetUsername] > 0) forcePowers[targetUsername]--;
+    saveForcePowers(forcePowers);
     io.emit('force_powers_update', forcePowers);
   });
 

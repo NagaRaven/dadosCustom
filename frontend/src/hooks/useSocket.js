@@ -77,6 +77,11 @@ export function useSocket(username) {
     socketRef.current.emit('add_force_point', { targetUsername });
   };
 
+  const subtractForcePoint = (targetUsername) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('subtract_force_point', { targetUsername });
+  };
+
   const updateCharacter = (username, data) => {
     if (!socketRef.current?.connected) return;
     socketRef.current.emit('update_character', { username, data });
@@ -125,7 +130,7 @@ export function useSocket(username) {
   return {
     history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
-    rollDice, forceResult, addForcePoint, updateCharacter, setTheme,
+    rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
   };
