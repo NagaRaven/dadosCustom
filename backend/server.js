@@ -30,7 +30,6 @@ const HISTORY_FILE     = path.join(__dirname, 'data', 'history.json');
 const CHARACTERS_FILE  = path.join(__dirname, 'data', 'characters.json');
 const FORTALEZAS_FILE  = path.join(__dirname, 'data', 'fortalezas.json');
 const ZYGERRIA_FILE    = path.join(__dirname, 'data', 'zygerria.json');
-const FORCE_FILE       = path.join(__dirname, 'data', 'force_powers.json');
 
 function loadHistory() {
   try {
@@ -52,8 +51,9 @@ function saveHistory(history) {
 function makeDefaultCharacter() {
   return {
     avatar: null,
-    nombre: '', apellidos: '', raza: '', clase: '',
-    profesion: '', afiliacion: '', px: '',
+    nombre: '', raza: '', clase: '',
+    profesion: '', afiliacion: '',
+    puntosDeFuerza: 2,
     creditos: { enPosesion: '', enElBanco: '' },
     realesDeAOcho: { enPosesion: '', enElBanco: '' },
     inventario: [],
@@ -70,7 +70,7 @@ function loadCharacters() {
   try {
     if (fs.existsSync(CHARACTERS_FILE)) {
       const saved = JSON.parse(fs.readFileSync(CHARACTERS_FILE, 'utf8'));
-      return Object.fromEntries(FORCE_PLAYERS.map(p => [p, saved[p] || makeDefaultCharacter()]));
+      return Object.fromEntries(FORCE_PLAYERS.map(p => [p, { ...makeDefaultCharacter(), ...(saved[p] || {}) }]));
     }
   } catch {}
   return Object.fromEntries(FORCE_PLAYERS.map(p => [p, makeDefaultCharacter()]));
@@ -119,30 +119,11 @@ function saveZygerriaHouses(houses) {
   } catch {}
 }
 
-function loadForcePowers() {
-  try {
-    if (fs.existsSync(FORCE_FILE)) {
-      const saved = JSON.parse(fs.readFileSync(FORCE_FILE, 'utf8'));
-      return Object.fromEntries(FORCE_PLAYERS.map(p => [p, saved[p] ?? 2]));
-    }
-  } catch {}
-  return Object.fromEntries(FORCE_PLAYERS.map(p => [p, 2]));
-}
-
-function saveForcePowers(powers) {
-  try {
-    fs.mkdirSync(path.dirname(FORCE_FILE), { recursive: true });
-    fs.writeFileSync(FORCE_FILE, JSON.stringify(powers, null, 2));
-  } catch {}
-}
 
 let fortalezasCatalog = loadFortalezas();
 let zygerriaHouses   = loadZygerriaHouses();
 let characters = loadCharacters();
 let archiveImage = null; // temporal — no se persiste
-
-// Puntos de Fuerza — se cargan desde disco (default 2 por jugador)
-let forcePowers = loadForcePowers();
 
 // Estado compartido del servidor
 let rollHistory = loadHistory();  // persiste entre reinicios
@@ -217,7 +198,6 @@ app.post('/api/login', (req, res) => {
 
 io.on('connection', (socket) => {
   socket.emit('history', rollHistory);
-  socket.emit('force_powers_update', forcePowers);
   socket.emit('characters_update', characters);
   socket.emit('theme_update', currentTheme);
   socket.emit('fortalezas_catalog_update', fortalezasCatalog);
@@ -232,11 +212,11 @@ io.on('connection', (socket) => {
   socket.on('roll_dice', ({ username, usedForce }) => {
     // Consumir punto de Fuerza si el jugador lo ha activado y tiene puntos
     let forceUsed = false;
-    if (usedForce && forcePowers[username] !== undefined && forcePowers[username] > 0) {
-      forcePowers[username]--;
+    if (usedForce && (characters[username]?.puntosDeFuerza ?? 0) > 0) {
+      characters[username].puntosDeFuerza--;
       forceUsed = true;
-      saveForcePowers(forcePowers);
-      io.emit('force_powers_update', forcePowers);
+      saveCharacters(characters);
+      io.emit('characters_update', characters);
     }
 
     const { roll, nextForced } = processRoll(username, forcedResult);
@@ -256,9 +236,9 @@ io.on('connection', (socket) => {
     const sender = connectedUsers[socket.id];
     if (sender !== 'Master') return;
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
-    forcePowers[targetUsername]++;
-    saveForcePowers(forcePowers);
-    io.emit('force_powers_update', forcePowers);
+    characters[targetUsername].puntosDeFuerza = (characters[targetUsername].puntosDeFuerza ?? 0) + 1;
+    saveCharacters(characters);
+    io.emit('characters_update', characters);
   });
 
   // Master: restar un punto de Fuerza a un jugador (mínimo 0)
@@ -266,9 +246,10 @@ io.on('connection', (socket) => {
     const sender = connectedUsers[socket.id];
     if (sender !== 'Master') return;
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
-    if (forcePowers[targetUsername] > 0) forcePowers[targetUsername]--;
-    saveForcePowers(forcePowers);
-    io.emit('force_powers_update', forcePowers);
+    const current = characters[targetUsername].puntosDeFuerza ?? 0;
+    if (current > 0) characters[targetUsername].puntosDeFuerza = current - 1;
+    saveCharacters(characters);
+    io.emit('characters_update', characters);
   });
 
   // Master: cambiar tema de color de la aplicación

@@ -10,7 +10,6 @@ export function useSocket(username) {
   const [lastRoll, setLastRoll]         = useState(null);
   const [connectedUsers, setConnected]  = useState([]);
   const [forceStatus, setForceStatus]   = useState(null);
-  const [forcePowers, setForcePowers]   = useState({});
   const [isConnected, setIsConnected]   = useState(false);
   const [characters, setCharacters]         = useState({});
   const [theme, setThemeState]              = useState('blue');
@@ -39,7 +38,6 @@ export function useSocket(username) {
     });
 
     socketRef.current.on('users_update', (users) => setConnected(users));
-    socketRef.current.on('force_powers_update', (powers) => setForcePowers(powers));
     socketRef.current.on('characters_update', (chars) => setCharacters(chars));
     socketRef.current.on('fortalezas_catalog_update', (cat) => setFortalezasCatalog(cat));
     socketRef.current.on('archive_image_update', (img) => setArchiveImageState(img));
@@ -126,6 +124,10 @@ export function useSocket(username) {
     if (!socketRef.current?.connected) return;
     socketRef.current.emit('delete_zygerria_house', id);
   };
+
+  const forcePowers = Object.fromEntries(
+    Object.entries(characters).map(([k, v]) => [k, v.puntosDeFuerza ?? 0])
+  );
 
   return {
     history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,

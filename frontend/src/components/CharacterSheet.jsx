@@ -26,6 +26,7 @@ function ensureChar(raw) {
     clase:      raw?.clase      ?? '',
     arquetipo:  raw?.arquetipo  ?? raw?.profesion ?? '',
     afiliacion: raw?.afiliacion ?? '',
+    puntosDeFuerza: raw?.puntosDeFuerza ?? 2,
     creditos:      { enPosesion: raw?.creditos?.enPosesion      ?? '', enElBanco: raw?.creditos?.enElBanco      ?? '' },
     realesDeAOcho: { enPosesion: raw?.realesDeAOcho?.enPosesion ?? '', enElBanco: raw?.realesDeAOcho?.enElBanco ?? '' },
     inventario:           Array.isArray(raw?.inventario)           ? raw.inventario.map(ensureItem)           : [],
@@ -514,6 +515,25 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
                 <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.2em', color:`rgba(${sc.rgb},0.65)`, flexShrink:0 }}>ESTADO</span>
                 <div style={{ width:'1px', height:'16px', background:`rgba(${sc.rgb},0.35)`, flexShrink:0 }} />
                 <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'14px', fontWeight:700, letterSpacing:'0.06em', color:sc.color, textShadow:`0 0 14px rgba(${sc.rgb},0.65)` }}>{char.estado.toUpperCase()}</span>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── PUNTOS DE FUERZA ─────────────────────────────────────────── */}
+        {(() => {
+          const pts = char.puntosDeFuerza ?? 0;
+          return (
+            <div style={{ display:'flex', justifyContent:'center', marginBottom:'14px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 24px', border:'1px solid rgba(0,255,136,0.25)', borderRadius:'5px', background:'rgba(0,255,136,0.04)' }}>
+                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.2em', color:'rgba(0,255,136,0.5)', flexShrink:0 }}>FUERZA</span>
+                <div style={{ width:'1px', height:'16px', background:'rgba(0,255,136,0.2)', flexShrink:0 }} />
+                <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} style={{ width:'8px', height:'8px', borderRadius:'50%', background: i < pts ? '#00ff88' : 'rgba(0,255,136,0.1)', boxShadow: i < pts ? '0 0 6px #00ff88' : 'none', transition:'all 0.3s' }} />
+                  ))}
+                </div>
+                <span style={{ fontFamily:'Orbitron,monospace', fontWeight:900, fontSize:'16px', color: pts > 0 ? '#00ff88' : 'rgba(0,255,136,0.2)', textShadow: pts > 0 ? '0 0 12px rgba(0,255,136,0.6)' : 'none', minWidth:'16px', textAlign:'center' }}>{pts}</span>
               </div>
             </div>
           );
