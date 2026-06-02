@@ -520,25 +520,6 @@ export default function CharacterSheet({ username, isMaster, characters, onUpdat
           );
         })()}
 
-        {/* ── PUNTOS DE FUERZA ─────────────────────────────────────────── */}
-        {(() => {
-          const pts = char.puntosDeFuerza ?? 0;
-          return (
-            <div style={{ display:'flex', justifyContent:'center', marginBottom:'14px' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 24px', border:'1px solid rgba(0,255,136,0.25)', borderRadius:'5px', background:'rgba(0,255,136,0.04)' }}>
-                <span style={{ fontFamily:'Orbitron,monospace', fontSize:'7px', letterSpacing:'0.2em', color:'rgba(0,255,136,0.5)', flexShrink:0 }}>FUERZA</span>
-                <div style={{ width:'1px', height:'16px', background:'rgba(0,255,136,0.2)', flexShrink:0 }} />
-                <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
-                  {Array.from({ length: 6 }, (_, i) => (
-                    <div key={i} style={{ width:'8px', height:'8px', borderRadius:'50%', background: i < pts ? '#00ff88' : 'rgba(0,255,136,0.1)', boxShadow: i < pts ? '0 0 6px #00ff88' : 'none', transition:'all 0.3s' }} />
-                  ))}
-                </div>
-                <span style={{ fontFamily:'Orbitron,monospace', fontWeight:900, fontSize:'16px', color: pts > 0 ? '#00ff88' : 'rgba(0,255,136,0.2)', textShadow: pts > 0 ? '0 0 12px rgba(0,255,136,0.6)' : 'none', minWidth:'16px', textAlign:'center' }}>{pts}</span>
-              </div>
-            </div>
-          );
-        })()}
-
         {/* ── GRID PRINCIPAL: CSS Grid — alturas simétricas por fila ─────── */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 32px 1fr', rowGap:'8px', marginBottom:'14px' }}>
 
