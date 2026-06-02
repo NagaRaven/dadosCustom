@@ -52,7 +52,7 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
 
   return (
     <div
-      className="hud-corners-full rounded-sm p-4"
+      className="hud-corners-full rounded-sm py-3 px-4"
       style={{
         background: 'rgba(124,58,237,0.06)',
         border: '1px solid rgba(124,58,237,0.35)',
