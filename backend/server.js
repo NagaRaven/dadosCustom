@@ -266,7 +266,8 @@ io.on('connection', (socket) => {
     const sender = connectedUsers[socket.id];
     if (sender !== 'Master') return;
     if (!FORCE_PLAYERS.includes(username)) return;
-    characters[username] = { ...makeDefaultCharacter(), ...data };
+    const puntosDeFuerza = characters[username]?.puntosDeFuerza ?? 2;
+    characters[username] = { ...makeDefaultCharacter(), ...data, puntosDeFuerza };
     saveCharacters(characters);
     io.emit('characters_update', characters);
   });
