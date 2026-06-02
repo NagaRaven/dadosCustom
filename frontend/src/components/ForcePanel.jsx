@@ -49,6 +49,7 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, on
   const players = Object.keys(forcePowers);
   const onlineSet = new Set(connectedUsers);
 
+  const [forceOpen, setForceOpen]     = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [newNombre, setNewNombre]     = useState('');
   const [newDesc, setNewDesc]         = useState('');
@@ -77,17 +78,25 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, on
     <>
       {/* ── Puntos de Fuerza ──────────────────────────────────────────────── */}
       <div
-        className="hud-corners-full rounded-sm p-4"
+        className="hud-corners-full rounded-sm"
         style={{ background: 'rgba(0,255,136,0.03)', border: '1px solid rgba(0,255,136,0.2)' }}
       >
-        <div className="flex items-center gap-2 mb-3">
+        <button
+          onClick={() => setForceOpen(o => !o)}
+          style={{
+            width: '100%', background: 'transparent', border: 'none',
+            cursor: 'pointer', padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+          }}
+        >
           <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#00ff88', boxShadow:'0 0 5px #00ff88', flexShrink:0 }} />
-          <span className="font-orbitron text-xs tracking-widest" style={{ color: 'rgba(0,255,136,0.8)' }}>
+          <span className="font-orbitron text-xs tracking-widest flex-1 text-left" style={{ color: 'rgba(0,255,136,0.8)' }}>
             PUNTOS DE FUERZA
           </span>
-        </div>
+          <span style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(0,255,136,0.5)', display:'inline-block', transform: forceOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition:'transform 0.2s' }}>▼</span>
+        </button>
 
-        <div className="space-y-2">
+        {forceOpen && <div className="space-y-2" style={{ padding: '0 16px 12px' }}>
           {players.map((player) => {
             const pts = forcePowers[player] ?? 0;
             const online = onlineSet.has(player);
@@ -124,7 +133,7 @@ export default function ForcePanel({ connectedUsers, forcePowers, onAddForce, on
               </div>
             );
           })}
-        </div>
+        </div>}
       </div>
 
       {/* ── Catálogo de Fortalezas (plegable) ────────────────────────────── */}

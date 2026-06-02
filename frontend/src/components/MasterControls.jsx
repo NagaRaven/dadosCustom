@@ -22,7 +22,7 @@ const STATUS_COLORS = {
 export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme, connectedUsers = [], characters = {}, onSetStatus }) {
   const isArmed = forceStatus !== null;
   const [customValue, setCustomValue] = useState('');
-  const [collapsed, setCollapsed]     = useState(false);
+  const [collapsed, setCollapsed]     = useState(true);
   const prevStatusRef = useRef(null);
 
   // Vacía el input cuando la tirada forzada se ha consumido
