@@ -4,21 +4,6 @@ Aplicación web de rol con estética cyberpunk/sci-fi para tiradas de d20 compar
 
 ---
 
-## Credenciales de acceso
-
-| Operador   | Código de acceso |
-|------------|-----------------|
-| Master     | `Nx7@kP2m`      |
-| Nivare     | `qR5#vL9w`      |
-| Xalithra   | `mT3$hJ6z`      |
-| Luz-Ya     | `bW8!cK4n`      |
-| Mireya     | `pD1%gY7s`      |
-| Kang       | `fV6^uA3x`      |
-
-> El Master tiene acceso exclusivo a los botones "Forzar crítico" y "Forzar pifia".
-
----
-
 ## Instalación y ejecución
 
 ### Requisitos
@@ -91,8 +76,7 @@ tema_custom/
     │   │   ├── Login.jsx         # Pantalla de acceso
     │   │   ├── Dashboard.jsx     # Panel principal
     │   │   ├── DiceRoller.jsx    # Botón + animación del dado
-    │   │   ├── RollHistory.jsx   # Registro global de tiradas
-    │   │   └── MasterControls.jsx # Panel exclusivo del Master
+    │   │   └── RollHistory.jsx   # Registro global de tiradas
     │   ├── hooks/
     │   │   └── useSocket.js      # Gestión de la conexión Socket.IO
     │   └── tests/
@@ -104,13 +88,6 @@ tema_custom/
 ### Flujo de una tirada
 
 1. El jugador pulsa **TIRAR d20** → se emite `roll_dice` al servidor.
-2. El servidor aplica el resultado forzado del Master (si existe) o genera uno aleatorio.
-3. El forzado se consume y se resetea a `null`.
-4. El servidor emite `new_roll` e `history` a **todos** los clientes conectados.
-5. El cliente del jugador que tiró muestra la animación; todos ven el resultado en el historial.
-
-### Seguridad del "forzado"
-
-- La lógica de forzado vive **exclusivamente en el servidor**.
-- El evento `force_confirmed` solo se emite al socket del Master.
-- Los jugadores reciben `new_roll` con el resultado final; no hay indicador de que fue forzado.
+2. El servidor genera el resultado y lo emite a todos los clientes.
+3. El servidor emite `new_roll` e `history` a **todos** los clientes conectados.
+4. El cliente del jugador que tiró muestra la animación; todos ven el resultado en el historial.
