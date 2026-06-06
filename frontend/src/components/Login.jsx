@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const USERS = ['Master', 'Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
+const USERS = ['Master', 'Desarrollador', 'Nivare', 'Xalithra', 'Luz-Ya', 'Mireya', 'Kang'];
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');

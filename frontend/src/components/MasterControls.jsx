@@ -18,8 +18,7 @@ const STATUS_COLORS = {
   'Heridas críticas': '#ff4444',
 };
 
-// Panel exclusivo del Master — no renderizado para otros usuarios
-export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme, connectedUsers = [], characters = {}, onSetStatus }) {
+export default function MasterControls({ onForce, forceStatus, theme = 'blue', onSetTheme, connectedUsers = [], characters = {}, onSetStatus, canForce = false }) {
   const isArmed = forceStatus !== null;
   const [customValue, setCustomValue] = useState('');
   const [collapsed, setCollapsed]     = useState(true);
@@ -117,16 +116,16 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
 
         {/* Crítico — cuadrado amarillo, sin texto */}
         <button
-          onClick={() => onForce('critical')}
-          disabled={isArmed}
-          title="Forzar crítico (20)"
+          onClick={() => canForce && onForce('critical')}
+          disabled={isArmed || !canForce}
+          title={canForce ? 'Forzar crítico (20)' : 'Sin permisos para forzar'}
           style={{
             width: '40px', height: '40px', flexShrink: 0,
-            background: isArmed ? 'transparent' : 'rgba(255,215,0,0.08)',
-            border: `1px solid ${isArmed ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.55)'}`,
-            color: isArmed ? 'rgba(255,215,0,0.3)' : '#ffd700',
-            cursor: isArmed ? 'not-allowed' : 'pointer',
-            boxShadow: isArmed ? 'none' : '0 0 10px rgba(255,215,0,0.15)',
+            background: (isArmed || !canForce) ? 'transparent' : 'rgba(255,215,0,0.08)',
+            border: `1px solid ${(isArmed || !canForce) ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.55)'}`,
+            color: (isArmed || !canForce) ? 'rgba(255,215,0,0.3)' : '#ffd700',
+            cursor: (isArmed || !canForce) ? 'not-allowed' : 'pointer',
+            boxShadow: (isArmed || !canForce) ? 'none' : '0 0 10px rgba(255,215,0,0.15)',
             borderRadius: '2px',
             fontFamily: 'Orbitron, monospace',
             fontSize: '13px',
@@ -139,16 +138,16 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
 
         {/* Pifia — cuadrado rojo, sin texto */}
         <button
-          onClick={() => onForce('fumble')}
-          disabled={isArmed}
-          title="Forzar pifia (1)"
+          onClick={() => canForce && onForce('fumble')}
+          disabled={isArmed || !canForce}
+          title={canForce ? 'Forzar pifia (1)' : 'Sin permisos para forzar'}
           style={{
             width: '40px', height: '40px', flexShrink: 0,
-            background: isArmed ? 'transparent' : 'rgba(255,68,68,0.08)',
-            border: `1px solid ${isArmed ? 'rgba(255,68,68,0.2)' : 'rgba(255,68,68,0.55)'}`,
-            color: isArmed ? 'rgba(255,68,68,0.3)' : '#ff4444',
-            cursor: isArmed ? 'not-allowed' : 'pointer',
-            boxShadow: isArmed ? 'none' : '0 0 10px rgba(255,68,68,0.15)',
+            background: (isArmed || !canForce) ? 'transparent' : 'rgba(255,68,68,0.08)',
+            border: `1px solid ${(isArmed || !canForce) ? 'rgba(255,68,68,0.2)' : 'rgba(255,68,68,0.55)'}`,
+            color: (isArmed || !canForce) ? 'rgba(255,68,68,0.3)' : '#ff4444',
+            cursor: (isArmed || !canForce) ? 'not-allowed' : 'pointer',
+            boxShadow: (isArmed || !canForce) ? 'none' : '0 0 10px rgba(255,68,68,0.15)',
             borderRadius: '2px',
             fontFamily: 'Orbitron, monospace',
             fontSize: '13px',
@@ -166,35 +165,35 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
           placeholder="1–20"
           value={customValue}
           onChange={handleInput}
-          onKeyDown={(e) => e.key === 'Enter' && handleForceCustom()}
-          disabled={isArmed}
+          onKeyDown={(e) => e.key === 'Enter' && canForce && handleForceCustom()}
+          disabled={isArmed || !canForce}
           className="cyber-input text-center font-orbitron text-sm flex-1"
           style={{
             height: '40px',
-            borderColor: isArmed
+            borderColor: (isArmed || !canForce)
               ? 'rgba(124,58,237,0.15)'
               : isCustomValid
               ? 'rgba(124,58,237,0.7)'
               : 'rgba(124,58,237,0.3)',
-            color: isCustomValid ? '#c4b5fd' : 'rgba(196,181,253,0.5)',
+            color: isCustomValid && canForce ? '#c4b5fd' : 'rgba(196,181,253,0.5)',
             background: 'rgba(124,58,237,0.06)',
-            cursor: isArmed ? 'not-allowed' : 'text',
+            cursor: (isArmed || !canForce) ? 'not-allowed' : 'text',
           }}
           data-testid="custom-value-input"
         />
 
         {/* Confirmar tirada personalizada — icono ▶ */}
         <button
-          onClick={handleForceCustom}
-          disabled={isArmed || !isCustomValid}
-          title="Forzar tirada personalizada"
+          onClick={() => canForce && handleForceCustom()}
+          disabled={isArmed || !isCustomValid || !canForce}
+          title={canForce ? 'Forzar tirada personalizada' : 'Sin permisos para forzar'}
           style={{
             width: '40px', height: '40px', flexShrink: 0,
-            background: isArmed || !isCustomValid ? 'transparent' : 'rgba(124,58,237,0.12)',
-            border: `1px solid ${isArmed || !isCustomValid ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.7)'}`,
-            color: isArmed || !isCustomValid ? 'rgba(124,58,237,0.3)' : '#c4b5fd',
-            cursor: isArmed || !isCustomValid ? 'not-allowed' : 'pointer',
-            boxShadow: isArmed || !isCustomValid ? 'none' : '0 0 12px rgba(124,58,237,0.25)',
+            background: (isArmed || !isCustomValid || !canForce) ? 'transparent' : 'rgba(124,58,237,0.12)',
+            border: `1px solid ${(isArmed || !isCustomValid || !canForce) ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.7)'}`,
+            color: (isArmed || !isCustomValid || !canForce) ? 'rgba(124,58,237,0.3)' : '#c4b5fd',
+            cursor: (isArmed || !isCustomValid || !canForce) ? 'not-allowed' : 'pointer',
+            boxShadow: (isArmed || !isCustomValid || !canForce) ? 'none' : '0 0 12px rgba(124,58,237,0.25)',
             borderRadius: '2px',
             fontSize: '16px',
           }}
@@ -250,12 +249,12 @@ export default function MasterControls({ onForce, forceStatus, theme = 'blue', o
         ESTADO DE JUGADORES
       </div>
 
-      {connectedUsers.filter(u => u !== 'Master').length === 0 ? (
+      {connectedUsers.filter(u => u !== 'Master' && u !== 'Desarrollador').length === 0 ? (
         <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:'11px', color:'rgba(124,58,237,0.35)', textAlign:'center', padding:'4px 0' }}>
           Sin jugadores conectados
         </div>
       ) : (
-        connectedUsers.filter(u => u !== 'Master').map(u => {
+        connectedUsers.filter(u => u !== 'Master' && u !== 'Desarrollador').map(u => {
           const currentStatus = characters[u]?.estado || 'Intacto';
           const statusColor = STATUS_COLORS[currentStatus] || '#94a3b8';
           return (

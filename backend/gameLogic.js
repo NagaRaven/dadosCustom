@@ -1,11 +1,12 @@
 // Cuentas predefinidas del sistema — no modificar sin actualizar contraseñas
 const ACCOUNTS = {
-  Master:   'Nx7@kP2m',
-  Nivare:   'qR5#vL9w',
-  Xalithra: 'mT3$hJ6z',
-  'Luz-Ya': 'bW8!cK4n',
-  Mireya:   'pD1%gY7s',
-  Kang:     'fV6^uA3x',
+  Master:       'Nx7@kP2m',
+  Desarrollador:'Zx4#rN8q',
+  Nivare:       'qR5#vL9w',
+  Xalithra:     'mT3$hJ6z',
+  'Luz-Ya':     'bW8!cK4n',
+  Mireya:       'pD1%gY7s',
+  Kang:         'fV6^uA3x',
 };
 
 const MAX_HISTORY = 20;

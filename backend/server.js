@@ -125,6 +125,8 @@ let zygerriaHouses   = loadZygerriaHouses();
 let characters = loadCharacters();
 let archiveImage = null; // temporal — no se persiste
 
+const isAdmin = (u) => u === 'Master' || u === 'Desarrollador';
+
 // Estado compartido del servidor
 let rollHistory = loadHistory();  // persiste entre reinicios
 let forcedResult = null;          // null | 'critical' | 'fumble' | number
@@ -231,20 +233,20 @@ io.on('connection', (socket) => {
     io.emit('history', rollHistory);
   });
 
-  // Master: añadir un punto de Fuerza a un jugador
+  // Master/Desarrollador: añadir un punto de Fuerza a un jugador
   socket.on('add_force_point', ({ targetUsername }) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
     characters[targetUsername].puntosDeFuerza = (characters[targetUsername].puntosDeFuerza ?? 0) + 1;
     saveCharacters(characters);
     io.emit('characters_update', characters);
   });
 
-  // Master: restar un punto de Fuerza a un jugador (mínimo 0)
+  // Master/Desarrollador: restar un punto de Fuerza a un jugador (mínimo 0)
   socket.on('subtract_force_point', ({ targetUsername }) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!FORCE_PLAYERS.includes(targetUsername)) return;
     const current = characters[targetUsername].puntosDeFuerza ?? 0;
     if (current > 0) characters[targetUsername].puntosDeFuerza = current - 1;
@@ -252,19 +254,19 @@ io.on('connection', (socket) => {
     io.emit('characters_update', characters);
   });
 
-  // Master: cambiar tema de color de la aplicación
+  // Master/Desarrollador: cambiar tema de color de la aplicación
   socket.on('set_theme', (theme) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!['blue', 'yellow', 'red', 'orange'].includes(theme)) return;
     currentTheme = theme;
     io.emit('theme_update', theme);
   });
 
-  // Master: actualizar ficha de personaje de un jugador
+  // Master/Desarrollador: actualizar ficha de personaje de un jugador
   socket.on('update_character', ({ username, data }) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!FORCE_PLAYERS.includes(username)) return;
     const puntosDeFuerza = characters[username]?.puntosDeFuerza ?? 2;
     characters[username] = { ...makeDefaultCharacter(), ...data, puntosDeFuerza };
@@ -290,20 +292,20 @@ io.on('connection', (socket) => {
     socket.emit('force_confirmed', { type, value: forcedResult });
   });
 
-  // Master: actualizar catálogo global de fortalezas
+  // Master/Desarrollador: actualizar catálogo global de fortalezas
   socket.on('update_fortalezas_catalog', (catalog) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!Array.isArray(catalog)) return;
     fortalezasCatalog = catalog.filter(f => f && typeof f.nombre === 'string' && f.nombre.trim());
     saveFortalezas(fortalezasCatalog);
     io.emit('fortalezas_catalog_update', fortalezasCatalog);
   });
 
-  // Master: cambiar el estado de un jugador
+  // Master/Desarrollador: cambiar el estado de un jugador
   socket.on('set_player_status', ({ targetPlayer, status }) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (!FORCE_PLAYERS.includes(targetPlayer)) return;
     const VALID = ['Intacto','Herido leve','Herido grave','Enfermo','Aturdido','Lesionado','Heridas críticas'];
     if (!VALID.includes(status)) return;
@@ -312,10 +314,10 @@ io.on('connection', (socket) => {
     io.emit('characters_update', characters);
   });
 
-  // Jugador o Master pueden actualizar las notas de un personaje
+  // Jugador, Master o Desarrollador pueden actualizar las notas de un personaje
   socket.on('update_notes', ({ targetUser, notas }) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master' && sender !== targetUser) return;
+    if (!isAdmin(sender) && sender !== targetUser) return;
     if (!FORCE_PLAYERS.includes(targetUser)) return;
     if (typeof notas !== 'string') return;
     characters[targetUser] = { ...characters[targetUser], notas };
@@ -323,18 +325,18 @@ io.on('connection', (socket) => {
     io.emit('characters_update', characters);
   });
 
-  // Master: imagen temporal (no se persiste, solo vive en memoria)
+  // Master/Desarrollador: imagen temporal (no se persiste, solo vive en memoria)
   socket.on('set_archive_image', (imageData) => {
     const sender = connectedUsers[socket.id];
-    if (sender !== 'Master') return;
+    if (!isAdmin(sender)) return;
     if (imageData !== null && typeof imageData !== 'string') return;
     archiveImage = imageData;
     io.emit('archive_image_update', archiveImage);
   });
 
-  // Master: CRUD de casas nobles Zygerrianas
+  // Master/Desarrollador: CRUD de casas nobles Zygerrianas
   socket.on('add_zygerria_house', (house) => {
-    if (connectedUsers[socket.id] !== 'Master') return;
+    if (!isAdmin(connectedUsers[socket.id])) return;
     const newHouse = { id: String(Date.now()), ...house };
     zygerriaHouses.push(newHouse);
     saveZygerriaHouses(zygerriaHouses);
@@ -342,7 +344,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('update_zygerria_house', ({ id, data }) => {
-    if (connectedUsers[socket.id] !== 'Master') return;
+    if (!isAdmin(connectedUsers[socket.id])) return;
     const idx = zygerriaHouses.findIndex(h => h.id === id);
     if (idx === -1) return;
     zygerriaHouses[idx] = { ...zygerriaHouses[idx], ...data };
@@ -351,7 +353,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('delete_zygerria_house', (id) => {
-    if (connectedUsers[socket.id] !== 'Master') return;
+    if (!isAdmin(connectedUsers[socket.id])) return;
     zygerriaHouses = zygerriaHouses.filter(h => h.id !== id);
     saveZygerriaHouses(zygerriaHouses);
     io.emit('zygerria_houses_update', zygerriaHouses);

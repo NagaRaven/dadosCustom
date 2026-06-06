@@ -13,6 +13,7 @@ import LocationRegistry from './LocationRegistry';
 import Zygerria from './Zygerria';
 
 const isMaster = (u) => u === 'Master';
+const isAdmin  = (u) => u === 'Master' || u === 'Desarrollador';
 
 export default function Dashboard({ username, onLogout }) {
   const {
@@ -245,7 +246,7 @@ export default function Dashboard({ username, onLogout }) {
       ) : currentView === 'zygerria' ? (
         <main className="flex-1 flex flex-col min-h-0">
           <Zygerria
-            isMaster={isMaster(username)}
+            isMaster={isAdmin(username)}
             houses={zygerriaHouses}
             onAddHouse={addZygerriaHouse}
             onUpdateHouse={updateZygerriaHouse}
@@ -275,14 +276,14 @@ export default function Dashboard({ username, onLogout }) {
               onAnimationStart={() => setIsAnimating(true)}
               onAnimationEnd={() => setIsAnimating(false)}
               myForcePower={forcePowers[username]}
-              isMaster={isMaster(username)}
+              isMaster={isAdmin(username)}
             />
           </div>
 
-          {/* Paneles exclusivos del Master */}
-          {isMaster(username) && (
+          {/* Paneles exclusivos del Master/Desarrollador */}
+          {isAdmin(username) && (
             <>
-              <MasterControls onForce={forceResult} forceStatus={forceStatus} theme={theme} onSetTheme={setTheme} connectedUsers={connectedUsers} characters={characters} onSetStatus={setPlayerStatus} />
+              <MasterControls onForce={forceResult} forceStatus={forceStatus} theme={theme} onSetTheme={setTheme} connectedUsers={connectedUsers} characters={characters} onSetStatus={setPlayerStatus} canForce={isMaster(username)} />
               <ForcePanel
                 connectedUsers={connectedUsers}
                 forcePowers={forcePowers}
@@ -300,7 +301,7 @@ export default function Dashboard({ username, onLogout }) {
               <RollHistory history={history} currentUser={username} isAnimating={isAnimating} />
             </div>
             <div className="flex-1 min-h-0">
-              <ArchiveTemp isMaster={isMaster(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
+              <ArchiveTemp isMaster={isAdmin(username)} archiveImage={archiveImage} onSetImage={setArchiveImage} />
             </div>
           </div>
 
@@ -308,7 +309,7 @@ export default function Dashboard({ username, onLogout }) {
             className="glass-panel rounded-sm px-4 py-3 font-mono text-xs shrink-0"
             style={{ color: 'rgba(0,212,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
           >
-{isMaster(username) && (
+{isAdmin(username) && (
               <>
                 <input ref={importInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportDB} />
                 <button
@@ -372,7 +373,7 @@ export default function Dashboard({ username, onLogout }) {
         <div className="md:flex-1 xl:flex-none xl:w-[700px] 2xl:w-[792px] shrink-0 min-h-0" style={{ minHeight: '400px' }}>
           <CharacterSheet
             username={username}
-            isMaster={isMaster(username)}
+            isMaster={isAdmin(username)}
             characters={characters}
             onUpdate={updateCharacter}
             onUpdateNotes={updateNotes}
