@@ -244,7 +244,16 @@ function EventModal({ event, onSave, onClose }) {
 // ── Panel de detalle holográfico ──────────────────────────────────────────
 
 function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
-  const [confirmDel, setConfirmDel] = useState(false);
+  const [confirmDel,   setConfirmDel]   = useState(false);
+  const [imgHovered,   setImgHovered]   = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const fn = (e) => { if (e.key === 'Escape') setLightboxOpen(false); };
+    document.addEventListener('keydown', fn);
+    return () => document.removeEventListener('keydown', fn);
+  }, [lightboxOpen]);
 
   const handleDel = () => {
     if (confirmDel) { onDelete(); }
@@ -343,14 +352,43 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
           )}
         </div>
 
-        {/* Columna derecha: imagen cuadrada (sin recorte) */}
+        {/* Columna derecha: imagen cuadrada 50% (sin recorte) */}
         {event.imagen && (
-          <div style={{ flexShrink: 0, width: '38%', maxWidth: '200px', padding: '18px 18px 18px 0' }}>
-            <div style={{ position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.28)', borderRadius: '2px', overflow: 'hidden', boxShadow: '0 0 14px rgba(0,212,255,0.08)' }}>
+          <div style={{ flexShrink: 0, width: '50%', padding: '18px 18px 18px 0' }}>
+            <div
+              style={{ position: 'relative', paddingBottom: '100%', background: '#000', border: `1px solid ${imgHovered ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.28)'}`, borderRadius: '2px', overflow: 'hidden', boxShadow: imgHovered ? '0 0 22px rgba(0,212,255,0.18)' : '0 0 14px rgba(0,212,255,0.08)', cursor: 'zoom-in', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+              onMouseEnter={() => setImgHovered(true)}
+              onMouseLeave={() => setImgHovered(false)}
+              onClick={() => setLightboxOpen(true)}
+            >
               <img src={event.imagen} alt={event.nombre} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
               {/* hologram tint */}
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,160,0.08)', mixBlendMode: 'screen', pointerEvents: 'none' }} />
+              {/* zoom overlay on hover */}
+              {imgHovered && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.85)', background: 'rgba(0,8,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(0,212,255,0.45)', color: 'rgba(0,212,255,0.95)', fontSize: '1.1rem' }}>
+                    ⤢
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Lightbox */}
+        {lightboxOpen && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+            onClick={() => setLightboxOpen(false)}
+          >
+            <img src={event.imagen} alt={event.nombre} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', display: 'block', borderRadius: '2px', boxShadow: '0 0 60px rgba(0,212,255,0.15)' }} />
+            <button
+              onClick={() => setLightboxOpen(false)}
+              style={{ position: 'absolute', top: '20px', right: '24px', background: 'transparent', border: '1px solid rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.7)', fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', padding: '6px 14px', cursor: 'pointer', borderRadius: '2px', letterSpacing: '0.1em' }}
+            >
+              ✕ CERRAR
+            </button>
           </div>
         )}
       </div>
@@ -379,9 +417,16 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
         userSelect: 'none', opacity: isDragging ? 0.3 : 1,
       }}
     >
+      {/* Miniatura cuadrada (sin recorte) */}
+      {event.imagen && (
+        <div style={{ marginBottom: '7px', position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
+          <img src={event.imagen} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+        </div>
+      )}
+
       {/* Nombre + botón editar */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
-        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: '0.08em', color: isSelected ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.85)', wordBreak: 'break-word', lineHeight: 1.4, flex: 1 }}>
+        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.72rem', letterSpacing: '0.07em', color: isSelected ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.88)', wordBreak: 'break-word', lineHeight: 1.4, flex: 1 }}>
           {event.nombre}
         </div>
         {isEditor && (
@@ -391,13 +436,6 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
           </button>
         )}
       </div>
-
-      {/* Miniatura cuadrada debajo del título (sin recorte) */}
-      {event.imagen && (
-        <div style={{ marginTop: '7px', position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
-          <img src={event.imagen} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-        </div>
-      )}
     </div>
   );
 }
