@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 // ── Constantes ────────────────────────────────────────────────────────────
 
@@ -295,100 +296,6 @@ function EventModal({ event, onSave, onClose }) {
   );
 }
 
-// ── Panel de estadísticas ─────────────────────────────────────────────────
-
-function StatsPanel({ events }) {
-  const total = events.length;
-  const bySeason = events.reduce((acc, ev) => {
-    const k = ev.temporada ?? 0;
-    acc[k] = (acc[k] || 0) + 1;
-    return acc;
-  }, {});
-  const byNivel = events.reduce((acc, ev) => {
-    const k = ev.nivel || 'casual';
-    acc[k] = (acc[k] || 0) + 1;
-    return acc;
-  }, { casual: 0, importante: 0, legendario: 0 });
-  const playerCounts = PLAYERS.reduce((acc, p) => {
-    acc[p] = events.filter(ev => (ev.jugadores || []).includes(p)).length;
-    return acc;
-  }, {});
-
-  const Row = ({ label, value, color = 'rgba(0,212,255,0.75)' }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid rgba(0,212,255,0.05)' }}>
-      <span style={{ color: 'rgba(0,212,255,0.45)', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em' }}>{label}</span>
-      <span style={{ color, fontFamily: 'Orbitron, monospace', fontSize: '0.78rem', fontWeight: 700, textShadow: `0 0 10px ${color}55` }}>{value}</span>
-    </div>
-  );
-
-  return (
-    <div style={{
-      height: '100%', display: 'flex', flexDirection: 'column', position: 'relative',
-      background: 'linear-gradient(175deg, rgba(0,10,22,0.98) 0%, rgba(0,5,14,0.99) 100%)',
-      border: '1px solid rgba(0,212,255,0.45)',
-      boxShadow: '0 0 30px rgba(0,212,255,0.1), inset 0 0 50px rgba(0,140,255,0.03)',
-      overflow: 'hidden',
-      animation: 'holo-flicker 11s ease-in-out infinite',
-    }}>
-      {/* scan lines */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.006) 3px, rgba(0,212,255,0.006) 4px)', pointerEvents: 'none', zIndex: 0 }} />
-      {/* HUD corners */}
-      <div className="hud-corners-full" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
-      {/* Moving scan line */}
-      <div style={{ position: 'absolute', left: 0, right: 0, height: '2px', background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.28) 40%, rgba(0,212,255,0.28) 60%, transparent 95%)', animation: 'holo-scan-panel 8s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
-
-      {/* Header */}
-      <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(0,212,255,0.1)', flexShrink: 0, zIndex: 3, position: 'relative' }}>
-        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.55rem', letterSpacing: '0.2em', color: 'rgba(0,212,255,0.38)' }}>◈ DATOS DEL ARCHIVO</div>
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 20px', position: 'relative', zIndex: 3 }}>
-        {/* Total */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '10px 0', borderBottom: '1px solid rgba(0,212,255,0.12)' }}>
-          <span style={{ color: 'rgba(0,212,255,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.62rem', letterSpacing: '0.12em' }}>EVENTOS TOTALES</span>
-          <span style={{ color: '#00d4ff', fontFamily: 'Orbitron, monospace', fontSize: '1.8rem', fontWeight: 700, textShadow: '0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,212,255,0.25)', lineHeight: 1 }}>{total}</span>
-        </div>
-
-        {total === 0 ? (
-          <div style={{ color: 'rgba(0,212,255,0.2)', fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', letterSpacing: '0.12em', textAlign: 'center', paddingTop: '20px' }}>
-            SIN EVENTOS REGISTRADOS
-          </div>
-        ) : (
-          <>
-            {/* Por temporada */}
-            <div style={{ marginBottom: '18px' }}>
-              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR TEMPORADA</div>
-              {[1, 2, 3].map(t => bySeason[t] > 0 && (
-                <Row key={t} label={`TEMPORADA ${t}`} value={bySeason[t]} color={tempColor(t)} />
-              ))}
-              {(bySeason[0] || 0) > 0 && <Row label="SIN TEMPORADA" value={bySeason[0]} color="rgba(0,212,255,0.5)" />}
-            </div>
-
-            {/* Por nivel */}
-            <div style={{ marginBottom: '18px' }}>
-              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR NIVEL</div>
-              {byNivel.legendario > 0 && <Row label="LEGENDARIOS" value={byNivel.legendario} color="#ffd700" />}
-              {byNivel.importante > 0 && <Row label="IMPORTANTES"  value={byNivel.importante} color="rgba(0,212,255,0.9)" />}
-              {byNivel.casual     > 0 && <Row label="CASUALES"     value={byNivel.casual}     color="rgba(0,212,255,0.5)" />}
-            </div>
-
-            {/* Por jugador */}
-            {Object.values(playerCounts).some(v => v > 0) && (
-              <div>
-                <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR JUGADOR</div>
-                {PLAYERS.filter(p => playerCounts[p] > 0).map(p => (
-                  <Row key={p} label={p.toUpperCase()} value={playerCounts[p]} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Panel de detalle holográfico ──────────────────────────────────────────
 
 function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
@@ -539,69 +446,68 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
         {event.imagen && (
           <div style={{ flexShrink: 0, width: '50%', padding: '18px 18px 0 0', display: 'flex', flexDirection: 'column' }}>
 
-            {/* Imagen cuadrada con efecto holograma */}
+            {/* Imagen con efecto holograma oval */}
             <div
               style={{
                 position: 'relative', paddingBottom: '100%',
-                background: '#000d1a',
-                border: `1px solid ${imgHovered ? 'rgba(0,212,255,0.65)' : 'rgba(0,212,255,0.38)'}`,
-                borderRadius: '2px 2px 0 0',
-                overflow: 'hidden', cursor: 'zoom-in',
-                boxShadow: imgHovered ? '0 0 28px rgba(0,212,255,0.2)' : '0 0 16px rgba(0,212,255,0.1)',
+                background: 'transparent',
+                overflow: 'visible', cursor: 'zoom-in',
                 animation: 'holo-flicker 11s ease-in-out infinite',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
+                /* Máscara oval para bordes difuminados */
+                maskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 28%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.2) 70%, transparent 88%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 28%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.2) 70%, transparent 88%)',
               }}
               onMouseEnter={() => setImgHovered(true)}
               onMouseLeave={() => setImgHovered(false)}
               onClick={() => setLightboxOpen(true)}
             >
-              {/* Imagen base ligeramente desaturada */}
+              {/* Imagen base — alta distorsión cromática */}
               <img src={event.imagen} alt={event.nombre} style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 objectFit: 'contain', display: 'block',
-                filter: 'brightness(1.05) contrast(1.12) saturate(0.55)',
+                filter: 'brightness(1.12) contrast(1.25) saturate(0.3) hue-rotate(-12deg)',
               }} />
 
-              {/* Tinte holográfico azul */}
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,80,200,0.30)', pointerEvents: 'none', zIndex: 1 }} />
+              {/* Tinte holográfico azul intenso */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,210,0.42)', pointerEvents: 'none', zIndex: 1 }} />
 
-              {/* Líneas de escaneo (scanlines) */}
+              {/* Scanlines pronunciadas */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,212,255,0.07) 0px, rgba(0,212,255,0.07) 1px, transparent 1px, transparent 5px)',
+                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,180,255,0.11) 0px, rgba(0,180,255,0.11) 1px, transparent 1px, transparent 4px)',
                 pointerEvents: 'none', zIndex: 2,
               }} />
 
-              {/* Línea de escaneo móvil */}
+              {/* Viñeta radial extra para reforzar el oval */}
               <div style={{
-                position: 'absolute', left: 0, right: 0, height: '2px',
-                background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.6) 40%, rgba(0,212,255,0.6) 60%, transparent 95%)',
-                animation: 'holo-img-scan 3.8s linear infinite',
+                position: 'absolute', inset: 0,
+                background: 'radial-gradient(ellipse at center, transparent 38%, rgba(0,6,30,0.55) 68%, rgba(0,0,20,0.85) 88%)',
                 pointerEvents: 'none', zIndex: 3,
               }} />
 
-              {/* Viñeta bordes (efecto holograma difuso) */}
+              {/* Brillo central (efecto emisión holográfica) */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'radial-gradient(ellipse at center, transparent 52%, rgba(0,10,40,0.6) 100%)',
+                background: 'radial-gradient(ellipse 70% 65% at 50% 50%, rgba(0,180,255,0.08) 0%, transparent 70%)',
+                mixBlendMode: 'screen',
                 pointerEvents: 'none', zIndex: 2,
               }} />
 
               {/* Zoom overlay al hacer hover */}
               {imgHovered && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 5 }}>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 5 }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.85)', background: 'rgba(0,8,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(0,212,255,0.45)', color: 'rgba(0,212,255,0.95)', fontSize: '1.1rem' }}>⤢</div>
                 </div>
               )}
             </div>
 
             {/* Base del proyector holográfico */}
-            <div style={{ position: 'relative', height: '54px', overflow: 'hidden', borderRadius: '0 0 2px 2px', background: 'rgba(0,5,15,0.8)', border: '1px solid rgba(0,212,255,0.2)', borderTop: 'none' }}>
+            <div style={{ position: 'relative', height: '54px', overflow: 'hidden', background: 'transparent' }}>
               {/* Cono de luz hacia arriba */}
               <div style={{
                 position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
                 width: '68%', height: '42px',
-                background: 'linear-gradient(to top, rgba(0,212,255,0.13) 0%, transparent 100%)',
+                background: 'linear-gradient(to top, rgba(0,212,255,0.15) 0%, transparent 100%)',
                 clipPath: 'polygon(15% 100%, 85% 100%, 62% 0%, 38% 0%)',
                 pointerEvents: 'none',
               }} />
@@ -624,7 +530,6 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
                 animation: 'holo-proj-pulse 2.5s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
-              {/* Líneas de detalle del aparato */}
               <div style={{
                 position: 'absolute', bottom: '28px', left: '50%', transform: 'translateX(-50%)',
                 width: '45%', height: '1px',
@@ -635,17 +540,18 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
           </div>
         )}
 
-        {/* Lightbox */}
-        {lightboxOpen && (
+        {/* Lightbox — portal para evitar problemas de stacking context */}
+        {lightboxOpen && createPortal(
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
             onClick={() => setLightboxOpen(false)}
           >
             <img src={event.imagen} alt={event.nombre} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', display: 'block', borderRadius: '2px', boxShadow: '0 0 60px rgba(0,212,255,0.15)' }} />
-            <button onClick={() => setLightboxOpen(false)} style={{ position: 'absolute', top: '20px', right: '24px', background: 'transparent', border: '1px solid rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.7)', fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', padding: '6px 14px', cursor: 'pointer', borderRadius: '2px', letterSpacing: '0.1em' }}>
+            <button onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }} style={{ position: 'absolute', top: '20px', right: '24px', background: 'transparent', border: '1px solid rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.7)', fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', padding: '6px 14px', cursor: 'pointer', borderRadius: '2px', letterSpacing: '0.1em' }}>
               ✕ CERRAR
             </button>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>
@@ -807,7 +713,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
   // ── render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <div className="tl-galaxy-bg-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
 
       {/* ══ CABECERA ══════════════════════════════════════════════════════ */}
       <div style={{ flexShrink: 0, padding: '0 18px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
@@ -874,10 +780,13 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
       {/* ══ CONTENIDO: timeline + panel derecho ══════════════════════════ */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
-        {/* ── Columna timeline (60%) ────────────────────────────────────── */}
+        {/* ── Columna timeline ─────────────────────────────────────────── */}
         <div style={{
-          flexShrink: 0, width: '60%', overflow: 'hidden',
-          borderRight: '1px solid rgba(0,212,255,0.1)',
+          flexShrink: 0,
+          width: selectedEvent ? '42%' : '100%',
+          transition: 'width 0.35s ease',
+          overflow: 'hidden',
+          borderRight: selectedEvent ? '1px solid rgba(0,212,255,0.1)' : 'none',
         }}>
           <div style={{ height: '100%', overflowY: 'auto', position: 'relative' }}
             onDragOver={e => e.preventDefault()}
@@ -976,24 +885,18 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           </div>
         </div>
 
-        {/* ── Panel derecho: estadísticas o detalle (40%) ───────────────── */}
-        <div style={{ flex: 1, minWidth: 0, padding: '10px' }}>
-          {selectedEvent ? (
-            <div style={{ height: '100%', animation: 'tl-detail-in 0.3s ease-out' }}>
-              <DetailPanel
-                event={selectedEvent}
-                isEditor={isEditor}
-                onClose={() => setSelectedId(null)}
-                onEdit={() => openEditModal(selectedEvent)}
-                onDelete={() => { onDelete(selectedId); setSelectedId(null); }}
-              />
-            </div>
-          ) : (
-            <div style={{ height: '100%', animation: 'tl-detail-in 0.25s ease-out' }}>
-              <StatsPanel events={events} />
-            </div>
-          )}
-        </div>
+        {/* ── Panel detalle ────────────────────────────────────────────── */}
+        {selectedEvent && (
+          <div style={{ flex: 1, minWidth: 0, padding: '10px', animation: 'tl-detail-in 0.3s ease-out' }}>
+            <DetailPanel
+              event={selectedEvent}
+              isEditor={isEditor}
+              onClose={() => setSelectedId(null)}
+              onEdit={() => openEditModal(selectedEvent)}
+              onDelete={() => { onDelete(selectedId); setSelectedId(null); }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Modal */}
