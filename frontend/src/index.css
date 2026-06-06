@@ -479,10 +479,32 @@ body {
   100% { opacity: 1;  clip-path: inset(0 0 0%   0); }
 }
 
-/* ── Timeline: expansión de descripción ────────────────────────────────── */
+/* ── Timeline: animaciones ──────────────────────────────────────────────── */
 @keyframes tl-expand {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tl-detail-in {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Parpadeo holográfico suave */
+@keyframes holo-flicker {
+  0%, 88%, 90.5%, 93%, 100% { opacity: 1; }
+  89%   { opacity: 0.91; }
+  90%   { opacity: 0.97; }
+  91%   { opacity: 0.88; }
+  92%   { opacity: 1; }
+}
+
+/* Línea de escaneo vertical dentro del panel de detalle */
+@keyframes holo-scan-panel {
+  0%   { top: -2px;  opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: calc(100% + 2px); opacity: 0; }
 }
 
 /* ── Scrollbar personalizada ────────────────────────────────────────────── */

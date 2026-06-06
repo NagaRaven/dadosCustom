@@ -399,12 +399,16 @@ io.on('connection', (socket) => {
   // Editores de timeline: añadir evento
   socket.on('timeline_add_event', (data) => {
     if (!TIMELINE_EDITORS.includes(connectedUsers[socket.id])) return;
+    const imagen = typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000
+      ? data.imagen : null;
     const ev = {
       id: String(Date.now()),
       nombre: String(data.nombre || '').slice(0, 200).trim(),
       descripcion: String(data.descripcion || '').slice(0, 2000).trim(),
       tags: Array.isArray(data.tags) ? data.tags.map(t => String(t).slice(0, 50)).slice(0, 10) : [],
       orden: typeof data.orden === 'number' && isFinite(data.orden) ? data.orden : 1000,
+      temporada: [1, 2, 3].includes(data.temporada) ? data.temporada : null,
+      imagen,
     };
     if (!ev.nombre) return;
     timelineEvents.push(ev);
@@ -421,6 +425,12 @@ io.on('connection', (socket) => {
     if (typeof data.nombre === 'string' && data.nombre.trim()) allowed.nombre = data.nombre.trim().slice(0, 200);
     if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
     if (Array.isArray(data.tags)) allowed.tags = data.tags.map(t => String(t).slice(0, 50)).slice(0, 10);
+    if ([1, 2, 3, null].includes(data.temporada)) allowed.temporada = data.temporada;
+    if (data.imagen === null) {
+      allowed.imagen = null;
+    } else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) {
+      allowed.imagen = data.imagen;
+    }
     timelineEvents[idx] = { ...timelineEvents[idx], ...allowed };
     saveTimeline(timelineEvents);
     io.emit('timeline_events_update', timelineEvents);
