@@ -292,59 +292,65 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
         </div>
       </div>
 
-      {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 24px', position: 'relative', zIndex: 3 }}>
+      {/* Body: texto izquierda + imagen derecha */}
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'flex-start', gap: '0', position: 'relative', zIndex: 3 }}>
 
-        {/* Imagen */}
-        {event.imagen && (
-          <div style={{ position: 'relative', marginBottom: '18px', borderRadius: '2px', overflow: 'hidden', border: '1px solid rgba(0,212,255,0.3)', boxShadow: '0 0 20px rgba(0,212,255,0.08)' }}>
-            <img src={event.imagen} alt={event.nombre} style={{ width: '100%', maxHeight: '260px', objectFit: 'cover', display: 'block' }} />
-            {/* hologram tint */}
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,160,0.1)', mixBlendMode: 'screen', pointerEvents: 'none' }} />
+        {/* Columna izquierda: texto */}
+        <div style={{ flex: 1, minWidth: 0, padding: '18px 16px 24px 18px' }}>
+
+          {/* Título */}
+          <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '1rem', fontWeight: 700, color: 'rgba(0,220,255,0.95)', letterSpacing: '0.1em', lineHeight: 1.35, marginBottom: '14px', textShadow: '0 0 18px rgba(0,212,255,0.5), 0 0 40px rgba(0,212,255,0.2)' }}>
+            {event.nombre}
           </div>
-        )}
 
-        {/* Título */}
-        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '1rem', fontWeight: 700, color: 'rgba(0,220,255,0.95)', letterSpacing: '0.1em', lineHeight: 1.35, marginBottom: '14px', textShadow: '0 0 18px rgba(0,212,255,0.5), 0 0 40px rgba(0,212,255,0.2)' }}>
-          {event.nombre}
-        </div>
+          {/* Meta: temporada + tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+            {event.temporada && (
+              <span style={{
+                padding: '3px 11px', borderRadius: '2px',
+                border: `1px solid ${tempColor(event.temporada)}77`,
+                background: `${tempColor(event.temporada)}15`,
+                color: tempColor(event.temporada),
+                fontFamily: 'Orbitron, monospace', fontSize: '0.63rem', letterSpacing: '0.14em',
+                textShadow: `0 0 10px ${tempColor(event.temporada)}55`,
+              }}>
+                TEMPORADA {event.temporada}
+              </span>
+            )}
+            {event.tags?.map(t => (
+              <span key={t} style={{
+                padding: '2px 9px', borderRadius: '2px',
+                border: `1px solid ${tagColor(t)}44`, background: `${tagColor(t)}15`,
+                color: tagColor(t), fontSize: '0.59rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.07em',
+              }}>
+                {t}
+              </span>
+            ))}
+          </div>
 
-        {/* Meta: temporada + tags */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
-          {event.temporada && (
-            <span style={{
-              padding: '3px 11px', borderRadius: '2px',
-              border: `1px solid ${tempColor(event.temporada)}77`,
-              background: `${tempColor(event.temporada)}15`,
-              color: tempColor(event.temporada),
-              fontFamily: 'Orbitron, monospace', fontSize: '0.63rem', letterSpacing: '0.14em',
-              textShadow: `0 0 10px ${tempColor(event.temporada)}55`,
-            }}>
-              TEMPORADA {event.temporada}
-            </span>
+          {/* Divisor */}
+          <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(0,212,255,0.45), rgba(0,212,255,0.1), transparent)', marginBottom: '16px' }} />
+
+          {/* Descripción */}
+          {event.descripcion ? (
+            <div style={{ color: 'rgba(180,225,255,0.82)', fontSize: '0.9rem', lineHeight: 1.7, fontFamily: 'Rajdhani, sans-serif', whiteSpace: 'pre-wrap' }}>
+              {event.descripcion}
+            </div>
+          ) : (
+            <div style={{ color: 'rgba(0,212,255,0.22)', fontSize: '0.78rem', fontStyle: 'italic', fontFamily: 'Rajdhani, sans-serif' }}>
+              Sin descripción registrada.
+            </div>
           )}
-          {event.tags?.map(t => (
-            <span key={t} style={{
-              padding: '2px 9px', borderRadius: '2px',
-              border: `1px solid ${tagColor(t)}44`, background: `${tagColor(t)}15`,
-              color: tagColor(t), fontSize: '0.59rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.07em',
-            }}>
-              {t}
-            </span>
-          ))}
         </div>
 
-        {/* Divisor */}
-        <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(0,212,255,0.45), rgba(0,212,255,0.1), transparent)', marginBottom: '16px' }} />
-
-        {/* Descripción */}
-        {event.descripcion ? (
-          <div style={{ color: 'rgba(180,225,255,0.82)', fontSize: '0.9rem', lineHeight: 1.7, fontFamily: 'Rajdhani, sans-serif', whiteSpace: 'pre-wrap' }}>
-            {event.descripcion}
-          </div>
-        ) : (
-          <div style={{ color: 'rgba(0,212,255,0.22)', fontSize: '0.78rem', fontStyle: 'italic', fontFamily: 'Rajdhani, sans-serif' }}>
-            Sin descripción registrada.
+        {/* Columna derecha: imagen cuadrada (sin recorte) */}
+        {event.imagen && (
+          <div style={{ flexShrink: 0, width: '38%', maxWidth: '200px', padding: '18px 18px 18px 0' }}>
+            <div style={{ position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.28)', borderRadius: '2px', overflow: 'hidden', boxShadow: '0 0 14px rgba(0,212,255,0.08)' }}>
+              <img src={event.imagen} alt={event.nombre} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+              {/* hologram tint */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,160,0.08)', mixBlendMode: 'screen', pointerEvents: 'none' }} />
+            </div>
           </div>
         )}
       </div>
@@ -373,13 +379,6 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
         userSelect: 'none', opacity: isDragging ? 0.3 : 1,
       }}
     >
-      {/* Miniatura */}
-      {event.imagen && (
-        <div style={{ marginBottom: '6px', borderRadius: '2px', overflow: 'hidden', height: '44px', border: '1px solid rgba(0,212,255,0.18)' }}>
-          <img src={event.imagen} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        </div>
-      )}
-
       {/* Nombre + botón editar */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
         <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: '0.08em', color: isSelected ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.85)', wordBreak: 'break-word', lineHeight: 1.4, flex: 1 }}>
@@ -393,19 +392,10 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
         )}
       </div>
 
-      {/* Badges: temporada + tags */}
-      {(event.temporada || event.tags?.length > 0) && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '5px' }}>
-          {event.temporada && (
-            <span style={{ padding: '1px 5px', borderRadius: '2px', border: `1px solid ${tempColor(event.temporada)}44`, background: `${tempColor(event.temporada)}12`, color: tempColor(event.temporada), fontSize: '0.52rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.1em' }}>
-              T{event.temporada}
-            </span>
-          )}
-          {event.tags?.map(t => (
-            <span key={t} style={{ padding: '1px 5px', borderRadius: '2px', border: `1px solid ${tagColor(t)}28`, background: `${tagColor(t)}0e`, color: tagColor(t), fontSize: '0.5rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.04em' }}>
-              {t}
-            </span>
-          ))}
+      {/* Miniatura cuadrada debajo del título (sin recorte) */}
+      {event.imagen && (
+        <div style={{ marginTop: '7px', position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
+          <img src={event.imagen} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
         </div>
       )}
     </div>
