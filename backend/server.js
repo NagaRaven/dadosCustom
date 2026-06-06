@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const { validateLogin, processRoll, limitHistory, FORCE_PLAYERS } = require('./gameLogic');
+const { validateLogin, processRoll, limitHistory, FORCE_PLAYERS, TIMELINE_EDITORS } = require('./gameLogic');
 
 // Railway siempre inyecta RAILWAY_ENVIRONMENT; también acepta NODE_ENV=production
 const isProd = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT;
@@ -30,6 +30,7 @@ const HISTORY_FILE     = path.join(__dirname, 'data', 'history.json');
 const CHARACTERS_FILE  = path.join(__dirname, 'data', 'characters.json');
 const FORTALEZAS_FILE  = path.join(__dirname, 'data', 'fortalezas.json');
 const ZYGERRIA_FILE    = path.join(__dirname, 'data', 'zygerria.json');
+const TIMELINE_FILE    = path.join(__dirname, 'data', 'timeline.json');
 
 function loadHistory() {
   try {
@@ -119,9 +120,38 @@ function saveZygerriaHouses(houses) {
   } catch {}
 }
 
+// ── Persistencia de la línea cronológica ─────────────────────────────────────
+function loadTimeline() {
+  try {
+    if (fs.existsSync(TIMELINE_FILE)) {
+      return JSON.parse(fs.readFileSync(TIMELINE_FILE, 'utf8'));
+    }
+  } catch {}
+  return [];
+}
+
+function saveTimeline(events) {
+  try {
+    fs.mkdirSync(path.dirname(TIMELINE_FILE), { recursive: true });
+    fs.writeFileSync(TIMELINE_FILE, JSON.stringify(events, null, 2));
+  } catch {}
+}
+
+function reindexTimeline(events) {
+  const sorted = [...events].sort((a, b) => b.orden - a.orden);
+  const minGap = sorted.length < 2 ? Infinity : sorted.reduce((min, e, i) => {
+    if (i === 0) return min;
+    return Math.min(min, sorted[i - 1].orden - e.orden);
+  }, Infinity);
+  if (minGap < 0.01) {
+    sorted.forEach((e, i) => { e.orden = (sorted.length - i) * 1000; });
+  }
+}
+
 
 let fortalezasCatalog = loadFortalezas();
 let zygerriaHouses   = loadZygerriaHouses();
+let timelineEvents   = loadTimeline();
 let characters = loadCharacters();
 let archiveImage = null; // temporal — no se persiste
 
@@ -145,6 +175,7 @@ app.get('/api/export-db', (_req, res) => {
     characters,
     fortalezasCatalog,
     zygerriaHouses,
+    timelineEvents,
   };
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   res.setHeader('Content-Disposition', `attachment; filename="d20-backup-${ts}.json"`);
@@ -155,7 +186,7 @@ app.get('/api/export-db', (_req, res) => {
 
 // Importar BD — reemplaza todos los datos con el fichero de backup
 app.post('/api/import-db', (req, res) => {
-  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg } = req.body || {};
+  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg, timelineEvents: importedTimeline } = req.body || {};
   if (!importedChars || typeof importedChars !== 'object') {
     return res.status(400).json({ success: false, message: 'Fichero inválido: falta characters' });
   }
@@ -178,6 +209,11 @@ app.post('/api/import-db', (req, res) => {
     zygerriaHouses = importedZyg;
     saveZygerriaHouses(zygerriaHouses);
     io.emit('zygerria_houses_update', zygerriaHouses);
+  }
+  if (Array.isArray(importedTimeline)) {
+    timelineEvents = importedTimeline;
+    saveTimeline(timelineEvents);
+    io.emit('timeline_events_update', timelineEvents);
   }
   res.json({ success: true });
 });
@@ -205,6 +241,7 @@ io.on('connection', (socket) => {
   socket.emit('fortalezas_catalog_update', fortalezasCatalog);
   socket.emit('archive_image_update', archiveImage);
   socket.emit('zygerria_houses_update', zygerriaHouses);
+  socket.emit('timeline_events_update', timelineEvents);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -357,6 +394,56 @@ io.on('connection', (socket) => {
     zygerriaHouses = zygerriaHouses.filter(h => h.id !== id);
     saveZygerriaHouses(zygerriaHouses);
     io.emit('zygerria_houses_update', zygerriaHouses);
+  });
+
+  // Editores de timeline: añadir evento
+  socket.on('timeline_add_event', (data) => {
+    if (!TIMELINE_EDITORS.includes(connectedUsers[socket.id])) return;
+    const ev = {
+      id: String(Date.now()),
+      nombre: String(data.nombre || '').slice(0, 200).trim(),
+      descripcion: String(data.descripcion || '').slice(0, 2000).trim(),
+      tags: Array.isArray(data.tags) ? data.tags.map(t => String(t).slice(0, 50)).slice(0, 10) : [],
+      orden: typeof data.orden === 'number' && isFinite(data.orden) ? data.orden : 1000,
+    };
+    if (!ev.nombre) return;
+    timelineEvents.push(ev);
+    saveTimeline(timelineEvents);
+    io.emit('timeline_events_update', timelineEvents);
+  });
+
+  // Editores de timeline: editar evento
+  socket.on('timeline_update_event', ({ id, data }) => {
+    if (!TIMELINE_EDITORS.includes(connectedUsers[socket.id])) return;
+    const idx = timelineEvents.findIndex(e => e.id === id);
+    if (idx === -1) return;
+    const allowed = {};
+    if (typeof data.nombre === 'string' && data.nombre.trim()) allowed.nombre = data.nombre.trim().slice(0, 200);
+    if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
+    if (Array.isArray(data.tags)) allowed.tags = data.tags.map(t => String(t).slice(0, 50)).slice(0, 10);
+    timelineEvents[idx] = { ...timelineEvents[idx], ...allowed };
+    saveTimeline(timelineEvents);
+    io.emit('timeline_events_update', timelineEvents);
+  });
+
+  // Editores de timeline: eliminar evento
+  socket.on('timeline_delete_event', (id) => {
+    if (!TIMELINE_EDITORS.includes(connectedUsers[socket.id])) return;
+    timelineEvents = timelineEvents.filter(e => e.id !== id);
+    saveTimeline(timelineEvents);
+    io.emit('timeline_events_update', timelineEvents);
+  });
+
+  // Editores de timeline: reordenar evento (drag & drop)
+  socket.on('timeline_reorder_event', ({ id, newOrden }) => {
+    if (!TIMELINE_EDITORS.includes(connectedUsers[socket.id])) return;
+    if (typeof newOrden !== 'number' || !isFinite(newOrden)) return;
+    const idx = timelineEvents.findIndex(e => e.id === id);
+    if (idx === -1) return;
+    timelineEvents[idx].orden = newOrden;
+    reindexTimeline(timelineEvents);
+    saveTimeline(timelineEvents);
+    io.emit('timeline_events_update', timelineEvents);
   });
 
   socket.on('disconnect', () => {

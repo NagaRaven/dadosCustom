@@ -16,6 +16,7 @@ export function useSocket(username) {
   const [fortalezasCatalog, setFortalezasCatalog] = useState([]);
   const [archiveImage, setArchiveImageState]       = useState(null);
   const [zygerriaHouses, setZygerriaHouses]        = useState([]);
+  const [timelineEvents, setTimelineEvents]        = useState([]);
 
   useEffect(() => {
     if (!username) return;
@@ -42,6 +43,7 @@ export function useSocket(username) {
     socketRef.current.on('fortalezas_catalog_update', (cat) => setFortalezasCatalog(cat));
     socketRef.current.on('archive_image_update', (img) => setArchiveImageState(img));
     socketRef.current.on('zygerria_houses_update', (houses) => setZygerriaHouses(houses));
+    socketRef.current.on('timeline_events_update', (evs) => setTimelineEvents(evs));
 
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
@@ -125,15 +127,36 @@ export function useSocket(username) {
     socketRef.current.emit('delete_zygerria_house', id);
   };
 
+  const addTimelineEvent = (data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('timeline_add_event', data);
+  };
+
+  const updateTimelineEvent = (id, data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('timeline_update_event', { id, data });
+  };
+
+  const deleteTimelineEvent = (id) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('timeline_delete_event', id);
+  };
+
+  const reorderTimelineEvent = (id, newOrden) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('timeline_reorder_event', { id, newOrden });
+  };
+
   const forcePowers = Object.fromEntries(
     Object.entries(characters).map(([k, v]) => [k, v.puntosDeFuerza ?? 0])
   );
 
   return {
     history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,
-    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
+    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
+    addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
   };
 }

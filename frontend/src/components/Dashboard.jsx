@@ -11,6 +11,7 @@ import ArchiveTemp from './ArchiveTemp';
 import CharacterRegistry from './CharacterRegistry';
 import LocationRegistry from './LocationRegistry';
 import Zygerria from './Zygerria';
+import Timeline from './Timeline';
 
 const isMaster = (u) => u === 'Master';
 const isAdmin  = (u) => u === 'Master' || u === 'Desarrollador';
@@ -19,10 +20,11 @@ export default function Dashboard({ username, onLogout }) {
   const {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
-    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses,
+    characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
+    addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentView, setCurrentView] = useState('main');
@@ -235,13 +237,16 @@ export default function Dashboard({ username, onLogout }) {
           <LocationRegistry onBack={() => setCurrentView('main')} />
         </main>
       ) : currentView === 'timeline' ? (
-        <main className="flex-1 flex flex-col min-h-0 p-4">
-          <div style={{ color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace', fontSize: '0.75rem', letterSpacing: '0.15em' }}>
-            LÍNEA CRONOLÓGICA
-          </div>
-          <button onClick={() => setCurrentView('main')} style={{ marginTop: '12px', background: 'transparent', border: '1px solid rgba(0,212,255,0.3)', color: 'rgba(0,212,255,0.6)', fontFamily: 'Orbitron, monospace', fontSize: '0.55rem', padding: '6px 12px', cursor: 'pointer' }}>
-            ← VOLVER
-          </button>
+        <main className="flex-1 flex flex-col min-h-0">
+          <Timeline
+            isEditor={isAdmin(username)}
+            events={timelineEvents}
+            onAdd={addTimelineEvent}
+            onUpdate={updateTimelineEvent}
+            onDelete={deleteTimelineEvent}
+            onReorder={reorderTimelineEvent}
+            onBack={() => setCurrentView('main')}
+          />
         </main>
       ) : currentView === 'zygerria' ? (
         <main className="flex-1 flex flex-col min-h-0">

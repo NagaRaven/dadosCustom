@@ -479,6 +479,12 @@ body {
   100% { opacity: 1;  clip-path: inset(0 0 0%   0); }
 }
 
+/* ── Timeline: expansión de descripción ────────────────────────────────── */
+@keyframes tl-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Scrollbar personalizada ────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
