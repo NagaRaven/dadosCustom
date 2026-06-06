@@ -11,6 +11,9 @@ const TAG_COLORS = {
   descubrimiento: '#ffd700',
 };
 const TEMPORADA_COLORS = { 1: '#5bc8e8', 2: '#ffd700', 3: '#ff7043' };
+const PLAYERS = ['Nivare', 'Dana', 'Bor Ashla', 'Khan', 'Ace', 'Xalithra', 'Mireya', "Luz'ya"];
+const NIVEL_LABELS  = { casual: 'Casual', importante: 'Importante', legendario: 'Legendario' };
+const NIVEL_WIDTHS  = { casual: '175px', importante: '215px', legendario: '255px' };
 
 const tagColor  = (t) => TAG_COLORS[t] || '#a0b0c0';
 const tempColor = (t) => TEMPORADA_COLORS[t] || '#aaa';
@@ -106,21 +109,20 @@ function TagsDropdown({ allTags, filterTags, onToggle, onClear }) {
 // ── Modal ─────────────────────────────────────────────────────────────────
 
 function EventModal({ event, onSave, onClose }) {
-  const [nombre,       setNombre]       = useState(event.nombre || '');
-  const [descripcion,  setDescripcion]  = useState(event.descripcion || '');
-  const [tags,         setTags]         = useState(event.tags || []);
-  const [customTag,    setCustomTag]    = useState('');
-  const [temporada,    setTemporada]    = useState(event.temporada ?? null);
-  const [imagen,       setImagen]       = useState(event.imagen || null);
-  const [imgLoading,   setImgLoading]   = useState(false);
+  const [nombre,      setNombre]      = useState(event.nombre || '');
+  const [descripcion, setDescripcion] = useState(event.descripcion || '');
+  const [tags,        setTags]        = useState(event.tags || []);
+  const [customTag,   setCustomTag]   = useState('');
+  const [temporada,   setTemporada]   = useState(event.temporada ?? null);
+  const [jugadores,   setJugadores]   = useState(event.jugadores || []);
+  const [nivel,       setNivel]       = useState(event.nivel || 'casual');
+  const [imagen,      setImagen]      = useState(event.imagen || null);
+  const [imgLoading,  setImgLoading]  = useState(false);
   const fileRef = useRef(null);
 
-  const toggleTag = (t) => setTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
-  const addCustom = () => {
-    const t = customTag.trim().toLowerCase();
-    if (t && !tags.includes(t)) setTags(p => [...p, t]);
-    setCustomTag('');
-  };
+  const toggleTag    = (t) => setTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const togglePlayer = (p) => setJugadores(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+
   const handleFile = async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
     setImgLoading(true);
@@ -128,10 +130,17 @@ function EventModal({ event, onSave, onClose }) {
     setImgLoading(false);
     if (fileRef.current) fileRef.current.value = '';
   };
+
   const submit = (e) => {
     e.preventDefault();
     if (!nombre.trim()) return;
-    onSave({ nombre: nombre.trim(), descripcion: descripcion.trim(), tags, temporada, imagen });
+    onSave({ nombre: nombre.trim(), descripcion: descripcion.trim(), tags, temporada, jugadores, nivel, imagen });
+  };
+
+  const addCustom = () => {
+    const t = customTag.trim().toLowerCase();
+    if (t && !tags.includes(t)) setTags(p => [...p, t]);
+    setCustomTag('');
   };
 
   const lbl = { display: 'block', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em', color: 'rgba(0,212,255,0.48)', marginBottom: '6px' };
@@ -148,7 +157,7 @@ function EventModal({ event, onSave, onClose }) {
           {/* Nombre */}
           <div>
             <label style={lbl}>NOMBRE *</label>
-            <input className="cyber-input" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del evento..." autoFocus />
+            <input className="cyber-input" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del evento…" autoFocus />
           </div>
 
           {/* Temporada */}
@@ -170,10 +179,55 @@ function EventModal({ event, onSave, onClose }) {
             </div>
           </div>
 
+          {/* Nivel */}
+          <div>
+            <label style={lbl}>NIVEL</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['casual', 'importante', 'legendario'].map(v => {
+                const isLeg = v === 'legendario';
+                const color = isLeg ? '#ffd700' : '#00d4ff';
+                const sel   = nivel === v;
+                return (
+                  <button key={v} type="button" onClick={() => setNivel(v)} style={{
+                    padding: '5px 14px', borderRadius: '2px', cursor: 'pointer',
+                    border: `1px solid ${sel ? color + 'cc' : color + '33'}`,
+                    background: sel ? `${color}18` : 'transparent',
+                    color: sel ? color : `${color}55`,
+                    fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: '0.1em',
+                  }}>
+                    {NIVEL_LABELS[v]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Descripción */}
           <div>
             <label style={lbl}>DESCRIPCIÓN</label>
-            <textarea className="cyber-input" value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="Descripción del evento..." rows={4} style={{ resize: 'vertical', minHeight: '80px' }} />
+            <textarea className="cyber-input" value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="Descripción del evento…" rows={4} style={{ resize: 'vertical', minHeight: '80px' }} />
+          </div>
+
+          {/* Jugadores */}
+          <div>
+            <label style={lbl}>JUGADORES</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              {PLAYERS.map(p => {
+                const sel = jugadores.includes(p);
+                return (
+                  <button key={p} type="button" onClick={() => togglePlayer(p)} style={{
+                    padding: '3px 9px', borderRadius: '2px', cursor: 'pointer',
+                    border: `1px solid ${sel ? 'rgba(0,212,255,0.7)' : 'rgba(0,212,255,0.2)'}`,
+                    background: sel ? 'rgba(0,212,255,0.12)' : 'transparent',
+                    color: sel ? 'rgba(0,212,255,0.9)' : 'rgba(0,212,255,0.38)',
+                    fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.06em',
+                    transition: 'all 0.15s',
+                  }}>
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Tags */}
@@ -241,6 +295,100 @@ function EventModal({ event, onSave, onClose }) {
   );
 }
 
+// ── Panel de estadísticas ─────────────────────────────────────────────────
+
+function StatsPanel({ events }) {
+  const total = events.length;
+  const bySeason = events.reduce((acc, ev) => {
+    const k = ev.temporada ?? 0;
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
+  const byNivel = events.reduce((acc, ev) => {
+    const k = ev.nivel || 'casual';
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, { casual: 0, importante: 0, legendario: 0 });
+  const playerCounts = PLAYERS.reduce((acc, p) => {
+    acc[p] = events.filter(ev => (ev.jugadores || []).includes(p)).length;
+    return acc;
+  }, {});
+
+  const Row = ({ label, value, color = 'rgba(0,212,255,0.75)' }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid rgba(0,212,255,0.05)' }}>
+      <span style={{ color: 'rgba(0,212,255,0.45)', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em' }}>{label}</span>
+      <span style={{ color, fontFamily: 'Orbitron, monospace', fontSize: '0.78rem', fontWeight: 700, textShadow: `0 0 10px ${color}55` }}>{value}</span>
+    </div>
+  );
+
+  return (
+    <div style={{
+      height: '100%', display: 'flex', flexDirection: 'column', position: 'relative',
+      background: 'linear-gradient(175deg, rgba(0,10,22,0.98) 0%, rgba(0,5,14,0.99) 100%)',
+      border: '1px solid rgba(0,212,255,0.45)',
+      boxShadow: '0 0 30px rgba(0,212,255,0.1), inset 0 0 50px rgba(0,140,255,0.03)',
+      overflow: 'hidden',
+      animation: 'holo-flicker 11s ease-in-out infinite',
+    }}>
+      {/* scan lines */}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.006) 3px, rgba(0,212,255,0.006) 4px)', pointerEvents: 'none', zIndex: 0 }} />
+      {/* HUD corners */}
+      <div className="hud-corners-full" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
+      {/* Moving scan line */}
+      <div style={{ position: 'absolute', left: 0, right: 0, height: '2px', background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.28) 40%, rgba(0,212,255,0.28) 60%, transparent 95%)', animation: 'holo-scan-panel 8s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
+
+      {/* Header */}
+      <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(0,212,255,0.1)', flexShrink: 0, zIndex: 3, position: 'relative' }}>
+        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.55rem', letterSpacing: '0.2em', color: 'rgba(0,212,255,0.38)' }}>◈ DATOS DEL ARCHIVO</div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 20px', position: 'relative', zIndex: 3 }}>
+        {/* Total */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '10px 0', borderBottom: '1px solid rgba(0,212,255,0.12)' }}>
+          <span style={{ color: 'rgba(0,212,255,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.62rem', letterSpacing: '0.12em' }}>EVENTOS TOTALES</span>
+          <span style={{ color: '#00d4ff', fontFamily: 'Orbitron, monospace', fontSize: '1.8rem', fontWeight: 700, textShadow: '0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,212,255,0.25)', lineHeight: 1 }}>{total}</span>
+        </div>
+
+        {total === 0 ? (
+          <div style={{ color: 'rgba(0,212,255,0.2)', fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', letterSpacing: '0.12em', textAlign: 'center', paddingTop: '20px' }}>
+            SIN EVENTOS REGISTRADOS
+          </div>
+        ) : (
+          <>
+            {/* Por temporada */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR TEMPORADA</div>
+              {[1, 2, 3].map(t => bySeason[t] > 0 && (
+                <Row key={t} label={`TEMPORADA ${t}`} value={bySeason[t]} color={tempColor(t)} />
+              ))}
+              {(bySeason[0] || 0) > 0 && <Row label="SIN TEMPORADA" value={bySeason[0]} color="rgba(0,212,255,0.5)" />}
+            </div>
+
+            {/* Por nivel */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR NIVEL</div>
+              {byNivel.legendario > 0 && <Row label="LEGENDARIOS" value={byNivel.legendario} color="#ffd700" />}
+              {byNivel.importante > 0 && <Row label="IMPORTANTES"  value={byNivel.importante} color="rgba(0,212,255,0.9)" />}
+              {byNivel.casual     > 0 && <Row label="CASUALES"     value={byNivel.casual}     color="rgba(0,212,255,0.5)" />}
+            </div>
+
+            {/* Por jugador */}
+            {Object.values(playerCounts).some(v => v > 0) && (
+              <div>
+                <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(0,212,255,0.28)', marginBottom: '8px' }}>POR JUGADOR</div>
+                {PLAYERS.filter(p => playerCounts[p] > 0).map(p => (
+                  <Row key={p} label={p.toUpperCase()} value={playerCounts[p]} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Panel de detalle holográfico ──────────────────────────────────────────
 
 function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
@@ -260,6 +408,9 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
     else { setConfirmDel(true); setTimeout(() => setConfirmDel(false), 3000); }
   };
 
+  const isLeg = event.nivel === 'legendario';
+  const isImp = event.nivel === 'importante';
+
   return (
     <div style={{
       height: '100%', display: 'flex', flexDirection: 'column', position: 'relative',
@@ -271,10 +422,8 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
     }}>
       {/* scan lines overlay */}
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.008) 3px, rgba(0,212,255,0.008) 4px)', pointerEvents: 'none', zIndex: 0 }} />
-
       {/* HUD corners */}
       <div className="hud-corners-full" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
-
       {/* Moving scan line */}
       <div style={{ position: 'absolute', left: 0, right: 0, height: '2px', background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.35) 40%, rgba(0,212,255,0.35) 60%, transparent 95%)', animation: 'holo-scan-panel 6s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
 
@@ -302,18 +451,34 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
       </div>
 
       {/* Body: texto izquierda + imagen derecha */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'flex-start', gap: '0', position: 'relative', zIndex: 3 }}>
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'flex-start', position: 'relative', zIndex: 3 }}>
 
         {/* Columna izquierda: texto */}
         <div style={{ flex: 1, minWidth: 0, padding: '18px 16px 24px 18px' }}>
 
           {/* Título */}
-          <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '1rem', fontWeight: 700, color: 'rgba(0,220,255,0.95)', letterSpacing: '0.1em', lineHeight: 1.35, marginBottom: '14px', textShadow: '0 0 18px rgba(0,212,255,0.5), 0 0 40px rgba(0,212,255,0.2)' }}>
+          <div style={{
+            fontFamily: 'Orbitron, monospace', fontSize: '1rem', fontWeight: 700, letterSpacing: '0.1em', lineHeight: 1.35, marginBottom: '14px',
+            color: isLeg ? '#ffd700' : 'rgba(0,220,255,0.95)',
+            textShadow: isLeg ? '0 0 18px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.2)' : '0 0 18px rgba(0,212,255,0.5), 0 0 40px rgba(0,212,255,0.2)',
+          }}>
             {event.nombre}
           </div>
 
-          {/* Meta: temporada + tags */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+          {/* Meta: nivel + temporada + tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', alignItems: 'center', marginBottom: '14px' }}>
+            {(isLeg || isImp) && (
+              <span style={{
+                padding: '3px 11px', borderRadius: '2px',
+                border: `1px solid ${isLeg ? 'rgba(255,215,0,0.6)' : 'rgba(0,212,255,0.5)'}`,
+                background: isLeg ? 'rgba(255,215,0,0.1)' : 'rgba(0,212,255,0.08)',
+                color: isLeg ? '#ffd700' : 'rgba(0,212,255,0.9)',
+                fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: '0.12em',
+                textShadow: isLeg ? '0 0 10px rgba(255,215,0,0.5)' : 'none',
+              }}>
+                ◆ {(event.nivel || 'casual').toUpperCase()}
+              </span>
+            )}
             {event.temporada && (
               <span style={{
                 padding: '3px 11px', borderRadius: '2px',
@@ -337,6 +502,24 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
             ))}
           </div>
 
+          {/* Jugadores */}
+          {event.jugadores?.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', marginBottom: '14px' }}>
+              <span style={{ color: 'rgba(0,212,255,0.32)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', marginRight: '2px' }}>JUGADORES:</span>
+              {event.jugadores.map(p => (
+                <span key={p} style={{
+                  padding: '2px 8px', borderRadius: '2px',
+                  border: '1px solid rgba(0,212,255,0.3)',
+                  background: 'rgba(0,212,255,0.06)',
+                  color: 'rgba(0,212,255,0.72)',
+                  fontFamily: 'Rajdhani, sans-serif', fontSize: '0.8rem',
+                }}>
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Divisor */}
           <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(0,212,255,0.45), rgba(0,212,255,0.1), transparent)', marginBottom: '16px' }} />
 
@@ -352,26 +535,102 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
           )}
         </div>
 
-        {/* Columna derecha: imagen cuadrada 50% (sin recorte) */}
+        {/* Columna derecha: imagen holográfica */}
         {event.imagen && (
-          <div style={{ flexShrink: 0, width: '50%', padding: '18px 18px 18px 0' }}>
+          <div style={{ flexShrink: 0, width: '50%', padding: '18px 18px 0 0', display: 'flex', flexDirection: 'column' }}>
+
+            {/* Imagen cuadrada con efecto holograma */}
             <div
-              style={{ position: 'relative', paddingBottom: '100%', background: '#000', border: `1px solid ${imgHovered ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.28)'}`, borderRadius: '2px', overflow: 'hidden', boxShadow: imgHovered ? '0 0 22px rgba(0,212,255,0.18)' : '0 0 14px rgba(0,212,255,0.08)', cursor: 'zoom-in', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+              style={{
+                position: 'relative', paddingBottom: '100%',
+                background: '#000d1a',
+                border: `1px solid ${imgHovered ? 'rgba(0,212,255,0.65)' : 'rgba(0,212,255,0.38)'}`,
+                borderRadius: '2px 2px 0 0',
+                overflow: 'hidden', cursor: 'zoom-in',
+                boxShadow: imgHovered ? '0 0 28px rgba(0,212,255,0.2)' : '0 0 16px rgba(0,212,255,0.1)',
+                animation: 'holo-flicker 11s ease-in-out infinite',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
               onMouseEnter={() => setImgHovered(true)}
               onMouseLeave={() => setImgHovered(false)}
               onClick={() => setLightboxOpen(true)}
             >
-              <img src={event.imagen} alt={event.nombre} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-              {/* hologram tint */}
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,160,0.08)', mixBlendMode: 'screen', pointerEvents: 'none' }} />
-              {/* zoom overlay on hover */}
+              {/* Imagen base ligeramente desaturada */}
+              <img src={event.imagen} alt={event.nombre} style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'contain', display: 'block',
+                filter: 'brightness(1.05) contrast(1.12) saturate(0.55)',
+              }} />
+
+              {/* Tinte holográfico azul */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,80,200,0.30)', pointerEvents: 'none', zIndex: 1 }} />
+
+              {/* Líneas de escaneo (scanlines) */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,212,255,0.07) 0px, rgba(0,212,255,0.07) 1px, transparent 1px, transparent 5px)',
+                pointerEvents: 'none', zIndex: 2,
+              }} />
+
+              {/* Línea de escaneo móvil */}
+              <div style={{
+                position: 'absolute', left: 0, right: 0, height: '2px',
+                background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.6) 40%, rgba(0,212,255,0.6) 60%, transparent 95%)',
+                animation: 'holo-img-scan 3.8s linear infinite',
+                pointerEvents: 'none', zIndex: 3,
+              }} />
+
+              {/* Viñeta bordes (efecto holograma difuso) */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'radial-gradient(ellipse at center, transparent 52%, rgba(0,10,40,0.6) 100%)',
+                pointerEvents: 'none', zIndex: 2,
+              }} />
+
+              {/* Zoom overlay al hacer hover */}
               {imgHovered && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.85)', background: 'rgba(0,8,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(0,212,255,0.45)', color: 'rgba(0,212,255,0.95)', fontSize: '1.1rem' }}>
-                    ⤢
-                  </div>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 5 }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.85)', background: 'rgba(0,8,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(0,212,255,0.45)', color: 'rgba(0,212,255,0.95)', fontSize: '1.1rem' }}>⤢</div>
                 </div>
               )}
+            </div>
+
+            {/* Base del proyector holográfico */}
+            <div style={{ position: 'relative', height: '54px', overflow: 'hidden', borderRadius: '0 0 2px 2px', background: 'rgba(0,5,15,0.8)', border: '1px solid rgba(0,212,255,0.2)', borderTop: 'none' }}>
+              {/* Cono de luz hacia arriba */}
+              <div style={{
+                position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
+                width: '68%', height: '42px',
+                background: 'linear-gradient(to top, rgba(0,212,255,0.13) 0%, transparent 100%)',
+                clipPath: 'polygon(15% 100%, 85% 100%, 62% 0%, 38% 0%)',
+                pointerEvents: 'none',
+              }} />
+              {/* Anillo exterior con glow */}
+              <div style={{
+                position: 'absolute', bottom: '3px', left: '50%', transform: 'translateX(-50%)',
+                width: '72%', height: '18px', borderRadius: '50%',
+                border: '1px solid rgba(0,212,255,0.45)',
+                background: 'rgba(0,212,255,0.04)',
+                boxShadow: '0 0 16px rgba(0,212,255,0.35), inset 0 0 8px rgba(0,212,255,0.1)',
+                animation: 'holo-proj-pulse 2.5s ease-in-out infinite',
+                pointerEvents: 'none',
+              }} />
+              {/* Emisor central */}
+              <div style={{
+                position: 'absolute', bottom: '7px', left: '50%', transform: 'translateX(-50%)',
+                width: '28%', height: '8px', borderRadius: '50%',
+                background: 'rgba(0,212,255,0.55)',
+                boxShadow: '0 0 12px rgba(0,212,255,0.75), 0 0 24px rgba(0,212,255,0.35)',
+                animation: 'holo-proj-pulse 2.5s ease-in-out infinite',
+                pointerEvents: 'none',
+              }} />
+              {/* Líneas de detalle del aparato */}
+              <div style={{
+                position: 'absolute', bottom: '28px', left: '50%', transform: 'translateX(-50%)',
+                width: '45%', height: '1px',
+                background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.25), transparent)',
+                pointerEvents: 'none',
+              }} />
             </div>
           </div>
         )}
@@ -383,10 +642,7 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
             onClick={() => setLightboxOpen(false)}
           >
             <img src={event.imagen} alt={event.nombre} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', display: 'block', borderRadius: '2px', boxShadow: '0 0 60px rgba(0,212,255,0.15)' }} />
-            <button
-              onClick={() => setLightboxOpen(false)}
-              style={{ position: 'absolute', top: '20px', right: '24px', background: 'transparent', border: '1px solid rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.7)', fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', padding: '6px 14px', cursor: 'pointer', borderRadius: '2px', letterSpacing: '0.1em' }}
-            >
+            <button onClick={() => setLightboxOpen(false)} style={{ position: 'absolute', top: '20px', right: '24px', background: 'transparent', border: '1px solid rgba(0,212,255,0.4)', color: 'rgba(0,212,255,0.7)', fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', padding: '6px 14px', cursor: 'pointer', borderRadius: '2px', letterSpacing: '0.1em' }}>
               ✕ CERRAR
             </button>
           </div>
@@ -400,6 +656,24 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
 
 function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdit, onDragStart, onDragEnd }) {
   const isDragging = draggingId === event.id;
+  const isLeg = (event.nivel || 'casual') === 'legendario';
+  const isImp = (event.nivel || 'casual') === 'importante';
+
+  const borderColor = isLeg
+    ? (isSelected ? 'rgba(255,215,0,0.85)' : 'rgba(255,215,0,0.5)')
+    : isSelected ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.17)';
+  const bg = isLeg
+    ? (isSelected ? 'rgba(255,215,0,0.08)' : 'rgba(25,18,0,0.92)')
+    : isSelected ? 'rgba(0,212,255,0.07)' : 'rgba(13,17,23,0.92)';
+  const shadow = isLeg
+    ? (isSelected ? '0 0 18px rgba(255,215,0,0.28)' : '0 0 8px rgba(255,215,0,0.12)')
+    : isSelected ? '0 0 16px rgba(0,212,255,0.15)' : 'none';
+  const textColor = isLeg
+    ? (isSelected ? '#ffd700' : 'rgba(255,215,0,0.85)')
+    : isSelected ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.88)';
+  const fontSize  = isLeg ? '0.82rem' : isImp ? '0.78rem' : '0.72rem';
+  const maxWidth  = NIVEL_WIDTHS[event.nivel || 'casual'];
+
   return (
     <div
       draggable={isEditor}
@@ -407,13 +681,11 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
       onDragEnd={onDragEnd}
       onClick={onSelect}
       style={{
-        background: isSelected ? 'rgba(0,212,255,0.07)' : 'rgba(13,17,23,0.92)',
-        border: `1px solid ${isSelected ? 'rgba(0,212,255,0.55)' : 'rgba(0,212,255,0.17)'}`,
+        background: bg, border: `1px solid ${borderColor}`,
         borderRadius: '3px', padding: '8px 11px',
-        width: '100%', maxWidth: '220px',
+        width: '100%', maxWidth,
         cursor: isEditor ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
-        transition: 'all 0.22s',
-        boxShadow: isSelected ? '0 0 16px rgba(0,212,255,0.15)' : 'none',
+        transition: 'all 0.22s', boxShadow: shadow,
         userSelect: 'none', opacity: isDragging ? 0.3 : 1,
       }}
     >
@@ -426,7 +698,7 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
 
       {/* Nombre + botón editar */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
-        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.72rem', letterSpacing: '0.07em', color: isSelected ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.88)', wordBreak: 'break-word', lineHeight: 1.4, flex: 1 }}>
+        <div style={{ fontFamily: 'Orbitron, monospace', fontSize, letterSpacing: '0.07em', color: textColor, wordBreak: 'break-word', lineHeight: 1.4, flex: 1 }}>
           {event.nombre}
         </div>
         {isEditor && (
@@ -467,6 +739,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
   const [filterName,      setFilterName]      = useState('');
   const [filterTags,      setFilterTags]      = useState([]);
   const [filterTemporada, setFilterTemporada] = useState([]);
+  const [filterPlayers,   setFilterPlayers]   = useState([]);
   const [showModal,       setShowModal]       = useState(false);
   const [editingEvent,    setEditingEvent]    = useState(null);
   const [insertPosition,  setInsertPosition]  = useState(null);
@@ -482,13 +755,15 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
     const nm = !filterName || ev.nombre.toLowerCase().includes(filterName.toLowerCase());
     const tm = filterTags.length === 0 || filterTags.some(t => (ev.tags || []).includes(t));
     const sm = filterTemporada.length === 0 || filterTemporada.includes(ev.temporada);
-    return nm && tm && sm;
+    const pm = filterPlayers.length === 0 || filterPlayers.some(p => (ev.jugadores || []).includes(p));
+    return nm && tm && sm && pm;
   };
 
-  const toggleFilterTag  = (t) => setFilterTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
-  const toggleFilterTemp = (t) => setFilterTemporada(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleFilterTag    = (t) => setFilterTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleFilterTemp   = (t) => setFilterTemporada(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleFilterPlayer = (p) => setFilterPlayers(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
 
-  const openAddModal  = (pos) => { if (!isEditor) return; setEditingEvent({ nombre: '', descripcion: '', tags: [], temporada: null, imagen: null }); setInsertPosition(pos); setShowModal(true); };
+  const openAddModal  = (pos) => { if (!isEditor) return; setEditingEvent({ nombre: '', descripcion: '', tags: [], temporada: null, jugadores: [], nivel: 'casual', imagen: null }); setInsertPosition(pos); setShowModal(true); };
   const openEditModal = (ev)  => { if (!isEditor) return; setEditingEvent({ ...ev }); setInsertPosition(null); setShowModal(true); };
 
   const handleSave = (data) => {
@@ -515,7 +790,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
     if (!draggingId) return;
     const wo = sorted.filter(e => e.id !== draggingId);
     let newOrden;
-    if (gapKey === 'top')    { newOrden = (wo[0]?.orden ?? 0) + 1000; }
+    if (gapKey === 'top')         { newOrden = (wo[0]?.orden ?? 0) + 1000; }
     else if (gapKey === 'bottom') { newOrden = (wo[wo.length - 1]?.orden ?? 1000) - 1000; }
     else {
       const ai = wo.findIndex(e => e.id === gapKey);
@@ -528,7 +803,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
     setDraggingId(null); setDragOverGap(null);
   };
 
-  const hasFilters = filterTags.length > 0 || filterTemporada.length > 0;
+  const hasFilters = filterTags.length > 0 || filterTemporada.length > 0 || filterPlayers.length > 0;
 
   // ── render ──────────────────────────────────────────────────────────────
   return (
@@ -551,8 +826,8 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           </div>
         </div>
 
-        {/* Fila 2: filtros temporada · separador · tags dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '10px', flexWrap: 'wrap' }}>
+        {/* Fila 2: filtros temporada · separador · tags */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '7px', flexWrap: 'wrap' }}>
           <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>FILTRAR:</span>
           {[1, 2, 3].map(t => (
             <button key={t} onClick={() => toggleFilterTemp(t)} style={{
@@ -568,24 +843,41 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           <div style={{ width: '1px', height: '14px', background: 'rgba(0,212,255,0.14)', flexShrink: 0 }} />
           <TagsDropdown allTags={allTags} filterTags={filterTags} onToggle={toggleFilterTag} onClear={() => setFilterTags([])} />
           {hasFilters && (
-            <button onClick={() => { setFilterTags([]); setFilterTemporada([]); }}
+            <button onClick={() => { setFilterTags([]); setFilterTemporada([]); setFilterPlayers([]); }}
               style={{ padding: '3px 8px', background: 'transparent', border: '1px solid rgba(0,212,255,0.18)', color: 'rgba(0,212,255,0.38)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', cursor: 'pointer', borderRadius: '2px' }}>
               ✕ TODO
             </button>
           )}
         </div>
+
+        {/* Fila 3: filtro jugadores */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '9px', flexWrap: 'wrap' }}>
+          <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>JUGADORES:</span>
+          {PLAYERS.map(p => {
+            const sel = filterPlayers.includes(p);
+            return (
+              <button key={p} onClick={() => toggleFilterPlayer(p)} style={{
+                padding: '2px 8px', borderRadius: '2px', cursor: 'pointer',
+                border: `1px solid ${sel ? 'rgba(0,212,255,0.7)' : 'rgba(0,212,255,0.2)'}`,
+                background: sel ? 'rgba(0,212,255,0.12)' : 'transparent',
+                color: sel ? 'rgba(0,212,255,0.9)' : 'rgba(0,212,255,0.35)',
+                fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.05em',
+                transition: 'all 0.15s',
+              }}>
+                {p}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ══ CONTENIDO: timeline + panel detalle ══════════════════════════ */}
+      {/* ══ CONTENIDO: timeline + panel derecho ══════════════════════════ */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
-        {/* ── Columna timeline ─────────────────────────────────────────── */}
+        {/* ── Columna timeline (60%) ────────────────────────────────────── */}
         <div style={{
-          flexShrink: 0,
-          width: selectedEvent ? '42%' : '100%',
-          transition: 'width 0.35s ease',
-          overflow: 'hidden',
-          borderRight: selectedEvent ? '1px solid rgba(0,212,255,0.1)' : 'none',
+          flexShrink: 0, width: '60%', overflow: 'hidden',
+          borderRight: '1px solid rgba(0,212,255,0.1)',
         }}>
           <div style={{ height: '100%', overflowY: 'auto', position: 'relative' }}
             onDragOver={e => e.preventDefault()}
@@ -615,16 +907,27 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
                     const isLeft  = i % 2 === 0;
                     const matched = isMatch(ev);
                     const isSel   = selectedId === ev.id;
+                    const nivel   = ev.nivel || 'casual';
+                    const isLeg   = nivel === 'legendario';
+                    const isImp   = nivel === 'importante';
+
+                    const nodeSize = isLeg ? '15px' : isImp ? '12px' : isSel ? '14px' : '10px';
+                    const nodeColor = isLeg
+                      ? (isSel ? '#ffd700' : 'rgba(255,215,0,0.8)')
+                      : isSel ? '#00d4ff' : (ev.temporada ? tempColor(ev.temporada) + 'aa' : 'rgba(0,212,255,0.65)');
+                    const nodeBorder = isLeg
+                      ? '#ffd700'
+                      : isSel ? '#00d4ff' : (ev.temporada ? tempColor(ev.temporada) : 'rgba(0,212,255,0.55)');
+                    const nodeGlow = isLeg
+                      ? '0 0 10px rgba(255,215,0,0.8), 0 0 22px rgba(255,215,0,0.35)'
+                      : isSel ? '0 0 12px rgba(0,212,255,0.9), 0 0 26px rgba(0,212,255,0.4)' : '0 0 6px rgba(0,212,255,0.38)';
 
                     const node = (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, position: 'relative' }}>
                         <div style={{
-                          width: isSel ? '14px' : '10px', height: isSel ? '14px' : '10px',
-                          borderRadius: '50%', flexShrink: 0,
-                          background: isSel ? '#00d4ff' : (ev.temporada ? tempColor(ev.temporada) + 'aa' : 'rgba(0,212,255,0.65)'),
-                          border: `2px solid ${isSel ? '#00d4ff' : (ev.temporada ? tempColor(ev.temporada) : 'rgba(0,212,255,0.55)')}`,
-                          boxShadow: isSel ? '0 0 12px rgba(0,212,255,0.9), 0 0 26px rgba(0,212,255,0.4)' : '0 0 6px rgba(0,212,255,0.38)',
-                          transition: 'all 0.22s',
+                          width: nodeSize, height: nodeSize, borderRadius: '50%', flexShrink: 0,
+                          background: nodeColor, border: `2px solid ${nodeBorder}`,
+                          boxShadow: nodeGlow, transition: 'all 0.22s',
                         }} />
                       </div>
                     );
@@ -635,7 +938,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
                     return (
                       <div key={ev.id}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 20px 1fr', alignItems: 'center', padding: '4px 14px', opacity: matched ? 1 : 0.2, transition: 'opacity 0.2s' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 20px 1fr', alignItems: 'center', padding: '4px 14px', opacity: matched ? 1 : 0.18, transition: 'opacity 0.2s' }}>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             {isLeft && (<>
                               <TimelineCard event={ev} isSelected={isSel} isEditor={isEditor} draggingId={draggingId}
@@ -673,18 +976,24 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           </div>
         </div>
 
-        {/* ── Panel detalle holográfico ─────────────────────────────────── */}
-        {selectedEvent && (
-          <div style={{ flex: 1, minWidth: 0, padding: '10px', animation: 'tl-detail-in 0.3s ease-out' }}>
-            <DetailPanel
-              event={selectedEvent}
-              isEditor={isEditor}
-              onClose={() => setSelectedId(null)}
-              onEdit={() => openEditModal(selectedEvent)}
-              onDelete={() => { onDelete(selectedId); setSelectedId(null); }}
-            />
-          </div>
-        )}
+        {/* ── Panel derecho: estadísticas o detalle (40%) ───────────────── */}
+        <div style={{ flex: 1, minWidth: 0, padding: '10px' }}>
+          {selectedEvent ? (
+            <div style={{ height: '100%', animation: 'tl-detail-in 0.3s ease-out' }}>
+              <DetailPanel
+                event={selectedEvent}
+                isEditor={isEditor}
+                onClose={() => setSelectedId(null)}
+                onEdit={() => openEditModal(selectedEvent)}
+                onDelete={() => { onDelete(selectedId); setSelectedId(null); }}
+              />
+            </div>
+          ) : (
+            <div style={{ height: '100%', animation: 'tl-detail-in 0.25s ease-out' }}>
+              <StatsPanel events={events} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal */}

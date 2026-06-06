@@ -120,6 +120,8 @@ function saveZygerriaHouses(houses) {
   } catch {}
 }
 
+const VALID_TIMELINE_PLAYERS = ['Nivare', 'Dana', 'Bor Ashla', 'Khan', 'Ace', 'Xalithra', 'Mireya', "Luz'ya"];
+
 // ── Persistencia de la línea cronológica ─────────────────────────────────────
 function loadTimeline() {
   try {
@@ -408,6 +410,8 @@ io.on('connection', (socket) => {
       tags: Array.isArray(data.tags) ? data.tags.map(t => String(t).slice(0, 50)).slice(0, 10) : [],
       orden: typeof data.orden === 'number' && isFinite(data.orden) ? data.orden : 1000,
       temporada: [1, 2, 3].includes(data.temporada) ? data.temporada : null,
+      jugadores: Array.isArray(data.jugadores) ? data.jugadores.filter(j => VALID_TIMELINE_PLAYERS.includes(j)) : [],
+      nivel: ['casual', 'importante', 'legendario'].includes(data.nivel) ? data.nivel : 'casual',
       imagen,
     };
     if (!ev.nombre) return;
@@ -426,6 +430,8 @@ io.on('connection', (socket) => {
     if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
     if (Array.isArray(data.tags)) allowed.tags = data.tags.map(t => String(t).slice(0, 50)).slice(0, 10);
     if ([1, 2, 3, null].includes(data.temporada)) allowed.temporada = data.temporada;
+    if (Array.isArray(data.jugadores)) allowed.jugadores = data.jugadores.filter(j => VALID_TIMELINE_PLAYERS.includes(j));
+    if (['casual', 'importante', 'legendario'].includes(data.nivel)) allowed.nivel = data.nivel;
     if (data.imagen === null) {
       allowed.imagen = null;
     } else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) {
