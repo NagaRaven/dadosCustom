@@ -30,7 +30,9 @@ const HISTORY_FILE     = path.join(__dirname, 'data', 'history.json');
 const CHARACTERS_FILE  = path.join(__dirname, 'data', 'characters.json');
 const FORTALEZAS_FILE  = path.join(__dirname, 'data', 'fortalezas.json');
 const ZYGERRIA_FILE    = path.join(__dirname, 'data', 'zygerria.json');
-const TIMELINE_FILE    = path.join(__dirname, 'data', 'timeline.json');
+const TIMELINE_FILE              = path.join(__dirname, 'data', 'timeline.json');
+const CATALOG_CHARACTERS_FILE   = path.join(__dirname, 'data', 'catalog_characters.json');
+const PLANETS_FILE               = path.join(__dirname, 'data', 'planets.json');
 
 function loadHistory() {
   try {
@@ -139,6 +141,40 @@ function saveTimeline(events) {
   } catch {}
 }
 
+// ── Persistencia del catálogo de personajes del mundo ───────────────────────
+function loadCatalogCharacters() {
+  try {
+    if (fs.existsSync(CATALOG_CHARACTERS_FILE)) {
+      return JSON.parse(fs.readFileSync(CATALOG_CHARACTERS_FILE, 'utf8'));
+    }
+  } catch {}
+  return [];
+}
+
+function saveCatalogCharacters(chars) {
+  try {
+    fs.mkdirSync(path.dirname(CATALOG_CHARACTERS_FILE), { recursive: true });
+    fs.writeFileSync(CATALOG_CHARACTERS_FILE, JSON.stringify(chars, null, 2));
+  } catch {}
+}
+
+// ── Persistencia del catálogo de planetas ───────────────────────────────────
+function loadPlanets() {
+  try {
+    if (fs.existsSync(PLANETS_FILE)) {
+      return JSON.parse(fs.readFileSync(PLANETS_FILE, 'utf8'));
+    }
+  } catch {}
+  return [];
+}
+
+function savePlanets(pl) {
+  try {
+    fs.mkdirSync(path.dirname(PLANETS_FILE), { recursive: true });
+    fs.writeFileSync(PLANETS_FILE, JSON.stringify(pl, null, 2));
+  } catch {}
+}
+
 function reindexTimeline(events) {
   const sorted = [...events].sort((a, b) => b.orden - a.orden);
   const minGap = sorted.length < 2 ? Infinity : sorted.reduce((min, e, i) => {
@@ -151,10 +187,12 @@ function reindexTimeline(events) {
 }
 
 
-let fortalezasCatalog = loadFortalezas();
-let zygerriaHouses   = loadZygerriaHouses();
-let timelineEvents   = loadTimeline();
-let characters = loadCharacters();
+let fortalezasCatalog    = loadFortalezas();
+let zygerriaHouses       = loadZygerriaHouses();
+let timelineEvents       = loadTimeline();
+let characters           = loadCharacters();
+let catalogCharacters    = loadCatalogCharacters();
+let planets              = loadPlanets();
 let archiveImage = null; // temporal — no se persiste
 
 const isAdmin = (u) => u === 'Master' || u === 'Desarrollador';
@@ -178,6 +216,8 @@ app.get('/api/export-db', (_req, res) => {
     fortalezasCatalog,
     zygerriaHouses,
     timelineEvents,
+    catalogCharacters,
+    planets,
   };
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   res.setHeader('Content-Disposition', `attachment; filename="d20-backup-${ts}.json"`);
@@ -188,7 +228,7 @@ app.get('/api/export-db', (_req, res) => {
 
 // Importar BD — reemplaza todos los datos con el fichero de backup
 app.post('/api/import-db', (req, res) => {
-  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg, timelineEvents: importedTimeline } = req.body || {};
+  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg, timelineEvents: importedTimeline, catalogCharacters: importedCatalogChars, planets: importedPlanets } = req.body || {};
   if (!importedChars || typeof importedChars !== 'object') {
     return res.status(400).json({ success: false, message: 'Fichero inválido: falta characters' });
   }
@@ -217,6 +257,16 @@ app.post('/api/import-db', (req, res) => {
     saveTimeline(timelineEvents);
     io.emit('timeline_events_update', timelineEvents);
   }
+  if (Array.isArray(importedCatalogChars)) {
+    catalogCharacters = importedCatalogChars;
+    saveCatalogCharacters(catalogCharacters);
+    io.emit('catalog_characters_update', catalogCharacters);
+  }
+  if (Array.isArray(importedPlanets)) {
+    planets = importedPlanets;
+    savePlanets(planets);
+    io.emit('planets_update', planets);
+  }
   res.json({ success: true });
 });
 
@@ -244,6 +294,8 @@ io.on('connection', (socket) => {
   socket.emit('archive_image_update', archiveImage);
   socket.emit('zygerria_houses_update', zygerriaHouses);
   socket.emit('timeline_events_update', timelineEvents);
+  socket.emit('catalog_characters_update', catalogCharacters);
+  socket.emit('planets_update', planets);
 
   socket.on('join', (username) => {
     connectedUsers[socket.id] = username;
@@ -413,6 +465,12 @@ io.on('connection', (socket) => {
       jugadores: Array.isArray(data.jugadores) ? data.jugadores.filter(j => VALID_TIMELINE_PLAYERS.includes(j)) : [],
       nivel: ['casual', 'importante', 'legendario'].includes(data.nivel) ? data.nivel : 'casual',
       imagen,
+      linkedCharacters: Array.isArray(data.linkedCharacters)
+        ? data.linkedCharacters.filter(id => typeof id === 'string' && catalogCharacters.some(c => c.id === id))
+        : [],
+      linkedPlanets: Array.isArray(data.linkedPlanets)
+        ? data.linkedPlanets.filter(id => typeof id === 'string' && planets.some(p => p.id === id))
+        : [],
     };
     if (!ev.nombre) return;
     timelineEvents.push(ev);
@@ -432,6 +490,8 @@ io.on('connection', (socket) => {
     if ([1, 2, 3, null].includes(data.temporada)) allowed.temporada = data.temporada;
     if (Array.isArray(data.jugadores)) allowed.jugadores = data.jugadores.filter(j => VALID_TIMELINE_PLAYERS.includes(j));
     if (['casual', 'importante', 'legendario'].includes(data.nivel)) allowed.nivel = data.nivel;
+    if (Array.isArray(data.linkedCharacters)) allowed.linkedCharacters = data.linkedCharacters.filter(id => typeof id === 'string' && catalogCharacters.some(c => c.id === id));
+    if (Array.isArray(data.linkedPlanets)) allowed.linkedPlanets = data.linkedPlanets.filter(id => typeof id === 'string' && planets.some(p => p.id === id));
     if (data.imagen === null) {
       allowed.imagen = null;
     } else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) {
@@ -448,6 +508,103 @@ io.on('connection', (socket) => {
     timelineEvents = timelineEvents.filter(e => e.id !== id);
     saveTimeline(timelineEvents);
     io.emit('timeline_events_update', timelineEvents);
+  });
+
+  // Master/Desarrollador: CRUD catálogo de personajes
+  const VALID_FACCIONES = ['Imperio Sith', 'Imperio Infinito', 'República', 'Otros'];
+  const VALID_ESTADOS_CHAR = ['Vivo', 'Muerto', 'Desaparecido'];
+
+  socket.on('catalog_character_add', (data) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    if (!data || typeof data.nombre !== 'string' || !data.nombre.trim()) return;
+    const imagen = typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000 ? data.imagen : null;
+    const ch = {
+      id: String(Date.now()),
+      nombre: data.nombre.trim().slice(0, 200),
+      titulo: typeof data.titulo === 'string' ? data.titulo.trim().slice(0, 200) : '',
+      raza: typeof data.raza === 'string' ? data.raza.trim().slice(0, 100) : '',
+      descripcion: typeof data.descripcion === 'string' ? data.descripcion.trim().slice(0, 2000) : '',
+      faccion: VALID_FACCIONES.includes(data.faccion) ? data.faccion : null,
+      estado: VALID_ESTADOS_CHAR.includes(data.estado) ? data.estado : null,
+      imagen,
+    };
+    catalogCharacters.push(ch);
+    saveCatalogCharacters(catalogCharacters);
+    io.emit('catalog_characters_update', catalogCharacters);
+  });
+
+  socket.on('catalog_character_update', ({ id, data }) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    const idx = catalogCharacters.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    const allowed = {};
+    if (typeof data.nombre === 'string' && data.nombre.trim()) allowed.nombre = data.nombre.trim().slice(0, 200);
+    if (typeof data.titulo === 'string') allowed.titulo = data.titulo.trim().slice(0, 200);
+    if (typeof data.raza === 'string') allowed.raza = data.raza.trim().slice(0, 100);
+    if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
+    if (VALID_FACCIONES.includes(data.faccion) || data.faccion === null) allowed.faccion = data.faccion;
+    if (VALID_ESTADOS_CHAR.includes(data.estado) || data.estado === null) allowed.estado = data.estado;
+    if (data.imagen === null) allowed.imagen = null;
+    else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) allowed.imagen = data.imagen;
+    catalogCharacters[idx] = { ...catalogCharacters[idx], ...allowed };
+    saveCatalogCharacters(catalogCharacters);
+    io.emit('catalog_characters_update', catalogCharacters);
+  });
+
+  socket.on('catalog_character_delete', (id) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    catalogCharacters = catalogCharacters.filter(c => c.id !== id);
+    saveCatalogCharacters(catalogCharacters);
+    io.emit('catalog_characters_update', catalogCharacters);
+  });
+
+  // Master/Desarrollador: CRUD catálogo de planetas
+  const VALID_SITUACIONES = ['Núcleo', 'Borde Medio', 'Borde Exterior', 'Desconocido'];
+  const VALID_TIPOS_PLANETA = ['mundo helado', 'desierto', 'selva', 'urbano', 'estación espacial'];
+
+  socket.on('planet_add', (data) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    if (!data || typeof data.nombre !== 'string' || !data.nombre.trim()) return;
+    if (typeof data.posX !== 'number' || typeof data.posY !== 'number') return;
+    const imagen = typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000 ? data.imagen : null;
+    const pl = {
+      id: String(Date.now()),
+      nombre: data.nombre.trim().slice(0, 200),
+      situacion: VALID_SITUACIONES.includes(data.situacion) ? data.situacion : 'Desconocido',
+      descripcion: typeof data.descripcion === 'string' ? data.descripcion.trim().slice(0, 2000) : '',
+      imagen,
+      posX: Math.max(0, Math.min(100, data.posX)),
+      posY: Math.max(0, Math.min(100, data.posY)),
+      tipo: VALID_TIPOS_PLANETA.includes(data.tipo) ? data.tipo : null,
+    };
+    planets.push(pl);
+    savePlanets(planets);
+    io.emit('planets_update', planets);
+  });
+
+  socket.on('planet_update', ({ id, data }) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    const idx = planets.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    const allowed = {};
+    if (typeof data.nombre === 'string' && data.nombre.trim()) allowed.nombre = data.nombre.trim().slice(0, 200);
+    if (VALID_SITUACIONES.includes(data.situacion)) allowed.situacion = data.situacion;
+    if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
+    if (data.imagen === null) allowed.imagen = null;
+    else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) allowed.imagen = data.imagen;
+    if (typeof data.posX === 'number') allowed.posX = Math.max(0, Math.min(100, data.posX));
+    if (typeof data.posY === 'number') allowed.posY = Math.max(0, Math.min(100, data.posY));
+    if (VALID_TIPOS_PLANETA.includes(data.tipo) || data.tipo === null) allowed.tipo = data.tipo;
+    planets[idx] = { ...planets[idx], ...allowed };
+    savePlanets(planets);
+    io.emit('planets_update', planets);
+  });
+
+  socket.on('planet_delete', (id) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    planets = planets.filter(p => p.id !== id);
+    savePlanets(planets);
+    io.emit('planets_update', planets);
   });
 
   // Editores de timeline: reordenar evento (drag & drop)

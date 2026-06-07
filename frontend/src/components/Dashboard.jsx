@@ -10,6 +10,8 @@ import CharacterSheet from './CharacterSheet';
 import ArchiveTemp from './ArchiveTemp';
 import CharacterRegistry from './CharacterRegistry';
 import LocationRegistry from './LocationRegistry';
+import CharacterCatalog from './CharacterCatalog';
+import PlanetCatalog from './PlanetCatalog';
 import Zygerria from './Zygerria';
 import Timeline from './Timeline';
 
@@ -21,13 +23,23 @@ export default function Dashboard({ username, onLogout }) {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
+    catalogCharacters, planets,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
     addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
+    addCatalogCharacter, updateCatalogCharacter, deleteCatalogCharacter,
+    addPlanet, updatePlanet, deletePlanet,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentView, setCurrentView] = useState('main');
+  const [navTarget,   setNavTarget]   = useState(null);
+
+  const navigateTo = (view, entityId = null) => {
+    setCurrentView(view);
+    setNavTarget(entityId);
+    setMenuOpen(false);
+  };
   const [menuOpen, setMenuOpen] = useState(false);
   const importInputRef = useRef(null);
 
@@ -96,7 +108,7 @@ export default function Dashboard({ username, onLogout }) {
                 }}
               >
                 <button
-                  onClick={() => { setCurrentView('main'); setMenuOpen(false); }}
+                  onClick={() => navigateTo('main')}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'transparent', border: 'none',
@@ -111,7 +123,7 @@ export default function Dashboard({ username, onLogout }) {
                   ⌂ HOME
                 </button>
                 <button
-                  onClick={() => { setCurrentView('registry'); setMenuOpen(false); }}
+                  onClick={() => navigateTo('characters')}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'transparent', border: 'none',
@@ -123,10 +135,10 @@ export default function Dashboard({ username, onLogout }) {
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  REGISTRO DE PERSONAJES
+                  ◈ CATÁLOGO DE PERSONAJES
                 </button>
                 <button
-                  onClick={() => { setCurrentView('locations'); setMenuOpen(false); }}
+                  onClick={() => navigateTo('planets')}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'transparent', border: 'none',
@@ -138,10 +150,10 @@ export default function Dashboard({ username, onLogout }) {
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  REGISTRO DE UBICACIONES
+                  ◉ MAPA GALÁCTICO
                 </button>
                 <button
-                  onClick={() => { setCurrentView('timeline'); setMenuOpen(false); }}
+                  onClick={() => navigateTo('timeline')}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'transparent', border: 'none',
@@ -156,7 +168,7 @@ export default function Dashboard({ username, onLogout }) {
                   LÍNEA CRONOLÓGICA
                 </button>
                 <button
-                  onClick={() => { setCurrentView('zygerria'); setMenuOpen(false); }}
+                  onClick={() => navigateTo('zygerria')}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     background: 'rgba(217,168,74,0.07)', border: 'none',
@@ -176,7 +188,7 @@ export default function Dashboard({ username, onLogout }) {
           <span
             className="font-orbitron font-black tracking-wider text-xs hidden sm:block"
             style={{ color: 'var(--cyan)', textShadow: '0 0 10px rgba(var(--cyan-rgb),0.5)', cursor: 'pointer' }}
-            onClick={() => setCurrentView('main')}
+            onClick={() => navigateTo('main')}
             title="Ir a la pantalla principal"
           >
             STAR WARS — LA TIERRA PROMETIDA
@@ -230,22 +242,58 @@ export default function Dashboard({ username, onLogout }) {
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       {currentView === 'registry' ? (
         <main className="flex-1 flex flex-col min-h-0">
-          <CharacterRegistry onBack={() => setCurrentView('main')} />
+          <CharacterRegistry onBack={() => navigateTo('main')} />
         </main>
       ) : currentView === 'locations' ? (
         <main className="flex-1 flex flex-col min-h-0">
-          <LocationRegistry onBack={() => setCurrentView('main')} />
+          <LocationRegistry onBack={() => navigateTo('main')} />
+        </main>
+      ) : currentView === 'characters' ? (
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+          <CharacterCatalog
+            key={`chars-${navTarget || 'all'}`}
+            isEditor={isAdmin(username)}
+            catalogCharacters={catalogCharacters}
+            timelineEvents={timelineEvents}
+            onAdd={addCatalogCharacter}
+            onUpdate={updateCatalogCharacter}
+            onDelete={deleteCatalogCharacter}
+            onNavigateToEvent={(evId) => navigateTo('timeline', evId)}
+            onBack={() => navigateTo('main')}
+            initialSelectedId={navTarget}
+          />
+        </main>
+      ) : currentView === 'planets' ? (
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+          <PlanetCatalog
+            key={`planets-${navTarget || 'all'}`}
+            isEditor={isAdmin(username)}
+            planets={planets}
+            timelineEvents={timelineEvents}
+            onAdd={addPlanet}
+            onUpdate={updatePlanet}
+            onDelete={deletePlanet}
+            onNavigateToEvent={(evId) => navigateTo('timeline', evId)}
+            onBack={() => navigateTo('main')}
+            initialSelectedId={navTarget}
+          />
         </main>
       ) : currentView === 'timeline' ? (
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
           <Timeline
+            key={`tl-${navTarget || 'none'}`}
             isEditor={isAdmin(username)}
             events={timelineEvents}
             onAdd={addTimelineEvent}
             onUpdate={updateTimelineEvent}
             onDelete={deleteTimelineEvent}
             onReorder={reorderTimelineEvent}
-            onBack={() => setCurrentView('main')}
+            onBack={() => navigateTo('main')}
+            catalogCharacters={catalogCharacters}
+            planets={planets}
+            onNavigateToCharacter={(charId) => navigateTo('characters', charId)}
+            onNavigateToPlanet={(planetId) => navigateTo('planets', planetId)}
+            initialSelectedId={navTarget}
           />
         </main>
       ) : currentView === 'zygerria' ? (

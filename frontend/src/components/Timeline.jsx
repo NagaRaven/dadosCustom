@@ -109,16 +109,20 @@ function TagsDropdown({ allTags, filterTags, onToggle, onClear }) {
 
 // ── Modal ─────────────────────────────────────────────────────────────────
 
-function EventModal({ event, onSave, onClose }) {
-  const [nombre,      setNombre]      = useState(event.nombre || '');
-  const [descripcion, setDescripcion] = useState(event.descripcion || '');
-  const [tags,        setTags]        = useState(event.tags || []);
-  const [customTag,   setCustomTag]   = useState('');
-  const [temporada,   setTemporada]   = useState(event.temporada ?? null);
-  const [jugadores,   setJugadores]   = useState(event.jugadores || []);
-  const [nivel,       setNivel]       = useState(event.nivel || 'casual');
-  const [imagen,      setImagen]      = useState(event.imagen || null);
-  const [imgLoading,  setImgLoading]  = useState(false);
+function EventModal({ event, onSave, onClose, catalogCharacters = [], planets = [] }) {
+  const [nombre,           setNombre]           = useState(event.nombre || '');
+  const [descripcion,      setDescripcion]      = useState(event.descripcion || '');
+  const [tags,             setTags]             = useState(event.tags || []);
+  const [customTag,        setCustomTag]        = useState('');
+  const [temporada,        setTemporada]        = useState(event.temporada ?? null);
+  const [jugadores,        setJugadores]        = useState(event.jugadores || []);
+  const [nivel,            setNivel]            = useState(event.nivel || 'casual');
+  const [imagen,           setImagen]           = useState(event.imagen || null);
+  const [imgLoading,       setImgLoading]       = useState(false);
+  const [linkedCharacters, setLinkedCharacters] = useState(event.linkedCharacters || []);
+  const [linkedPlanets,    setLinkedPlanets]    = useState(event.linkedPlanets || []);
+  const [charSearch,       setCharSearch]       = useState('');
+  const [planetSearch,     setPlanetSearch]     = useState('');
   const fileRef = useRef(null);
 
   const toggleTag    = (t) => setTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
@@ -135,7 +139,7 @@ function EventModal({ event, onSave, onClose }) {
   const submit = (e) => {
     e.preventDefault();
     if (!nombre.trim()) return;
-    onSave({ nombre: nombre.trim(), descripcion: descripcion.trim(), tags, temporada, jugadores, nivel, imagen });
+    onSave({ nombre: nombre.trim(), descripcion: descripcion.trim(), tags, temporada, jugadores, nivel, imagen, linkedCharacters, linkedPlanets });
   };
 
   const addCustom = () => {
@@ -266,6 +270,82 @@ function EventModal({ event, onSave, onClose }) {
             </div>
           </div>
 
+          {/* Personajes vinculados */}
+          <div>
+            <label style={lbl}>PERSONAJES VINCULADOS</label>
+            {linkedCharacters.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '7px' }}>
+                {linkedCharacters.map(id => {
+                  const ch = catalogCharacters.find(c => c.id === id);
+                  if (!ch) return null;
+                  return (
+                    <button key={id} type="button" onClick={() => setLinkedCharacters(p => p.filter(x => x !== id))} style={{ padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(0,212,255,0.5)', background: 'rgba(0,212,255,0.1)', color: 'rgba(0,212,255,0.85)', fontSize: '0.58rem', fontFamily: 'Orbitron, monospace', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {ch.nombre} <span style={{ opacity: 0.55 }}>×</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div style={{ position: 'relative' }}>
+              <input className="cyber-input" value={charSearch} onChange={e => setCharSearch(e.target.value)} placeholder="Buscar personaje para vincular…" style={{ fontSize: '0.8rem', padding: '5px 10px' }} />
+              {charSearch && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0d0d18', border: '1px solid rgba(0,212,255,0.3)', borderTop: 'none', borderRadius: '0 0 3px 3px', maxHeight: '140px', overflowY: 'auto', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+                  {catalogCharacters.filter(c => c.nombre.toLowerCase().includes(charSearch.toLowerCase()) && !linkedCharacters.includes(c.id)).slice(0, 8).map(c => (
+                    <button key={c.id} type="button"
+                      onClick={() => { setLinkedCharacters(p => [...p, c.id]); setCharSearch(''); }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '6px 10px', background: 'transparent', border: 'none', color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', cursor: 'pointer', letterSpacing: '0.05em' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {c.nombre}{c.titulo && <span style={{ color: 'rgba(0,212,255,0.38)', marginLeft: '6px', fontSize: '0.52rem', fontFamily: 'Rajdhani, sans-serif' }}>{c.titulo}</span>}
+                    </button>
+                  ))}
+                  {catalogCharacters.filter(c => c.nombre.toLowerCase().includes(charSearch.toLowerCase()) && !linkedCharacters.includes(c.id)).length === 0 && (
+                    <div style={{ padding: '8px 10px', color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.55rem' }}>Sin resultados</div>
+                  )}
+                </div>
+              )}
+            </div>
+            {catalogCharacters.length === 0 && <div style={{ color: 'rgba(0,212,255,0.25)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', marginTop: '4px' }}>No hay personajes en el catálogo aún.</div>}
+          </div>
+
+          {/* Planetas vinculados */}
+          <div>
+            <label style={lbl}>PLANETAS VINCULADOS</label>
+            {linkedPlanets.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '7px' }}>
+                {linkedPlanets.map(id => {
+                  const pl = planets.find(p => p.id === id);
+                  if (!pl) return null;
+                  return (
+                    <button key={id} type="button" onClick={() => setLinkedPlanets(p => p.filter(x => x !== id))} style={{ padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(91,200,232,0.5)', background: 'rgba(91,200,232,0.1)', color: 'rgba(91,200,232,0.85)', fontSize: '0.58rem', fontFamily: 'Orbitron, monospace', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {pl.nombre} <span style={{ opacity: 0.55 }}>×</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div style={{ position: 'relative' }}>
+              <input className="cyber-input" value={planetSearch} onChange={e => setPlanetSearch(e.target.value)} placeholder="Buscar planeta para vincular…" style={{ fontSize: '0.8rem', padding: '5px 10px' }} />
+              {planetSearch && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0d0d18', border: '1px solid rgba(0,212,255,0.3)', borderTop: 'none', borderRadius: '0 0 3px 3px', maxHeight: '140px', overflowY: 'auto', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+                  {planets.filter(p => p.nombre.toLowerCase().includes(planetSearch.toLowerCase()) && !linkedPlanets.includes(p.id)).slice(0, 8).map(p => (
+                    <button key={p.id} type="button"
+                      onClick={() => { setLinkedPlanets(prev => [...prev, p.id]); setPlanetSearch(''); }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '6px 10px', background: 'transparent', border: 'none', color: 'rgba(91,200,232,0.75)', fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', cursor: 'pointer', letterSpacing: '0.05em' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {p.nombre}<span style={{ color: 'rgba(91,200,232,0.38)', marginLeft: '6px', fontSize: '0.52rem', fontFamily: 'Rajdhani, sans-serif' }}>{p.situacion}</span>
+                    </button>
+                  ))}
+                  {planets.filter(p => p.nombre.toLowerCase().includes(planetSearch.toLowerCase()) && !linkedPlanets.includes(p.id)).length === 0 && (
+                    <div style={{ padding: '8px 10px', color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.55rem' }}>Sin resultados</div>
+                  )}
+                </div>
+              )}
+            </div>
+            {planets.length === 0 && <div style={{ color: 'rgba(0,212,255,0.25)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', marginTop: '4px' }}>No hay planetas en el catálogo aún.</div>}
+          </div>
+
           {/* Imagen */}
           <div>
             <label style={lbl}>IMAGEN</label>
@@ -298,7 +378,7 @@ function EventModal({ event, onSave, onClose }) {
 
 // ── Panel de detalle holográfico ──────────────────────────────────────────
 
-function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
+function DetailPanel({ event, isEditor, onClose, onEdit, onDelete, catalogCharacters = [], planets = [], onNavigateToCharacter, onNavigateToPlanet }) {
   const [confirmDel,   setConfirmDel]   = useState(false);
   const [imgHovered,   setImgHovered]   = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -423,6 +503,42 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
               ))}
             </div>
           )}
+
+          {/* Personajes vinculados */}
+          {(event.linkedCharacters || []).length > 0 && (() => {
+            const chars = (event.linkedCharacters || []).map(id => catalogCharacters.find(c => c.id === id)).filter(Boolean);
+            if (!chars.length) return null;
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ color: 'rgba(0,212,255,0.32)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', marginRight: '2px' }}>PERSONAJES:</span>
+                {chars.map(ch => (
+                  <button key={ch.id} onClick={() => onNavigateToCharacter?.(ch.id)} style={{ padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(0,212,255,0.07)', color: 'rgba(0,212,255,0.8)', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,212,255,0.14)'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.6)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,212,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.35)'; }}>
+                    {ch.nombre} <span style={{ fontSize: '0.55rem', opacity: 0.5 }}>→</span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
+          {/* Planetas vinculados */}
+          {(event.linkedPlanets || []).length > 0 && (() => {
+            const pls = (event.linkedPlanets || []).map(id => planets.find(p => p.id === id)).filter(Boolean);
+            if (!pls.length) return null;
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ color: 'rgba(0,212,255,0.32)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', marginRight: '2px' }}>PLANETAS:</span>
+                {pls.map(pl => (
+                  <button key={pl.id} onClick={() => onNavigateToPlanet?.(pl.id)} style={{ padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(91,200,232,0.35)', background: 'rgba(91,200,232,0.06)', color: 'rgba(91,200,232,0.8)', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,200,232,0.14)'; e.currentTarget.style.borderColor = 'rgba(91,200,232,0.6)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(91,200,232,0.06)'; e.currentTarget.style.borderColor = 'rgba(91,200,232,0.35)'; }}>
+                    ◉ {pl.nombre} <span style={{ fontSize: '0.55rem', opacity: 0.5 }}>→</span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Divisor */}
           <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(0,212,255,0.45), rgba(0,212,255,0.1), transparent)', marginBottom: '16px' }} />
@@ -644,12 +760,14 @@ function GapRow({ gapKey, isEditor, hoverGap, dragOverGap, draggingId, onMouseEn
 
 // ── Componente principal ──────────────────────────────────────────────────
 
-export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, onReorder, onBack }) {
-  const [selectedId,      setSelectedId]      = useState(null);
-  const [filterName,      setFilterName]      = useState('');
-  const [filterTags,      setFilterTags]      = useState([]);
-  const [filterTemporada, setFilterTemporada] = useState([]);
-  const [filterPlayers,   setFilterPlayers]   = useState([]);
+export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, onReorder, onBack, catalogCharacters = [], planets = [], onNavigateToCharacter, onNavigateToPlanet, initialSelectedId }) {
+  const [selectedId,        setSelectedId]        = useState(initialSelectedId || null);
+  const [filterName,        setFilterName]        = useState('');
+  const [filterTags,        setFilterTags]        = useState([]);
+  const [filterTemporada,   setFilterTemporada]   = useState([]);
+  const [filterPlayers,     setFilterPlayers]     = useState([]);
+  const [filterCharacters,  setFilterCharacters]  = useState([]);
+  const [filterPlanets,     setFilterPlanets]     = useState([]);
   const [showModal,       setShowModal]       = useState(false);
   const [editingEvent,    setEditingEvent]    = useState(null);
   const [insertPosition,  setInsertPosition]  = useState(null);
@@ -662,19 +780,23 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
   const selectedEvent = selectedId ? events.find(e => e.id === selectedId) ?? null : null;
 
   const isMatch = (ev) => {
-    const nm = !filterName || ev.nombre.toLowerCase().includes(filterName.toLowerCase());
-    const tm = filterTags.length === 0 || filterTags.some(t => (ev.tags || []).includes(t));
-    const sm = filterTemporada.length === 0 || filterTemporada.includes(ev.temporada);
-    const pm = filterPlayers.length === 0 || filterPlayers.some(p => (ev.jugadores || []).includes(p));
-    return nm && tm && sm && pm;
+    const nm  = !filterName || ev.nombre.toLowerCase().includes(filterName.toLowerCase());
+    const tm  = filterTags.length === 0 || filterTags.some(t => (ev.tags || []).includes(t));
+    const sm  = filterTemporada.length === 0 || filterTemporada.includes(ev.temporada);
+    const pm  = filterPlayers.length === 0 || filterPlayers.some(p => (ev.jugadores || []).includes(p));
+    const cm  = filterCharacters.length === 0 || filterCharacters.some(id => (ev.linkedCharacters || []).includes(id));
+    const plm = filterPlanets.length === 0 || filterPlanets.some(id => (ev.linkedPlanets || []).includes(id));
+    return nm && tm && sm && pm && cm && plm;
   };
 
-  const toggleFilterTag    = (t) => setFilterTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
-  const toggleFilterTemp   = (t) => setFilterTemporada(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
-  const toggleFilterPlayer = (p) => setFilterPlayers(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+  const toggleFilterTag    = (t)  => setFilterTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleFilterTemp   = (t)  => setFilterTemporada(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleFilterPlayer = (p)  => setFilterPlayers(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+  const toggleFilterChar   = (id) => setFilterCharacters(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleFilterPlanet = (id) => setFilterPlanets(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const openAddModal  = (pos) => { if (!isEditor) return; setEditingEvent({ nombre: '', descripcion: '', tags: [], temporada: null, jugadores: [], nivel: 'casual', imagen: null }); setInsertPosition(pos); setShowModal(true); };
-  const openEditModal = (ev)  => { if (!isEditor) return; setEditingEvent({ ...ev }); setInsertPosition(null); setShowModal(true); };
+  const openAddModal  = (pos) => { if (!isEditor) return; setEditingEvent({ nombre: '', descripcion: '', tags: [], temporada: null, jugadores: [], nivel: 'casual', imagen: null, linkedCharacters: [], linkedPlanets: [] }); setInsertPosition(pos); setShowModal(true); };
+  const openEditModal = (ev)  => { if (!isEditor) return; setEditingEvent({ ...ev, linkedCharacters: ev.linkedCharacters || [], linkedPlanets: ev.linkedPlanets || [] }); setInsertPosition(null); setShowModal(true); };
 
   const handleSave = (data) => {
     if (editingEvent.id) {
@@ -713,7 +835,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
     setDraggingId(null); setDragOverGap(null);
   };
 
-  const hasFilters = filterTags.length > 0 || filterTemporada.length > 0 || filterPlayers.length > 0;
+  const hasFilters = filterTags.length > 0 || filterTemporada.length > 0 || filterPlayers.length > 0 || filterCharacters.length > 0 || filterPlanets.length > 0;
 
   // ── render ──────────────────────────────────────────────────────────────
   return (
@@ -753,7 +875,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           <div style={{ width: '1px', height: '14px', background: 'rgba(0,212,255,0.14)', flexShrink: 0 }} />
           <TagsDropdown allTags={allTags} filterTags={filterTags} onToggle={toggleFilterTag} onClear={() => setFilterTags([])} />
           {hasFilters && (
-            <button onClick={() => { setFilterTags([]); setFilterTemporada([]); setFilterPlayers([]); }}
+            <button onClick={() => { setFilterTags([]); setFilterTemporada([]); setFilterPlayers([]); setFilterCharacters([]); setFilterPlanets([]); }}
               style={{ padding: '3px 8px', background: 'transparent', border: '1px solid rgba(0,212,255,0.18)', color: 'rgba(0,212,255,0.38)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', cursor: 'pointer', borderRadius: '2px' }}>
               ✕ TODO
             </button>
@@ -761,7 +883,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
         </div>
 
         {/* Fila 3: filtro jugadores */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '9px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '7px', flexWrap: 'wrap' }}>
           <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>JUGADORES:</span>
           {PLAYERS.map(p => {
             const sel = filterPlayers.includes(p);
@@ -779,6 +901,50 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
             );
           })}
         </div>
+
+        {/* Fila 4: filtro personajes del catálogo */}
+        {catalogCharacters.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '7px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>PERSONAJES:</span>
+            {catalogCharacters.map(ch => {
+              const sel = filterCharacters.includes(ch.id);
+              return (
+                <button key={ch.id} onClick={() => toggleFilterChar(ch.id)} style={{
+                  padding: '2px 8px', borderRadius: '2px', cursor: 'pointer',
+                  border: `1px solid ${sel ? 'rgba(0,212,255,0.7)' : 'rgba(0,212,255,0.18)'}`,
+                  background: sel ? 'rgba(0,212,255,0.12)' : 'transparent',
+                  color: sel ? 'rgba(0,212,255,0.9)' : 'rgba(0,212,255,0.3)',
+                  fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', letterSpacing: '0.04em',
+                  transition: 'all 0.15s',
+                }}>
+                  {ch.nombre}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Fila 5: filtro planetas */}
+        {planets.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '9px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>PLANETAS:</span>
+            {planets.map(pl => {
+              const sel = filterPlanets.includes(pl.id);
+              return (
+                <button key={pl.id} onClick={() => toggleFilterPlanet(pl.id)} style={{
+                  padding: '2px 8px', borderRadius: '2px', cursor: 'pointer',
+                  border: `1px solid ${sel ? 'rgba(91,200,232,0.7)' : 'rgba(91,200,232,0.2)'}`,
+                  background: sel ? 'rgba(91,200,232,0.1)' : 'transparent',
+                  color: sel ? 'rgba(91,200,232,0.9)' : 'rgba(91,200,232,0.3)',
+                  fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', letterSpacing: '0.04em',
+                  transition: 'all 0.15s',
+                }}>
+                  ◉ {pl.nombre}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ══ CONTENIDO: timeline + panel derecho ══════════════════════════ */}
@@ -903,6 +1069,10 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
               onClose={() => setSelectedId(null)}
               onEdit={() => openEditModal(selectedEvent)}
               onDelete={() => { onDelete(selectedId); setSelectedId(null); }}
+              catalogCharacters={catalogCharacters}
+              planets={planets}
+              onNavigateToCharacter={onNavigateToCharacter}
+              onNavigateToPlanet={onNavigateToPlanet}
             />
           </div>
         )}
@@ -910,7 +1080,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
       {/* Modal */}
       {showModal && editingEvent && (
-        <EventModal event={editingEvent} onSave={handleSave} onClose={() => { setShowModal(false); setEditingEvent(null); }} />
+        <EventModal event={editingEvent} onSave={handleSave} onClose={() => { setShowModal(false); setEditingEvent(null); }} catalogCharacters={catalogCharacters} planets={planets} />
       )}
     </div>
   );

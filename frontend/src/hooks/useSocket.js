@@ -15,8 +15,10 @@ export function useSocket(username) {
   const [theme, setThemeState]              = useState('blue');
   const [fortalezasCatalog, setFortalezasCatalog] = useState([]);
   const [archiveImage, setArchiveImageState]       = useState(null);
-  const [zygerriaHouses, setZygerriaHouses]        = useState([]);
-  const [timelineEvents, setTimelineEvents]        = useState([]);
+  const [zygerriaHouses, setZygerriaHouses]              = useState([]);
+  const [timelineEvents, setTimelineEvents]              = useState([]);
+  const [catalogCharacters, setCatalogCharacters]        = useState([]);
+  const [planets, setPlanets]                            = useState([]);
 
   useEffect(() => {
     if (!username) return;
@@ -44,6 +46,8 @@ export function useSocket(username) {
     socketRef.current.on('archive_image_update', (img) => setArchiveImageState(img));
     socketRef.current.on('zygerria_houses_update', (houses) => setZygerriaHouses(houses));
     socketRef.current.on('timeline_events_update', (evs) => setTimelineEvents(evs));
+    socketRef.current.on('catalog_characters_update', (chars) => setCatalogCharacters(chars));
+    socketRef.current.on('planets_update', (pl) => setPlanets(pl));
 
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
@@ -147,6 +151,36 @@ export function useSocket(username) {
     socketRef.current.emit('timeline_reorder_event', { id, newOrden });
   };
 
+  const addCatalogCharacter = (data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('catalog_character_add', data);
+  };
+
+  const updateCatalogCharacter = (id, data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('catalog_character_update', { id, data });
+  };
+
+  const deleteCatalogCharacter = (id) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('catalog_character_delete', id);
+  };
+
+  const addPlanet = (data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('planet_add', data);
+  };
+
+  const updatePlanet = (id, data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('planet_update', { id, data });
+  };
+
+  const deletePlanet = (id) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('planet_delete', id);
+  };
+
   const forcePowers = Object.fromEntries(
     Object.entries(characters).map(([k, v]) => [k, v.puntosDeFuerza ?? 0])
   );
@@ -154,9 +188,12 @@ export function useSocket(username) {
   return {
     history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
+    catalogCharacters, planets,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
     addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
+    addCatalogCharacter, updateCatalogCharacter, deleteCatalogCharacter,
+    addPlanet, updatePlanet, deletePlanet,
   };
 }
