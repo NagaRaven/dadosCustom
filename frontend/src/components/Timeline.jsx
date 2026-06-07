@@ -717,7 +717,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
   // ── render ──────────────────────────────────────────────────────────────
   return (
-    <div className="tl-galaxy-bg-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <div className="tl-galaxy-bg-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
 
       {/* ══ CABECERA ══════════════════════════════════════════════════════ */}
       <div style={{ flexShrink: 0, padding: '0 18px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>

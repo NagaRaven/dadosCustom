@@ -237,7 +237,7 @@ export default function Dashboard({ username, onLogout }) {
           <LocationRegistry onBack={() => setCurrentView('main')} />
         </main>
       ) : currentView === 'timeline' ? (
-        <main className="flex-1 flex flex-col min-h-0">
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <Timeline
             isEditor={isAdmin(username)}
             events={timelineEvents}
