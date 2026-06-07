@@ -331,9 +331,6 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.008) 3px, rgba(0,212,255,0.008) 4px)', pointerEvents: 'none', zIndex: 0 }} />
       {/* HUD corners */}
       <div className="hud-corners-full" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
-      {/* Moving scan line */}
-      <div style={{ position: 'absolute', left: 0, right: 0, height: '2px', background: 'linear-gradient(to right, transparent 5%, rgba(0,212,255,0.35) 40%, rgba(0,212,255,0.35) 60%, transparent 95%)', animation: 'holo-scan-panel 6s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
-
       {/* Header bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid rgba(0,212,255,0.1)', flexShrink: 0, zIndex: 3, position: 'relative' }}>
         <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.55rem', letterSpacing: '0.2em', color: 'rgba(0,212,255,0.38)' }}>
@@ -454,8 +451,8 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
                 overflow: 'visible', cursor: 'zoom-in',
                 animation: 'holo-flicker 11s ease-in-out infinite',
                 /* Máscara oval para bordes difuminados */
-                maskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 28%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.2) 70%, transparent 88%)',
-                WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 28%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.2) 70%, transparent 88%)',
+                maskImage: 'radial-gradient(ellipse 88% 82% at 50% 50%, black 12%, rgba(0,0,0,0.55) 36%, rgba(0,0,0,0.08) 58%, transparent 72%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 88% 82% at 50% 50%, black 12%, rgba(0,0,0,0.55) 36%, rgba(0,0,0,0.08) 58%, transparent 72%)',
               }}
               onMouseEnter={() => setImgHovered(true)}
               onMouseLeave={() => setImgHovered(false)}
@@ -464,17 +461,17 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
               {/* Imagen base — alta distorsión cromática */}
               <img src={event.imagen} alt={event.nombre} style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
-                objectFit: 'contain', display: 'block',
+                objectFit: 'cover', display: 'block',
                 filter: 'brightness(1.12) contrast(1.25) saturate(0.3) hue-rotate(-12deg)',
               }} />
 
               {/* Tinte holográfico azul intenso */}
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,210,0.42)', pointerEvents: 'none', zIndex: 1 }} />
 
-              {/* Scanlines pronunciadas */}
+              {/* Scanlines en tono cián de interfaz */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,180,255,0.11) 0px, rgba(0,180,255,0.11) 1px, transparent 1px, transparent 4px)',
+                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,212,255,0.1) 0px, rgba(0,212,255,0.1) 1px, transparent 1px, transparent 4px)',
                 pointerEvents: 'none', zIndex: 2,
               }} />
 
@@ -595,10 +592,10 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
         userSelect: 'none', opacity: isDragging ? 0.3 : 1,
       }}
     >
-      {/* Miniatura cuadrada (sin recorte) */}
+      {/* Miniatura cuadrada (zoom para cubrir sin barras) */}
       {event.imagen && (
-        <div style={{ marginBottom: '7px', position: 'relative', paddingBottom: '100%', background: '#000', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
-          <img src={event.imagen} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+        <div style={{ marginBottom: '7px', position: 'relative', paddingBottom: '100%', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
+          <img src={event.imagen} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
       )}
 
