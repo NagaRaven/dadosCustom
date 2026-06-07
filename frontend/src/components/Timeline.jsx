@@ -626,7 +626,7 @@ function TimelineCard({ event, isSelected, isEditor, draggingId, onSelect, onEdi
 
 function GapRow({ gapKey, isEditor, hoverGap, dragOverGap, draggingId, onMouseEnter, onMouseLeave, onAdd, onDragOver, onDrop }) {
   const isOver  = dragOverGap === gapKey && !!draggingId;
-  const isHover = hoverGap === gapKey && !draggingId;
+  const isHover = hoverGap === gapKey && !draggingId && isEditor;
   return (
     <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
       onDragOver={e => { e.preventDefault(); onDragOver(); }}
@@ -717,7 +717,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
   // ── render ──────────────────────────────────────────────────────────────
   return (
-    <div className="tl-galaxy-bg-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+    <div className="tl-galaxy-bg-container" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
 
       {/* ══ CABECERA ══════════════════════════════════════════════════════ */}
       <div style={{ flexShrink: 0, padding: '0 18px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
@@ -787,6 +787,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
         {/* ── Columna timeline ─────────────────────────────────────────── */}
         <div style={{
           flexShrink: 0,
+          minHeight: 0,
           width: selectedEvent ? '42%' : '100%',
           transition: 'width 0.35s ease',
           overflow: 'hidden',
@@ -891,7 +892,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
 
         {/* ── Panel detalle ────────────────────────────────────────────── */}
         {selectedEvent && (
-          <div style={{ flex: 1, minWidth: 0, padding: '10px', animation: 'tl-detail-in 0.3s ease-out' }}>
+          <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', padding: '10px', animation: 'tl-detail-in 0.3s ease-out' }}>
             <DetailPanel
               event={selectedEvent}
               isEditor={isEditor}
