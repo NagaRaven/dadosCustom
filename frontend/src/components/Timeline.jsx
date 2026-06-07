@@ -793,14 +793,18 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
           overflow: 'hidden',
           borderRight: selectedEvent ? '1px solid rgba(0,212,255,0.1)' : 'none',
         }}>
-          <div style={{ height: '100%', overflowY: 'auto', position: 'relative' }}
+          <div style={{ height: '100%', overflowY: 'auto' }}
             onDragOver={e => e.preventDefault()}
             onDrop={() => { setDraggingId(null); setDragOverGap(null); }}
           >
-            {/* eje holográfico */}
-            <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '2px', transform: 'translateX(-50%)', background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,0.12) 4%, rgba(0,212,255,0.32) 18%, rgba(0,212,255,0.32) 82%, rgba(0,212,255,0.12) 96%, transparent)', boxShadow: '0 0 10px rgba(0,212,255,0.22), 0 0 30px rgba(0,212,255,0.07)', pointerEvents: 'none', zIndex: 0 }} />
-
-            <div style={{ padding: '12px 0 40px' }}>
+            {/* eje holográfico — background en el wrapper de contenido para extenderse con el scroll */}
+            <div style={{
+              padding: '12px 0 40px',
+              backgroundImage: [
+                'linear-gradient(to right, transparent calc(50% - 1px), rgba(0,212,255,0.30) calc(50% - 1px), rgba(0,212,255,0.30) calc(50% + 1px), transparent calc(50% + 1px))',
+                'linear-gradient(to right, transparent calc(50% - 5px), rgba(0,212,255,0.05) calc(50% - 5px), rgba(0,212,255,0.05) calc(50% + 5px), transparent calc(50% + 5px))',
+              ].join(', '),
+            }}>
               {sorted.length === 0 ? (
                 <div style={{ textAlign: 'center', paddingTop: '60px' }}>
                   {isEditor ? (
