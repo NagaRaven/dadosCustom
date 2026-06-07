@@ -450,44 +450,51 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
                 background: 'transparent',
                 overflow: 'visible', cursor: 'zoom-in',
                 animation: 'holo-flicker 11s ease-in-out infinite',
-                /* Máscara oval para bordes difuminados */
-                maskImage: 'radial-gradient(ellipse 88% 82% at 50% 50%, black 12%, rgba(0,0,0,0.55) 36%, rgba(0,0,0,0.08) 58%, transparent 72%)',
-                WebkitMaskImage: 'radial-gradient(ellipse 88% 82% at 50% 50%, black 12%, rgba(0,0,0,0.55) 36%, rgba(0,0,0,0.08) 58%, transparent 72%)',
+                /* Centro desplazado arriba: la parte inferior desvanece menos para fundirse con la base */
+                maskImage: 'radial-gradient(ellipse 88% 88% at 50% 38%, black 15%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,0.08) 60%, transparent 75%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 88% 88% at 50% 38%, black 15%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,0.08) 60%, transparent 75%)',
               }}
               onMouseEnter={() => setImgHovered(true)}
               onMouseLeave={() => setImgHovered(false)}
               onClick={() => setLightboxOpen(true)}
             >
-              {/* Imagen base — alta distorsión cromática */}
+              {/* Imagen base — totalmente desaturada para colorización monocromática */}
               <img src={event.imagen} alt={event.nombre} style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 objectFit: 'cover', display: 'block',
-                filter: 'brightness(1.12) contrast(1.25) saturate(0.3) hue-rotate(-12deg)',
+                filter: 'brightness(1.15) contrast(1.4) saturate(0)',
               }} />
 
-              {/* Tinte holográfico azul intenso */}
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,60,210,0.42)', pointerEvents: 'none', zIndex: 1 }} />
+              {/* Colorización cián monocromática: blend "color" aplica la hue cián a la luminancia */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,200,255,1)', mixBlendMode: 'color', pointerEvents: 'none', zIndex: 1 }} />
 
-              {/* Scanlines en tono cián de interfaz */}
+              {/* Scanlines horizontales */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,212,255,0.1) 0px, rgba(0,212,255,0.1) 1px, transparent 1px, transparent 4px)',
+                backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,212,255,0.12) 0px, rgba(0,212,255,0.12) 1px, transparent 1px, transparent 4px)',
                 pointerEvents: 'none', zIndex: 2,
               }} />
 
-              {/* Viñeta radial extra para reforzar el oval */}
+              {/* Brillo central sutil */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'radial-gradient(ellipse at center, transparent 38%, rgba(0,6,30,0.55) 68%, rgba(0,0,20,0.85) 88%)',
+                background: 'radial-gradient(ellipse 70% 60% at 50% 45%, rgba(0,220,255,0.12) 0%, transparent 70%)',
+                mixBlendMode: 'screen',
+                pointerEvents: 'none', zIndex: 2,
+              }} />
+
+              {/* Viñeta radial — enmarca y da profundidad */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,6,30,0.45) 65%, rgba(0,0,20,0.8) 88%)',
                 pointerEvents: 'none', zIndex: 3,
               }} />
 
-              {/* Brillo central (efecto emisión holográfica) */}
+              {/* Luz desde la base: ilumina la mitad inferior del holograma (sobre la viñeta) */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'radial-gradient(ellipse 70% 65% at 50% 50%, rgba(0,180,255,0.08) 0%, transparent 70%)',
-                mixBlendMode: 'screen',
-                pointerEvents: 'none', zIndex: 2,
+                background: 'linear-gradient(to top, rgba(0,230,255,0.55) 0%, rgba(0,200,255,0.22) 30%, transparent 60%)',
+                pointerEvents: 'none', zIndex: 4,
               }} />
 
               {/* Zoom overlay al hacer hover */}
@@ -498,39 +505,39 @@ function DetailPanel({ event, isEditor, onClose, onEdit, onDelete }) {
               )}
             </div>
 
-            {/* Base del proyector holográfico */}
-            <div style={{ position: 'relative', height: '54px', overflow: 'hidden', background: 'transparent' }}>
-              {/* Cono de luz hacia arriba */}
+            {/* Base del proyector — solapada con la imagen para unificar la composición */}
+            <div style={{ position: 'relative', height: '54px', marginTop: '-20px', overflow: 'visible', background: 'transparent' }}>
+              {/* Cono de luz que sube hacia la imagen */}
               <div style={{
                 position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
-                width: '68%', height: '42px',
-                background: 'linear-gradient(to top, rgba(0,212,255,0.15) 0%, transparent 100%)',
-                clipPath: 'polygon(15% 100%, 85% 100%, 62% 0%, 38% 0%)',
+                width: '90%', height: '55px',
+                background: 'linear-gradient(to top, rgba(0,220,255,0.32) 0%, rgba(0,180,255,0.1) 60%, transparent 100%)',
+                clipPath: 'polygon(18% 100%, 82% 100%, 100% 0%, 0% 0%)',
                 pointerEvents: 'none',
               }} />
               {/* Anillo exterior con glow */}
               <div style={{
                 position: 'absolute', bottom: '3px', left: '50%', transform: 'translateX(-50%)',
-                width: '72%', height: '18px', borderRadius: '50%',
-                border: '1px solid rgba(0,212,255,0.45)',
-                background: 'rgba(0,212,255,0.04)',
-                boxShadow: '0 0 16px rgba(0,212,255,0.35), inset 0 0 8px rgba(0,212,255,0.1)',
+                width: '78%', height: '18px', borderRadius: '50%',
+                border: '1px solid rgba(0,212,255,0.55)',
+                background: 'rgba(0,212,255,0.06)',
+                boxShadow: '0 0 22px rgba(0,212,255,0.55), inset 0 0 12px rgba(0,212,255,0.18)',
                 animation: 'holo-proj-pulse 2.5s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
               {/* Emisor central */}
               <div style={{
                 position: 'absolute', bottom: '7px', left: '50%', transform: 'translateX(-50%)',
-                width: '28%', height: '8px', borderRadius: '50%',
-                background: 'rgba(0,212,255,0.55)',
-                boxShadow: '0 0 12px rgba(0,212,255,0.75), 0 0 24px rgba(0,212,255,0.35)',
+                width: '32%', height: '8px', borderRadius: '50%',
+                background: 'rgba(0,220,255,0.7)',
+                boxShadow: '0 0 18px rgba(0,212,255,0.95), 0 0 36px rgba(0,212,255,0.5)',
                 animation: 'holo-proj-pulse 2.5s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
               <div style={{
                 position: 'absolute', bottom: '28px', left: '50%', transform: 'translateX(-50%)',
-                width: '45%', height: '1px',
-                background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.25), transparent)',
+                width: '55%', height: '1px',
+                background: 'linear-gradient(to right, transparent, rgba(0,212,255,0.35), transparent)',
                 pointerEvents: 'none',
               }} />
             </div>
