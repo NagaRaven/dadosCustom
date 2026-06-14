@@ -13,6 +13,7 @@ import LocationRegistry from './LocationRegistry';
 import CharacterCatalog from './CharacterCatalog';
 import PlanetCatalog from './PlanetCatalog';
 import Zygerria from './Zygerria';
+import MapaZygerria from './MapaZygerria';
 import Timeline from './Timeline';
 
 const isMaster = (u) => u === 'Master';
@@ -23,13 +24,14 @@ export default function Dashboard({ username, onLogout }) {
     history, lastRoll, connectedUsers,
     forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
-    catalogCharacters, planets,
+    catalogCharacters, planets, mapaPois,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
     addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
     addCatalogCharacter, updateCatalogCharacter, deleteCatalogCharacter,
     addPlanet, updatePlanet, deletePlanet,
+    addMapaPoi, updateMapaPoi, deleteMapaPoi,
   } = useSocket(username);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentView, setCurrentView] = useState('main');
@@ -151,6 +153,21 @@ export default function Dashboard({ username, onLogout }) {
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   ◉ MAPA GALÁCTICO
+                </button>
+                <button
+                  onClick={() => navigateTo('mapa-zygerria')}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'transparent', border: 'none',
+                    borderBottom: '1px solid rgba(0,212,255,0.08)',
+                    color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace',
+                    fontSize: '0.6rem', letterSpacing: '0.1em',
+                    padding: '10px 14px', cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,255,0.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  ⬡ MAPA ZIGERRIA
                 </button>
                 <button
                   onClick={() => navigateTo('timeline')}
@@ -276,6 +293,17 @@ export default function Dashboard({ username, onLogout }) {
             onNavigateToEvent={(evId) => navigateTo('timeline', evId)}
             onBack={() => navigateTo('main')}
             initialSelectedId={navTarget}
+          />
+        </main>
+      ) : currentView === 'mapa-zygerria' ? (
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+          <MapaZygerria
+            isEditor={isAdmin(username)}
+            pois={mapaPois}
+            onAdd={addMapaPoi}
+            onUpdate={updateMapaPoi}
+            onDelete={deleteMapaPoi}
+            onBack={() => navigateTo('main')}
           />
         </main>
       ) : currentView === 'timeline' ? (

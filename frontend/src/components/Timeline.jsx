@@ -768,6 +768,7 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
   const [filterPlayers,     setFilterPlayers]     = useState([]);
   const [filterCharacters,  setFilterCharacters]  = useState([]);
   const [filterPlanets,     setFilterPlanets]     = useState([]);
+  const [showFilters,       setShowFilters]       = useState(false);
   const [showModal,       setShowModal]       = useState(false);
   const [editingEvent,    setEditingEvent]    = useState(null);
   const [insertPosition,  setInsertPosition]  = useState(null);
@@ -856,7 +857,19 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
             <input className="cyber-input" value={filterName} onChange={e => setFilterName(e.target.value)}
               placeholder="Buscar por nombre…" style={{ fontSize: '0.75rem', padding: '4px 10px' }} />
           </div>
+          {(() => {
+            const active = hasFilters;
+            const count  = filterTags.length + filterTemporada.length + filterPlayers.length + filterCharacters.length + filterPlanets.length;
+            return (
+              <button onClick={() => setShowFilters(v => !v)} style={{ padding: '4px 11px', borderRadius: '2px', cursor: 'pointer', background: showFilters ? 'rgba(0,212,255,0.1)' : 'transparent', border: `1px solid ${active ? 'rgba(0,212,255,0.55)' : showFilters ? 'rgba(0,212,255,0.4)' : 'rgba(0,212,255,0.28)'}`, color: active ? 'rgba(0,212,255,0.9)' : showFilters ? 'rgba(0,212,255,0.75)' : 'rgba(0,212,255,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                FILTROS{active ? ` (${count})` : ''}&nbsp;<span style={{ fontSize: '0.45rem', opacity: 0.7 }}>{showFilters ? '▲' : '▼'}</span>
+              </button>
+            );
+          })()}
         </div>
+
+        {/* Filas de filtros (colapsables) */}
+        {showFilters && <>
 
         {/* Fila 2: filtros temporada · separador · tags */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '7px', flexWrap: 'wrap' }}>
@@ -945,6 +958,8 @@ export default function Timeline({ isEditor, events, onAdd, onUpdate, onDelete, 
             })}
           </div>
         )}
+
+        </>}
       </div>
 
       {/* ══ CONTENIDO: timeline + panel derecho ══════════════════════════ */}

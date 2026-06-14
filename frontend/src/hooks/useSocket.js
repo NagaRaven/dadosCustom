@@ -19,6 +19,7 @@ export function useSocket(username) {
   const [timelineEvents, setTimelineEvents]              = useState([]);
   const [catalogCharacters, setCatalogCharacters]        = useState([]);
   const [planets, setPlanets]                            = useState([]);
+  const [mapaPois, setMapaPois]                          = useState([]);
 
   useEffect(() => {
     if (!username) return;
@@ -48,6 +49,7 @@ export function useSocket(username) {
     socketRef.current.on('timeline_events_update', (evs) => setTimelineEvents(evs));
     socketRef.current.on('catalog_characters_update', (chars) => setCatalogCharacters(chars));
     socketRef.current.on('planets_update', (pl) => setPlanets(pl));
+    socketRef.current.on('mapa_pois_update', (pois) => setMapaPois(pois));
 
     socketRef.current.on('theme_update', (t) => {
       setThemeState(t);
@@ -181,6 +183,21 @@ export function useSocket(username) {
     socketRef.current.emit('planet_delete', id);
   };
 
+  const addMapaPoi = (data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('mapa_poi_add', data);
+  };
+
+  const updateMapaPoi = (id, data) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('mapa_poi_update', { id, data });
+  };
+
+  const deleteMapaPoi = (id) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('mapa_poi_delete', id);
+  };
+
   const forcePowers = Object.fromEntries(
     Object.entries(characters).map(([k, v]) => [k, v.puntosDeFuerza ?? 0])
   );
@@ -188,12 +205,13 @@ export function useSocket(username) {
   return {
     history, lastRoll, connectedUsers, forceStatus, forcePowers, isConnected,
     characters, theme, fortalezasCatalog, archiveImage, zygerriaHouses, timelineEvents,
-    catalogCharacters, planets,
+    catalogCharacters, planets, mapaPois,
     rollDice, forceResult, addForcePoint, subtractForcePoint, updateCharacter, setTheme,
     updateNotes, setPlayerStatus, updateFortalezasCatalog, setArchiveImage,
     addZygerriaHouse, updateZygerriaHouse, deleteZygerriaHouse,
     addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, reorderTimelineEvent,
     addCatalogCharacter, updateCatalogCharacter, deleteCatalogCharacter,
     addPlanet, updatePlanet, deletePlanet,
+    addMapaPoi, updateMapaPoi, deleteMapaPoi,
   };
 }
