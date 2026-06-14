@@ -33,6 +33,7 @@ const ZYGERRIA_FILE    = path.join(__dirname, 'data', 'zygerria.json');
 const TIMELINE_FILE              = path.join(__dirname, 'data', 'timeline.json');
 const CATALOG_CHARACTERS_FILE   = path.join(__dirname, 'data', 'catalog_characters.json');
 const PLANETS_FILE               = path.join(__dirname, 'data', 'planets.json');
+const MAPA_POIS_FILE             = path.join(__dirname, 'data', 'mapazygerria.json');
 
 function loadHistory() {
   try {
@@ -175,6 +176,32 @@ function savePlanets(pl) {
   } catch {}
 }
 
+// ── Persistencia del mapa de Zygerria (puntos de interés) ───────────────────
+const MAPA_POIS_SEED = path.join(__dirname, 'seed', 'mapazygerria.json');
+
+function loadMapaPois() {
+  try {
+    if (fs.existsSync(MAPA_POIS_FILE)) {
+      return JSON.parse(fs.readFileSync(MAPA_POIS_FILE, 'utf8'));
+    }
+    // Primer arranque (sin datos persistidos): cargar la semilla versionada
+    // y persistirla. Nunca pisa datos ya existentes en data/.
+    if (fs.existsSync(MAPA_POIS_SEED)) {
+      const seeded = JSON.parse(fs.readFileSync(MAPA_POIS_SEED, 'utf8'));
+      saveMapaPois(seeded);
+      return seeded;
+    }
+  } catch {}
+  return [];
+}
+
+function saveMapaPois(pois) {
+  try {
+    fs.mkdirSync(path.dirname(MAPA_POIS_FILE), { recursive: true });
+    fs.writeFileSync(MAPA_POIS_FILE, JSON.stringify(pois, null, 2));
+  } catch {}
+}
+
 function reindexTimeline(events) {
   const sorted = [...events].sort((a, b) => b.orden - a.orden);
   const minGap = sorted.length < 2 ? Infinity : sorted.reduce((min, e, i) => {
@@ -193,6 +220,7 @@ let timelineEvents       = loadTimeline();
 let characters           = loadCharacters();
 let catalogCharacters    = loadCatalogCharacters();
 let planets              = loadPlanets();
+let mapaPois             = loadMapaPois();
 let archiveImage = null; // temporal — no se persiste
 
 const isAdmin = (u) => u === 'Master' || u === 'Desarrollador';
@@ -218,6 +246,7 @@ app.get('/api/export-db', (_req, res) => {
     timelineEvents,
     catalogCharacters,
     planets,
+    mapaPois,
   };
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   res.setHeader('Content-Disposition', `attachment; filename="d20-backup-${ts}.json"`);
@@ -228,7 +257,7 @@ app.get('/api/export-db', (_req, res) => {
 
 // Importar BD — reemplaza todos los datos con el fichero de backup
 app.post('/api/import-db', (req, res) => {
-  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg, timelineEvents: importedTimeline, catalogCharacters: importedCatalogChars, planets: importedPlanets } = req.body || {};
+  const { history, characters: importedChars, fortalezasCatalog: importedFortalezas, zygerriaHouses: importedZyg, timelineEvents: importedTimeline, catalogCharacters: importedCatalogChars, planets: importedPlanets, mapaPois: importedMapaPois } = req.body || {};
   if (!importedChars || typeof importedChars !== 'object') {
     return res.status(400).json({ success: false, message: 'Fichero inválido: falta characters' });
   }
@@ -267,6 +296,11 @@ app.post('/api/import-db', (req, res) => {
     savePlanets(planets);
     io.emit('planets_update', planets);
   }
+  if (Array.isArray(importedMapaPois)) {
+    mapaPois = importedMapaPois;
+    saveMapaPois(mapaPois);
+    io.emit('mapa_pois_update', mapaPois);
+  }
   res.json({ success: true });
 });
 
@@ -293,6 +327,7 @@ io.on('connection', (socket) => {
   socket.emit('fortalezas_catalog_update', fortalezasCatalog);
   socket.emit('archive_image_update', archiveImage);
   socket.emit('zygerria_houses_update', zygerriaHouses);
+  socket.emit('mapa_pois_update', mapaPois);
   socket.emit('timeline_events_update', timelineEvents);
   socket.emit('catalog_characters_update', catalogCharacters);
   socket.emit('planets_update', planets);
@@ -605,6 +640,59 @@ io.on('connection', (socket) => {
     planets = planets.filter(p => p.id !== id);
     savePlanets(planets);
     io.emit('planets_update', planets);
+  });
+
+  // Master/Desarrollador: CRUD de puntos de interés del Mapa de Zygerria
+  const clampPct = (v) => Math.max(0, Math.min(100, v));
+
+  socket.on('mapa_poi_add', (data) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    if (!data || typeof data.nombre !== 'string' || !data.nombre.trim()) return;
+    if (typeof data.x !== 'number' || typeof data.y !== 'number') return;
+    const imagen = typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000 ? data.imagen : null;
+    const poi = {
+      id: String(Date.now()),
+      nombre: data.nombre.trim().slice(0, 200),
+      descripcion: typeof data.descripcion === 'string' ? data.descripcion.trim().slice(0, 2000) : '',
+      faccion: typeof data.faccion === 'string' && data.faccion.trim() ? data.faccion.trim().slice(0, 120) : null,
+      recompensas: typeof data.recompensas === 'string' ? data.recompensas.trim().slice(0, 300) : '',
+      color: typeof data.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(data.color) ? data.color : null,
+      x: clampPct(data.x),
+      y: clampPct(data.y),
+      imagen,
+      createdAt: new Date().toISOString(),
+    };
+    mapaPois.push(poi);
+    saveMapaPois(mapaPois);
+    io.emit('mapa_pois_update', mapaPois);
+  });
+
+  socket.on('mapa_poi_update', ({ id, data }) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    const idx = mapaPois.findIndex(p => p.id === id);
+    if (idx === -1 || !data) return;
+    const allowed = {};
+    if (typeof data.nombre === 'string' && data.nombre.trim()) allowed.nombre = data.nombre.trim().slice(0, 200);
+    if (typeof data.descripcion === 'string') allowed.descripcion = data.descripcion.trim().slice(0, 2000);
+    if (typeof data.faccion === 'string') allowed.faccion = data.faccion.trim() ? data.faccion.trim().slice(0, 120) : null;
+    else if (data.faccion === null) allowed.faccion = null;
+    if (typeof data.recompensas === 'string') allowed.recompensas = data.recompensas.trim().slice(0, 300);
+    if (typeof data.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(data.color)) allowed.color = data.color;
+    else if (data.color === null) allowed.color = null;
+    if (typeof data.x === 'number') allowed.x = clampPct(data.x);
+    if (typeof data.y === 'number') allowed.y = clampPct(data.y);
+    if (data.imagen === null) allowed.imagen = null;
+    else if (typeof data.imagen === 'string' && data.imagen.startsWith('data:image/') && data.imagen.length <= 3_000_000) allowed.imagen = data.imagen;
+    mapaPois[idx] = { ...mapaPois[idx], ...allowed };
+    saveMapaPois(mapaPois);
+    io.emit('mapa_pois_update', mapaPois);
+  });
+
+  socket.on('mapa_poi_delete', (id) => {
+    if (!isAdmin(connectedUsers[socket.id])) return;
+    mapaPois = mapaPois.filter(p => p.id !== id);
+    saveMapaPois(mapaPois);
+    io.emit('mapa_pois_update', mapaPois);
   });
 
   // Editores de timeline: reordenar evento (drag & drop)

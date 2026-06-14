@@ -132,17 +132,17 @@ function CharCard({ char, isSelected, onClick }) {
         borderRadius: '3px',
         padding: '10px',
         cursor: 'pointer',
-        transition: 'all 0.22s',
+        transition: 'border-color 0.22s, background-color 0.22s, box-shadow 0.22s',
         boxShadow: isSelected ? '0 0 16px rgba(0,212,255,0.15)' : 'none',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
       }}
     >
-      {/* Imagen miniatura cuadrada */}
-      <div style={{ position: 'relative', paddingBottom: '100%', background: 'rgba(0,10,25,0.8)', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
+      {/* Imagen miniatura vertical (4:5) */}
+      <div style={{ position: 'relative', paddingBottom: '125%', background: 'rgba(0,10,25,0.8)', border: '1px solid rgba(0,212,255,0.18)', borderRadius: '2px', overflow: 'hidden' }}>
         {char.imagen ? (
-          <img src={char.imagen} alt={char.nombre} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={char.imagen} alt={char.nombre} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
         ) : (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CharPlaceholder size="65%" />
@@ -424,6 +424,7 @@ export default function CharacterCatalog({ isEditor, catalogCharacters, timeline
   const [filterEstado,  setFilterEstado]  = useState(null);
   const [showModal,     setShowModal]     = useState(false);
   const [editingChar,   setEditingChar]   = useState(null);
+  const [showFilters,   setShowFilters]   = useState(false);
 
   const selectedChar = selectedId ? catalogCharacters.find(c => c.id === selectedId) ?? null : null;
 
@@ -466,6 +467,15 @@ export default function CharacterCatalog({ isEditor, catalogCharacters, timeline
           <div style={{ flex: 1 }}>
             <input className="cyber-input" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre o título…" style={{ fontSize: '0.75rem', padding: '4px 10px' }} />
           </div>
+          {(() => {
+            const activeCount = (filterFaccion ? 1 : 0) + (filterEstado ? 1 : 0);
+            const active = activeCount > 0;
+            return (
+              <button onClick={() => setShowFilters(v => !v)} style={{ padding: '5px 11px', borderRadius: '2px', cursor: 'pointer', background: showFilters ? 'rgba(0,212,255,0.1)' : 'transparent', border: `1px solid ${active ? 'rgba(0,212,255,0.55)' : showFilters ? 'rgba(0,212,255,0.4)' : 'rgba(0,212,255,0.28)'}`, color: active ? 'rgba(0,212,255,0.9)' : showFilters ? 'rgba(0,212,255,0.75)' : 'rgba(0,212,255,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                FILTROS{active ? ` (${activeCount})` : ''}&nbsp;<span style={{ fontSize: '0.45rem', opacity: 0.7 }}>{showFilters ? '▲' : '▼'}</span>
+              </button>
+            );
+          })()}
           {isEditor && (
             <button onClick={openAdd} className="cyber-btn" style={{ padding: '5px 14px', fontSize: '0.58rem', letterSpacing: '0.1em', flexShrink: 0 }}>
               + NUEVO
@@ -473,7 +483,8 @@ export default function CharacterCatalog({ isEditor, catalogCharacters, timeline
           )}
         </div>
 
-        {/* Fila 2: filtros */}
+        {/* Fila 2: filtros (colapsable) */}
+        {showFilters && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '9px', flexWrap: 'wrap' }}>
           <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>FACCIÓN:</span>
           {FACCIONES.map(f => {
@@ -503,6 +514,7 @@ export default function CharacterCatalog({ isEditor, catalogCharacters, timeline
             </button>
           )}
         </div>
+        )}
       </div>
 
       {/* ══ CONTENIDO: cuadrícula + panel derecho ════════════════════════ */}
@@ -515,7 +527,7 @@ export default function CharacterCatalog({ isEditor, catalogCharacters, timeline
               {catalogCharacters.length === 0 ? 'NO HAY PERSONAJES REGISTRADOS' : 'SIN RESULTADOS'}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: selectedChar ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
               {filtered.map(c => (
                 <CharCard
                   key={c.id}

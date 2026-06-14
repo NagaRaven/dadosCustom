@@ -428,8 +428,17 @@ export default function PlanetCatalog({ isEditor, planets, timelineEvents, onAdd
   const [showModal,   setShowModal]   = useState(false);
   const [editingPl,   setEditingPl]   = useState(null);
   const [tooltip,     setTooltip]     = useState({ visible: false, x: 0, y: 0, name: '' });
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterZone,  setFilterZone]  = useState(null);
+  const [filterTipo,  setFilterTipo]  = useState(null);
 
-  const selectedPlanet = selectedId ? planets.find(p => p.id === selectedId) ?? null : null;
+  const selectedPlanet  = selectedId ? planets.find(p => p.id === selectedId) ?? null : null;
+  const activeFilters   = (filterZone ? 1 : 0) + (filterTipo ? 1 : 0);
+  const visiblePlanets  = planets.filter(p => {
+    const zf = !filterZone || p.situacion === filterZone;
+    const tf = !filterTipo  || p.tipo      === filterTipo;
+    return zf && tf;
+  });
 
   const openAdd  = () => { setEditingPl({ nombre: '', descripcion: '', situacion: 'Desconocido', tipo: null, imagen: null, posX: 50, posY: 50 }); setShowModal(true); };
   const openEdit = (pl) => { setEditingPl({ ...pl }); setShowModal(true); };
@@ -450,37 +459,60 @@ export default function PlanetCatalog({ isEditor, planets, timelineEvents, onAdd
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
 
       {/* ══ CABECERA ══════════════════════════════════════════════════════ */}
-      <div style={{ flexShrink: 0, padding: '0 18px', borderBottom: '1px solid rgba(0,212,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '10px', paddingBottom: '10px' }}>
-        <button onClick={onBack} style={{ background: 'transparent', border: '1px solid rgba(0,212,255,0.3)', color: 'rgba(0,212,255,0.58)', fontFamily: 'Orbitron, monospace', fontSize: '0.54rem', padding: '5px 11px', cursor: 'pointer', letterSpacing: '0.08em', flexShrink: 0, borderRadius: '2px' }}>
-          ← VOLVER
-        </button>
-        <span style={{ color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', letterSpacing: '0.15em', flexShrink: 0 }}>
-          MESA HOLOGRÁFICA — MAPA GALÁCTICO
-        </span>
+      <div style={{ flexShrink: 0, padding: '0 18px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
 
-        {/* Leyenda de zonas */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {[
-            { label: 'Núcleo', color: SITUACION_COLOR['Núcleo'] },
-            { label: 'Borde Medio', color: SITUACION_COLOR['Borde Medio'] },
-            { label: 'Borde Exterior', color: SITUACION_COLOR['Borde Exterior'] },
-            { label: 'Desconocido', color: SITUACION_COLOR['Desconocido'] },
-          ].map(({ label, color }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: `1px solid ${color}`, flexShrink: 0 }} />
-              <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.48rem', color: `${color}99`, letterSpacing: '0.06em' }}>{label}</span>
-            </div>
-          ))}
+        {/* Fila 1 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '10px', paddingBottom: '10px' }}>
+          <button onClick={onBack} style={{ background: 'transparent', border: '1px solid rgba(0,212,255,0.3)', color: 'rgba(0,212,255,0.58)', fontFamily: 'Orbitron, monospace', fontSize: '0.54rem', padding: '5px 11px', cursor: 'pointer', letterSpacing: '0.08em', flexShrink: 0, borderRadius: '2px' }}>
+            ← VOLVER
+          </button>
+          <span style={{ color: 'rgba(0,212,255,0.75)', fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', letterSpacing: '0.15em', flexShrink: 0 }}>
+            MESA HOLOGRÁFICA — MAPA GALÁCTICO
+          </span>
+          <div style={{ flex: 1 }} />
+          <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', color: 'rgba(0,212,255,0.35)', letterSpacing: '0.08em', flexShrink: 0 }}>
+            {visiblePlanets.length}/{planets.length} PLANETA{planets.length !== 1 ? 'S' : ''}
+          </span>
+          <button onClick={() => setShowFilters(v => !v)} style={{ padding: '4px 11px', borderRadius: '2px', cursor: 'pointer', background: showFilters ? 'rgba(0,212,255,0.1)' : 'transparent', border: `1px solid ${activeFilters > 0 ? 'rgba(0,212,255,0.55)' : showFilters ? 'rgba(0,212,255,0.4)' : 'rgba(0,212,255,0.28)'}`, color: activeFilters > 0 ? 'rgba(0,212,255,0.9)' : showFilters ? 'rgba(0,212,255,0.75)' : 'rgba(0,212,255,0.5)', fontFamily: 'Orbitron, monospace', fontSize: '0.57rem', letterSpacing: '0.1em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            FILTROS{activeFilters > 0 ? ` (${activeFilters})` : ''}&nbsp;<span style={{ fontSize: '0.45rem', opacity: 0.7 }}>{showFilters ? '▲' : '▼'}</span>
+          </button>
+          {isEditor && (
+            <button onClick={openAdd} className="cyber-btn" style={{ padding: '5px 14px', fontSize: '0.58rem', letterSpacing: '0.1em', flexShrink: 0 }}>
+              + NUEVO
+            </button>
+          )}
         </div>
 
-        <div style={{ flex: 1 }} />
-        <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', color: 'rgba(0,212,255,0.35)', letterSpacing: '0.08em' }}>
-          {planets.length} PLANETA{planets.length !== 1 ? 'S' : ''}
-        </span>
-        {isEditor && (
-          <button onClick={openAdd} className="cyber-btn" style={{ padding: '5px 14px', fontSize: '0.58rem', letterSpacing: '0.1em', flexShrink: 0 }}>
-            + NUEVO
-          </button>
+        {/* Fila 2: filtros colapsables */}
+        {showFilters && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '9px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>ZONA:</span>
+            {SITUACIONES.map(s => {
+              const col = SITUACION_COLOR[s] || '#aaa';
+              const sel = filterZone === s;
+              return (
+                <button key={s} onClick={() => setFilterZone(sel ? null : s)} style={{ padding: '2px 9px', borderRadius: '2px', cursor: 'pointer', border: `1px solid ${sel ? col + 'cc' : col + '33'}`, background: sel ? `${col}18` : 'transparent', color: sel ? col : `${col}66`, fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.05em' }}>
+                  {s}
+                </button>
+              );
+            })}
+            <div style={{ width: '1px', height: '14px', background: 'rgba(0,212,255,0.14)', flexShrink: 0 }} />
+            <span style={{ color: 'rgba(0,212,255,0.3)', fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.1em', flexShrink: 0 }}>TIPO:</span>
+            {TIPOS_PLANETA.map(t => {
+              const col = TIPO_COLOR[t] || '#aaa';
+              const sel = filterTipo === t;
+              return (
+                <button key={t} onClick={() => setFilterTipo(sel ? null : t)} style={{ padding: '2px 9px', borderRadius: '2px', cursor: 'pointer', border: `1px solid ${sel ? col + 'cc' : col + '33'}`, background: sel ? `${col}18` : 'transparent', color: sel ? col : `${col}66`, fontFamily: 'Orbitron, monospace', fontSize: '0.52rem', letterSpacing: '0.06em' }}>
+                  {t}
+                </button>
+              );
+            })}
+            {activeFilters > 0 && (
+              <button onClick={() => { setFilterZone(null); setFilterTipo(null); }} style={{ padding: '2px 7px', background: 'transparent', border: '1px solid rgba(0,212,255,0.18)', color: 'rgba(0,212,255,0.38)', fontFamily: 'Orbitron, monospace', fontSize: '0.5rem', cursor: 'pointer', borderRadius: '2px' }}>
+                ✕ LIMPIAR
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -511,7 +543,7 @@ export default function PlanetCatalog({ isEditor, planets, timelineEvents, onAdd
         </div>
 
         {/* Planetas */}
-        {planets.map(pl => {
+        {visiblePlanets.map(pl => {
           const isSelected = selectedId === pl.id;
           const isHovered  = hoveredId  === pl.id;
           const sitColor   = SITUACION_COLOR[pl.situacion] || '#00d4ff';
