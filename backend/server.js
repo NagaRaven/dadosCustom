@@ -177,10 +177,19 @@ function savePlanets(pl) {
 }
 
 // ── Persistencia del mapa de Zygerria (puntos de interés) ───────────────────
+const MAPA_POIS_SEED = path.join(__dirname, 'seed', 'mapazygerria.json');
+
 function loadMapaPois() {
   try {
     if (fs.existsSync(MAPA_POIS_FILE)) {
       return JSON.parse(fs.readFileSync(MAPA_POIS_FILE, 'utf8'));
+    }
+    // Primer arranque (sin datos persistidos): cargar la semilla versionada
+    // y persistirla. Nunca pisa datos ya existentes en data/.
+    if (fs.existsSync(MAPA_POIS_SEED)) {
+      const seeded = JSON.parse(fs.readFileSync(MAPA_POIS_SEED, 'utf8'));
+      saveMapaPois(seeded);
+      return seeded;
     }
   } catch {}
   return [];
